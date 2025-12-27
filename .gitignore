@@ -1,0 +1,9 @@
+diabetes-env/
+
+.env
+
+.vscode
+.ruff_cache
+__pycache__
+
+work_log/
