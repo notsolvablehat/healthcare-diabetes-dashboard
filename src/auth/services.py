@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Annotated
 from uuid import UUID, uuid4
 
@@ -19,7 +19,7 @@ from . import models
 
 load_dotenv()
 
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/login")
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 JWT_SECRET: str | None = os.getenv("JWT_SECRET")
@@ -78,7 +78,10 @@ def register_user(db: Session, request: models.RegisterUserRequest) -> None:
             id=uuid4(),
             email=request.email,
             username=request.username,
-            hashed_pass=pass_hash
+            hashed_pass=pass_hash,
+            role=request.role if request.role else "patient",
+            is_onboarded=False,
+            created_at=date.today()
         )
 
         db.add(create_user_model)
@@ -101,7 +104,7 @@ def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials")
 
-    token = create_access_token(user.email, user.id, timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MIN))
+    token = create_access_token(user.email, user.id, timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MIN)) # type: ignore
     return models.Token(access_token=token, token_type="bearer")
 
 # Business Logic End
