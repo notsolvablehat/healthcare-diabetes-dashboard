@@ -1,6 +1,17 @@
-from sqlalchemy import Boolean, Column, Date, Float, ForeignKey, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from src.database.core import Base
 
@@ -93,6 +104,9 @@ class Doctor(Base):
     emergency_contact_phone = Column(String, nullable=False)
     consent_hipaa = Column(Boolean, nullable=False)
 
+    specialisation = Column(String, nullable=False, index=True) # Ensure this is indexed for speed
+    max_patients = Column(Integer, default=10, nullable=False)
+
     # Back Reference
     user = relationship("User", back_populates="doctor_profile")
 
@@ -102,3 +116,34 @@ class Doctor(Base):
             f"specialisation={self.specialisation}, "
             f"dob={self.date_of_birth})>"
         )
+
+class Assignment(Base):
+    __tablename__ = "doctor_patient_assignments"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4())
+
+    # Foreign Keys linking to the users table
+    doctor_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    patient_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    # Status control
+    is_active = Column(Boolean, default=True, nullable=False)
+
+    # Audit trail
+    assigned_at = Column(DateTime(timezone=True), server_default=func.now())
+    revoked_at = Column(DateTime(timezone=True), nullable=True)
+
+    # ---------------------------------------------------------
+    # PARTIAL INDEX CONFIGURATION
+    # ---------------------------------------------------------
+    __table_args__ = (
+        Index(
+            'unique_active_assignment',        # Index Name
+            'doctor_user_id', 'patient_user_id', # Columns to check
+            unique=True,                       # Make it unique
+            postgresql_where=(is_active.is_(True)) # ONLY if is_active is True
+        ),
+    )
+
+    def __repr__(self):
+        return f"<Assignment(doc={self.doctor_user_id}, patient={self.patient_user_id}, active={self.is_active})>"

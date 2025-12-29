@@ -1,14 +1,19 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi import HTTPException, status
+from pydantic import EmailStr
 from sqlalchemy import select
 
 from src.database.core import DbSession
 from src.schemas.users.users import Patient, User
-from src.users.models import DoctorProfile, PatientOnboarding, PatientProfile
+from src.users.models import (
+    DoctorProfile,
+    PatientOnboarding,
+    PatientProfile,
+)
 
 
-def get_user(db: DbSession, user_id: str) -> User:
+def get_user(db: DbSession, user_id: UUID) -> User:
     stmt = select(User).where(User.id == user_id)
     user = db.execute(stmt).scalar_one_or_none()
 
@@ -17,7 +22,7 @@ def get_user(db: DbSession, user_id: str) -> User:
 
     return user
 
-def get_profile(db: DbSession, user_id: str) -> PatientProfile | DoctorProfile:
+def get_profile(db: DbSession, user_id: UUID) -> PatientProfile | DoctorProfile:
     """
     Returns the user's profile.
     Possible to return either PatientProfile or DoctorProfile
@@ -37,7 +42,7 @@ def get_profile(db: DbSession, user_id: str) -> PatientProfile | DoctorProfile:
 
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User Profile is corrupted. Hence something went wrong.")
 
-def onboard_user(db: DbSession, user_id: str, request: PatientOnboarding) -> User:
+def onboard_user(db: DbSession, user_id: UUID, request: PatientOnboarding) -> User:
     """
     For onboarding patients.
     Returns current user.
@@ -74,7 +79,7 @@ def onboard_user(db: DbSession, user_id: str, request: PatientOnboarding) -> Use
 
     return user
 
-def update_user(db: DbSession, user_id: str, request: PatientOnboarding) -> User:
+def update_user(db: DbSession, user_id: UUID, request: PatientOnboarding) -> User:
     """
     For updating a user's profile data.
     Returns User
@@ -108,3 +113,20 @@ def update_user(db: DbSession, user_id: str, request: PatientOnboarding) -> User
                 setattr(user.doctor_profile, field, value)
 
     return user
+
+def get_patient_profile_by_email(db: DbSession, user_id: UUID, patient_email: EmailStr) -> PatientProfile:
+    user = get_user(db, user_id)
+
+    if user.role not in ["admin"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to perform this operation.")
+
+    stmt = select(User).filter(User.email == patient_email)
+    patient = db.scalar(stmt)
+
+    if not patient:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Patient not found for {patient_email}")
+
+    if not patient.patient_profile:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Patient {patient_email} has no profile.")
+
+    return patient.patient_profile

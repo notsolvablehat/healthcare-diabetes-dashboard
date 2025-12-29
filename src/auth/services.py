@@ -72,6 +72,8 @@ def authenticate_user(username: str, password: str, db: Session) -> User | bool:
 
 # Business Logic Start
 def register_user(db: Session, request: models.RegisterUserRequest) -> None:
+    if request.role == "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to create this role.")
     try:
         pass_hash = generate_password_hash(request.password)
         create_user_model = User(

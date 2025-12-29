@@ -1,0 +1,64 @@
+[
+  {
+    "name": null,
+    "email": "notsolvablehat@gmail.com",
+    "role": "patient",
+    "username": "solvablehat"
+  },
+  {
+    "name": null,
+    "email": "shafiagha789@gmail.com",
+    "role": "doctor",
+    "username": "Yaseen"
+  },
+  {
+    "name": "Gregory House",
+    "email": "house@hospital.com",
+    "role": "doctor",
+    "username": "dr_house",
+    "password": "password@123",
+    "specialisation": ["Cardiology", "General Medicine", "Neurology"]
+  },
+  {
+    "name": "John Watson",
+    "email": "watson@hospital.com",
+    "role": "doctor",
+    "username": "dr_watson"
+  },
+  {
+    "name": "Stephen Strange",
+    "email": "strange@hospital.com",
+    "role": "doctor",
+    "username": "dr_strange"
+  },
+  {
+    "name": "Alice Smith",
+    "email": "alice@example.com",
+    "role": "patient",
+    "username": "alice_s"
+  },
+  {
+    "name": "Bob Jones",
+    "email": "bob@example.com",
+    "role": "patient",
+    "username": "bob_j"
+  },
+  {
+    "name": "Charlie Brown",
+    "email": "charlie@example.com",
+    "role": "patient",
+    "username": "charlie_b"
+  },
+  {
+    "name": "Diana Prince",
+    "email": "diana@example.com",
+    "role": "patient",
+    "username": "diana_p"
+  },
+  {
+    "name": "Evan Wright",
+    "email": "evan@example.com",
+    "role": "patient",
+    "username": "evan_w"
+  }
+]

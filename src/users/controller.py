@@ -1,10 +1,16 @@
 from fastapi import APIRouter, HTTPException, status
+from pydantic import EmailStr
 
 from src.auth.services import CurrentUser
 from src.database.core import DbSession
 from src.users.models import PatientOnboarding
 
-from .services import get_profile, onboard_user, update_user
+from .services import (
+    get_patient_profile_by_email,
+    get_profile,
+    onboard_user,
+    update_user,
+)
 
 router = APIRouter(prefix="/users", tags=["user"])
 
@@ -13,7 +19,7 @@ def read_users_me(user: CurrentUser):
     return {"user": user}
 
 @router.get("/profile")
-def get_user_profile(user: CurrentUser, db: DbSession):
+def get_my_profile(user: CurrentUser, db: DbSession):
     if not user or not user.user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User is required.")
     return get_profile(db=db, user_id=user.user_id)
@@ -29,3 +35,7 @@ def update_user_profile(user: CurrentUser, db: DbSession, request: PatientOnboar
     if not user or not user.user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User is required.")
     return update_user(db, user.user_id, request)
+
+@router.get("/patient-profile/{patient_email}")
+def get_patient_profile(user: CurrentUser, db: DbSession, patient_email: EmailStr):
+    return get_patient_profile_by_email(db, user.user_id, patient_email)
