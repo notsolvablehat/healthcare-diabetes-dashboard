@@ -61,38 +61,38 @@
 
 *The actual medical consultation workflow.*
 
-* [ ] **POST** `/cases/` (Patient)
+* [ ] **POST** `/cases` (Patient)
 * **Input:** `{ symptoms: str, vitals: dict }`.
-Step 1: Create CaseDetailsMongo document in MongoDB. Get the returned _id.
-
-Step 2: Create Case row in PostgreSQL with mongo_case_id = str(new_mongo_id).
-
-Why: If Postgres fails, you have an orphan doc in Mongo (low risk). If you did Postgres first, you'd have a null link.
-
+* Logic: 
+1. Create the document in MongoDB first. Get the string _id.
+2. Create the row in PostgreSQL with mongo_case_id and patient_id (from CurrentUser).
+3. Future Step: Trigger the "NLP Normalization Engine" mentioned in your System Design
 
 * [ ] **GET** `/cases/{case_id}`
 * **Action:**
 * **Patient:** Returns their own case history.
 * **Doctor:** Returns cases from *their assigned* patients only.
 
+* Logic:
+1. Fetch the Row from Postgres using case_id.
+2. Security Check: If requester is a doctor, is he assigned to this patient? If requester is a patient, is it his case?
+3. Take mongo_case_id from the row.
+4. Fetch the full JSON from MongoDB.
+5. Merge them into one response (Status from SQL + Symptoms from Mongo).
 
-
-
-* [ ] **GET** `/cases/{case_id}`
-* **Action:** Returns full case details, including AI predictions and attached report links.
-Step 1: Fetch row from PostgreSQL (to check permissions/doctor assignment).
-
-Step 2: Take mongo_case_id from that row.
-
-Step 3: Fetch the full JSON from MongoDB.
-
-Step 4: Merge and return.
+* [ ] **GET** `/cases`
+* Logic:
+If Patient: SELECT * FROM cases WHERE patient_id = me.
+If Doctor: SELECT * FROM cases WHERE doctor_id = me.
+Note: Do not fetch MongoDB data here. Just return the SQL summaries (Date, Status, Patient Name) to keep the list fast. Merge and return.
 
 * [ ] **PATCH** `/cases/{case_id}/status` (Doctor)
-* **Input:** `{ status: "Reviewed" | "Closed" }`.
+* **Input:** `{ status: "Closed" | "Accepted" | "Rejeted" }`.
 * **Action:** Updates workflow state.
-
-
+* Logic:
+Verify Doctor owns this case.
+Update status in PostgreSQL.
+Update doctor_notes inside the MongoDB document (append to a notes array).
 
 #### **Priority 4: Files & Reports (Supabase Integration)**
 
