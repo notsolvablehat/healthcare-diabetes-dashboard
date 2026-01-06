@@ -117,6 +117,13 @@ def update_user(db: DbSession, user_id: str, request: PatientOnboarding) -> User
 
     return user
 
+def update_user_name(db: DbSession, user_id: str, name_of_user: str) -> User:
+    user = get_user(db, user_id)
+    user.name = name_of_user
+    db.commit()
+    db.refresh(user)
+    return user
+
 def get_patient_profile_by_email(db: DbSession, user_id: str, patient_email: EmailStr) -> PatientProfile:
     user = get_user(db, user_id)
 

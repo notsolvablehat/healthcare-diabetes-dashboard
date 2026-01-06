@@ -31,7 +31,7 @@ class DoctorSummary(BaseModel):
     """
     user_id: str
     doctor_id: str
-    name: str
+    name: str | None = None
     email: EmailStr
     specialisation: str
     department: str | None = None

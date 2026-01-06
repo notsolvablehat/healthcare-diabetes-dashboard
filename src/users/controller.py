@@ -10,6 +10,7 @@ from .services import (
     get_profile,
     onboard_user,
     update_user,
+    update_user_name,
 )
 
 router = APIRouter(prefix="/users", tags=["user"])
@@ -35,6 +36,12 @@ def update_user_profile(user: CurrentUser, db: DbSession, request: PatientOnboar
     if not user or not user.user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User is required.")
     return update_user(db, user.user_id, request)
+
+@router.post("/update-user-name")
+def update_name_endpoint(user: CurrentUser, db: DbSession, name_of_user: str):
+    if not user or not user.user_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User is required.")
+    return update_user_name(db, user.user_id, name_of_user)
 
 @router.get("/patient-profile/{patient_email}")
 def get_patient_profile(user: CurrentUser, db: DbSession, patient_email: EmailStr):

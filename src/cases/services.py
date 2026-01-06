@@ -205,7 +205,7 @@ class CaseService:
         # Add to MongoDB
         await mongo_db["cases"].update_one(
             {"_id": ObjectId(postgres_case.mongo_case_id)},
-            {"$push": {"doctor_notes": note.dict()}}
+            {"$push": {"doctor_notes": note.model_dump(mode="json")}}
         )
 
         await self.add_audit_log(db, mongo_db, case_id, "note_added", doctor_id)
@@ -258,12 +258,12 @@ class CaseService:
             postgres_case.status = case_update.status
 
         # Update MongoDB
-        update_dict = case_update.dict(exclude_unset=True)
+        update_dict = case_update.model_dump(mode="json", exclude_unset=True)
         if not update_dict:
              mongo_case["_id"] = str(mongo_case["_id"]) # ensure ID stringification if no update
              return Case(**mongo_case)
 
-        update_dict["updated_at"] = datetime.utcnow()
+        update_dict["updated_at"] = datetime.utcnow().isoformat()
 
         await mongo_db["cases"].update_one(
             {"_id": ObjectId(postgres_case.mongo_case_id)},

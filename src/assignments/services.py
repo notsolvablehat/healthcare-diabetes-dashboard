@@ -40,11 +40,6 @@ def get_patients(user_id: str, db: DbSession) -> MyPatients:
 
 def get_doctors(user_id: str, db: DbSession) -> MyDoctors:
     user = get_user(db, user_id)
-    if str(user.role) != "patient" and str(user.role) != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not allowed to view the doctors."
-        )
 
     stmt = (
         select(User, Doctor)

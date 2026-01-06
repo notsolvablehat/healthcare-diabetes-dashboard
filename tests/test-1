@@ -1,0 +1,70 @@
+# PATIENT 1
+patient_email: patient1@test.com
+patient_username: patient1
+patient_password: Test@123
+patient_access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXRpZW50MUB0ZXN0LmNvbSIsImlkIjoiMmZjYTY5MDUtYjUwYy00MTBmLWIxMDYtNzZlZTI4MjU5MGNlIiwicm9sZSI6InBhdGllbnQiLCJleHAiOjE3Njc3OTc2NTZ9.HwS7pZMD-0EWkjA_OGSelgiYAEJolLWekr2fMuyBnIY
+patient_user_id: 2fca6905-b50c-410f-b106-76ee282590ce
+
+# PATIENT 2 (for assignment testing)
+patient2_email: patient2@test.com
+patient2_access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXRpZW50MkB0ZXN0LmNvbSIsImlkIjoiZTYwZGNjNWQtYTRkNi00ODAwLWFiNjYtODllM2E0N2MyMTU3Iiwicm9sZSI6InBhdGllbnQiLCJleHAiOjE3Njc3OTc2ODF9.qhJRwMgOvpQKUqu6CtGMbOI0tlhSKVMaiMwtApB8p78
+patient2_password: Test@123
+patient2_user_id: e60dcc5d-a4d6-4800-ab66-89e3a47c2157
+
+# DOCTOR 1
+doctor_email: doctor1@test.com
+doctor_username: doctor1
+doctor_access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkb2N0b3IxQHRlc3QuY29tIiwiaWQiOiI0MTdjZTQ3Zi0xNzBlLTQ3ZmEtYWQ1Ny1hZmE2NjM5MTY3NGIiLCJyb2xlIjoiZG9jdG9yIiwiZXhwIjoxNzY3Nzk3NzIwfQ.F9Az_Cn-jvOjy03GNafCYJuqLwsgp48vETjEYfTXEtg
+doctor_password: Test@123
+doctor_user_id: 417ce47f-170e-47fa-ad57-afa66391674b
+
+# CASE
+case_id: CASE202601062E7FAF8F
+
+
+[x] Auth
+    [x] Register patient
+    [x] Register patient 2
+    [x] Register doctor
+    [x] Login patient
+    [x] Login patient 2
+    [x] Login doctor
+
+[x] Users
+    [x] Get /me (patient)
+    [x] Get /me (doctor)
+    [x] Get /profile (before onboard - should fail)
+    [x] Onboard patient 1
+    [x] Onboard patient 2
+    [x] Get /profile (after onboard)
+    [x] Update user profile
+
+[x] Doctors (Manual SQL)
+    [x] Insert doctor profile
+
+[x] Assignments
+    [x] Assign patient 1 to doctor
+    [x] Assign patient 2 to doctor
+    [x] Get my patients (doctor)
+    [x] Get my doctors (patient)
+    [x] Revoke patient 2 access
+    [x] Get my patients (should show 1 now)
+
+[x] Cases
+    [x] Create case
+    [x] Get case by ID (doctor)
+    [x] Get case by ID (patient)
+    [x] Update case
+    [x] Add doctor note
+    [x] Get case notes
+    [x] Approve case
+    [x] List doctor's cases
+    [x] List patient's cases
+
+[ ] Error Cases to Test
+    [x] Login with wrong password	POST /auth/login	400 Bad Request
+    [x] Access endpoint without token	GET /users/me	401 Unauthorized
+    [x] Patient tries to create case	POST /cases/	403 Forbidden
+    [x] Doctor views other doctor's cases	GET /cases/doctor/{other_id}/list	403 Forbidden
+    [x] Assign already assigned patient	POST /assignments/assign	226 IM Used
+    [x] Register with existing email	POST /auth/register	Error

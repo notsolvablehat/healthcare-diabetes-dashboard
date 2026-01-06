@@ -19,7 +19,7 @@ def get_my_patients(user: CurrentUser, db: DbSession):
     return get_patients(user.user_id, db)
 
 @router.get("/doctors")
-def get_my_doctors(doctor_id: str, user: CurrentUser, db: DbSession):
+def get_my_doctors(user: CurrentUser, db: DbSession):
     """
     Fetch all doctors currently assigned to the logged-in patient.
     """
