@@ -14,7 +14,13 @@ MONGO_DB_URL: str | None = os.getenv("MONGO_DB_URL")
 if not MONGO_DB_URL:
     raise RuntimeError("MongoDB connection string not found.")
 
-client = AsyncMongoClient(MONGO_DB_URL)
+# Add timeouts to prevent long hangs when MongoDB is unreachable
+client = AsyncMongoClient(
+    MONGO_DB_URL,
+    serverSelectionTimeoutMS=5000,  # 5 seconds instead of 30
+    connectTimeoutMS=5000,
+    socketTimeoutMS=5000
+)
 
 async def get_mongodb():
     db = client.get_database("health-care-db")

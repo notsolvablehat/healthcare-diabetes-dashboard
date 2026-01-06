@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import logging
 
 from fastapi import FastAPI
@@ -12,6 +13,7 @@ from .logging import LogLevels, configure_logging
 
 configure_logging(LogLevels.info)
 
+@asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.info("Everything Ready...")
 
@@ -20,7 +22,7 @@ async def lifespan(app: FastAPI):
     await close_mongodb_connection()
     logging.info("Closed connections...")
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 

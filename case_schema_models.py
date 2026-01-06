@@ -2,11 +2,12 @@
 # Production-ready Pydantic schemas for Case & Doctor Notes
 # Compatible with both MongoDB and PostgreSQL via dual-write pattern
 
-from typing import Optional, List, Literal, Dict, Any
-from datetime import datetime, date
-from enum import Enum
-from pydantic import BaseModel, Field, validator
 import uuid
+from datetime import date, datetime
+from enum import Enum
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field
 
 # ============================================================================
 # ENUMS - Standardized values across the system
@@ -71,7 +72,7 @@ class Route(str, Enum):
     RECTAL = "rectal"
     SUBLINGUAL = "sublingual"
 
-class Disposition(str, Enum):
+class DispositionType(str, Enum):
     DISCHARGE = "discharge"
     ADMIT = "admit"
     OBSERVE = "observe"
@@ -83,25 +84,25 @@ class Disposition(str, Enum):
 
 class HistoryOfPresentIllness(BaseModel):
     """Detailed history of current illness"""
-    onset: Optional[str] = None  # "YYYY-MM-DD" or "gradual" or "sudden"
-    duration: Optional[str] = None  # e.g. "3 days", "2 weeks"
-    
-    severity: Optional[Dict[str, Any]] = Field(
+    onset: str | None = None  # "YYYY-MM-DD" or "gradual" or "sudden"
+    duration: str | None = None  # e.g. "3 days", "2 weeks"
+
+    severity: dict[str, Any] | None = Field(
         None,
         description="Pain/symptom severity scale 1-10"
     )
-    character: Optional[str] = None  # e.g. "sharp", "dull", "burning"
-    
-    aggravating_factors: Optional[List[str]] = Field(default_factory=list)
-    alleviating_factors: Optional[List[str]] = Field(default_factory=list)
-    
-    associated_symptoms: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
-    functional_status: Optional[str] = None  # Impact on daily activities
-    
-    narrative: Optional[str] = None  # Free-text full history (for LLM)
-    
+    character: str | None = None  # e.g. "sharp", "dull", "burning"
+
+    aggravating_factors: list[str] | None = Field(default_factory=list)
+    alleviating_factors: list[str] | None = Field(default_factory=list)
+
+    associated_symptoms: list[dict[str, Any]] | None = Field(default_factory=list)
+    functional_status: str | None = None  # Impact on daily activities
+
+    narrative: str | None = None  # Free-text full history (for LLM)
+
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "onset": "2025-01-01",
                 "duration": "3 days",
@@ -120,19 +121,19 @@ class HistoryOfPresentIllness(BaseModel):
 class PastMedicalHistoryItem(BaseModel):
     """Previous medical condition"""
     condition: str  # SNOMED CT code + display
-    snomed_code: Optional[str] = None
-    onset: Optional[date] = None
+    snomed_code: str | None = None
+    onset: date | None = None
     status: Literal["active", "inactive", "resolved"]
-    notes: Optional[str] = None
+    notes: str | None = None
 
 class CurrentMedication(BaseModel):
     """Currently prescribed medication"""
     name: str
-    rxnorm_code: Optional[str] = None
-    dosage: Optional[str] = None  # e.g. "10mg"
-    frequency: Optional[MedicationFrequency] = None
-    duration: Optional[str] = None
-    indication: Optional[str] = None
+    rxnorm_code: str | None = None
+    dosage: str | None = None  # e.g. "10mg"
+    frequency: MedicationFrequency | None = None
+    duration: str | None = None
+    indication: str | None = None
     status: Literal["active", "stopped", "paused"] = "active"
 
 class Allergy(BaseModel):
@@ -141,51 +142,51 @@ class Allergy(BaseModel):
     allergen_name: str
     reaction_type: str  # e.g. "rash", "anaphylaxis", "itching"
     severity: SeverityLevel
-    reaction_date: Optional[date] = None
+    reaction_date: date | None = None
 
 class FamilyHistoryItem(BaseModel):
     """Family medical history"""
     relative: Literal["mother", "father", "sibling", "grandparent", "other"]
     condition: str  # SNOMED CT code + display
-    snomed_code: Optional[str] = None
-    age_of_onset: Optional[int] = None
+    snomed_code: str | None = None
+    age_of_onset: int | None = None
     status: Literal["alive", "deceased"]
 
 class SocialHistory(BaseModel):
     """Social and lifestyle history"""
-    occupation: Optional[str] = None
+    occupation: str | None = None
     smoking_status: Literal["never", "current", "former"] = "never"
-    pack_years: Optional[float] = None
+    pack_years: float | None = None
     alcohol_use: Literal["none", "occasional", "regular", "heavy"] = "none"
     drug_use: Literal["none", "current", "former"] = "none"
-    living_status: Optional[str] = None
+    living_status: str | None = None
 
 class ReviewOfSystems(BaseModel):
     """System-by-system screening"""
-    constitutional: Optional[str] = None
-    cardiovascular: Optional[str] = None
-    respiratory: Optional[str] = None
-    gastrointestinal: Optional[str] = None
-    genitourinary: Optional[str] = None
-    neurological: Optional[str] = None
-    psychiatric_mental: Optional[str] = None
-    skin: Optional[str] = None
-    other_systems: Optional[str] = None
+    constitutional: str | None = None
+    cardiovascular: str | None = None
+    respiratory: str | None = None
+    gastrointestinal: str | None = None
+    genitourinary: str | None = None
+    neurological: str | None = None
+    psychiatric_mental: str | None = None
+    skin: str | None = None
+    other_systems: str | None = None
 
 class SubjectiveSection(BaseModel):
     """Complete Subjective (S) section of SOAP note"""
     chief_complaint: str = Field(..., max_length=500)
-    
-    history_of_present_illness: Optional[HistoryOfPresentIllness] = None
-    past_medical_history: List[PastMedicalHistoryItem] = Field(default_factory=list)
-    
-    current_medications: List[CurrentMedication] = Field(default_factory=list)
-    allergies: List[Allergy] = Field(default_factory=list)
-    
-    family_history: List[FamilyHistoryItem] = Field(default_factory=list)
-    social_history: Optional[SocialHistory] = None
-    
-    review_of_systems: Optional[ReviewOfSystems] = None
+
+    history_of_present_illness: HistoryOfPresentIllness | None = None
+    past_medical_history: list[PastMedicalHistoryItem] = Field(default_factory=list)
+
+    current_medications: list[CurrentMedication] = Field(default_factory=list)
+    allergies: list[Allergy] = Field(default_factory=list)
+
+    family_history: list[FamilyHistoryItem] = Field(default_factory=list)
+    social_history: SocialHistory | None = None
+
+    review_of_systems: ReviewOfSystems | None = None
 
 # ============================================================================
 # OBJECTIVE SECTION MODELS (O in SOAP)
@@ -194,55 +195,55 @@ class SubjectiveSection(BaseModel):
 class VitalSigns(BaseModel):
     """Patient vital signs"""
     recorded_at: datetime = Field(default_factory=datetime.utcnow)
-    
-    systolic_bp: Optional[int] = None  # mmHg
-    diastolic_bp: Optional[int] = None  # mmHg
-    heart_rate: Optional[int] = None  # bpm
-    respiratory_rate: Optional[int] = None  # breaths/min
-    temperature: Optional[float] = None  # °C or °F
-    oxygen_saturation: Optional[float] = None  # %
-    
-    weight: Optional[float] = None  # kg
-    height: Optional[float] = None  # cm
-    bmi: Optional[float] = None  # kg/m²
+
+    systolic_bp: int | None = None  # mmHg
+    diastolic_bp: int | None = None  # mmHg
+    heart_rate: int | None = None  # bpm
+    respiratory_rate: int | None = None  # breaths/min
+    temperature: float | None = None  # °C or °F
+    oxygen_saturation: float | None = None  # %
+
+    weight: float | None = None  # kg
+    height: float | None = None  # cm
+    bmi: float | None = None  # kg/m²
 
 class LabResult(BaseModel):
     """Individual lab test result"""
     test_name: str
-    loinc_code: Optional[str] = None
-    value: Optional[str] = None  # Can be string or number
-    unit: Optional[str] = None
-    
-    reference_range: Optional[Dict[str, float]] = None  # {"low": 70, "high": 100}
+    loinc_code: str | None = None
+    value: str | None = None  # Can be string or number
+    unit: str | None = None
+
+    reference_range: dict[str, float] | None = None  # {"low": 70, "high": 100}
     status: ObservationStatus = ObservationStatus.FINAL
     abnormal: bool = False
-    flags: Optional[str] = None  # H (high), L (low), C (critical)
-    
-    date_collected: Optional[date] = None
-    date_received: Optional[date] = None
+    flags: str | None = None  # H (high), L (low), C (critical)
+
+    date_collected: date | None = None
+    date_received: date | None = None
 
 class ImagingResult(BaseModel):
     """Imaging/Diagnostic study result"""
     study_type: str  # X-ray, CT, MRI, Ultrasound, ECG, etc.
     ordered_date: date
-    completed_date: Optional[date] = None
-    
+    completed_date: date | None = None
+
     description: str  # Radiologist impression
-    findings: Optional[str] = None
-    impression: Optional[str] = None
-    
-    s3_url: Optional[str] = None  # AWS S3 path to image/PDF
+    findings: str | None = None
+    impression: str | None = None
+
+    s3_url: str | None = None  # AWS S3 path to image/PDF
     status: Literal["pending", "completed", "interpreted"] = "completed"
-    radiologist_name: Optional[str] = None
+    radiologist_name: str | None = None
 
 class ObjectiveSection(BaseModel):
     """Complete Objective (O) section of SOAP note"""
-    vital_signs: Optional[VitalSigns] = None
-    
-    physical_examination: Optional[Dict[str, str]] = None  # System-specific findings
-    
-    lab_results: List[LabResult] = Field(default_factory=list)
-    imaging_results: List[ImagingResult] = Field(default_factory=list)
+    vital_signs: VitalSigns | None = None
+
+    physical_examination: dict[str, str] | None = None  # System-specific findings
+
+    lab_results: list[LabResult] = Field(default_factory=list)
+    imaging_results: list[ImagingResult] = Field(default_factory=list)
 
 # ============================================================================
 # ASSESSMENT SECTION MODELS (A in SOAP)
@@ -252,41 +253,41 @@ class Problem(BaseModel):
     """Individual problem/diagnosis in assessment"""
     rank: int = Field(1, ge=1)
     problem_type: ProblemType
-    
+
     condition: str  # Display name
-    snomed_code: Optional[str] = None
-    icd_code: Optional[str] = None
-    
-    severity: Optional[SeverityLevel] = None
+    snomed_code: str | None = None
+    icd_code: str | None = None
+
+    severity: SeverityLevel | None = None
     status: Literal["confirmed", "suspected", "ruled_out"] = "suspected"
     confidence: ConfidenceLevel = ConfidenceLevel.MEDIUM
-    
-    clinical_reasoning: Optional[str] = None  # Why doctor thinks this
-    date_of_onset: Optional[date] = None
-    date_last_confirmed: Optional[date] = None
+
+    clinical_reasoning: str | None = None  # Why doctor thinks this
+    date_of_onset: date | None = None
+    date_last_confirmed: date | None = None
 
 class DifferentialDiagnosis(BaseModel):
     """Differential diagnosis consideration"""
     diagnosis: str
-    snomed_code: Optional[str] = None
+    snomed_code: str | None = None
     likelihood: Literal["high", "moderate", "low"]
-    reasoning: Optional[str] = None
+    reasoning: str | None = None
     ruled_out: bool = False
-    rule_out_reason: Optional[str] = None
+    rule_out_reason: str | None = None
 
 class ClinicalImpression(BaseModel):
     """Overall clinical impression"""
     summary: str  # 2-3 sentence summary
     complexity_level: Literal["straightforward", "moderate", "complex"]
     diagnostic_certainty: ConfidenceLevel
-    main_concerns: List[str] = Field(default_factory=list)
-    key_findings: List[str] = Field(default_factory=list)
+    main_concerns: list[str] = Field(default_factory=list)
+    key_findings: list[str] = Field(default_factory=list)
 
 class AssessmentSection(BaseModel):
     """Complete Assessment (A) section of SOAP note"""
-    problem_list: List[Problem] = Field(default_factory=list, min_items=1)
-    differential_diagnoses: List[DifferentialDiagnosis] = Field(default_factory=list)
-    clinical_impression: Optional[ClinicalImpression] = None
+    problem_list: list[Problem] = Field(default_factory=list, min_items=1)
+    differential_diagnoses: list[DifferentialDiagnosis] = Field(default_factory=list)
+    clinical_impression: ClinicalImpression | None = None
 
 # ============================================================================
 # PLAN SECTION MODELS (P in SOAP)
@@ -295,26 +296,26 @@ class AssessmentSection(BaseModel):
 class DiagnosticPlan(BaseModel):
     """Diagnostic test ordered"""
     test_name: str
-    test_code: Optional[str] = None
+    test_code: str | None = None
     priority: Literal["urgent", "routine", "when_available"] = "routine"
     rationale: str
     ordered_date: date = Field(default_factory=date.today)
-    expected_result_date: Optional[date] = None
+    expected_result_date: date | None = None
     status: Literal["ordered", "pending", "completed", "cancelled"] = "ordered"
 
 class Medication(BaseModel):
     """Medication prescribed"""
     name: str
-    rxnorm_code: Optional[str] = None
+    rxnorm_code: str | None = None
     dosage: str
     frequency: MedicationFrequency
     route: Route = Route.ORAL
     duration: str  # e.g. "5 days", "2 weeks", "ongoing"
     indication: str
     start_date: date = Field(default_factory=date.today)
-    end_date: Optional[date] = None
-    instructions: Optional[str] = None
-    warnings: List[str] = Field(default_factory=list)
+    end_date: date | None = None
+    instructions: str | None = None
+    warnings: list[str] = Field(default_factory=list)
     status: Literal["prescribed", "active", "stopped", "completed"] = "prescribed"
 
 class NonPharmaceuticalIntervention(BaseModel):
@@ -322,65 +323,65 @@ class NonPharmaceuticalIntervention(BaseModel):
     intervention: str
     category: Literal["lifestyle", "physical", "behavioral", "diet"]
     instructions: str
-    expected_duration: Optional[str] = None
+    expected_duration: str | None = None
     priority: Literal["high", "medium", "low"] = "medium"
 
 class Procedure(BaseModel):
     """Medical procedure planned"""
     procedure_name: str
-    snomed_code: Optional[str] = None
+    snomed_code: str | None = None
     indication: str
-    scheduled_date: Optional[date] = None
-    location: Optional[str] = None
+    scheduled_date: date | None = None
+    location: str | None = None
     urgency: Literal["emergency", "urgent", "routine"] = "routine"
-    pre_operative_notes: Optional[str] = None
+    pre_operative_notes: str | None = None
     status: Literal["planned", "scheduled", "completed", "cancelled"] = "planned"
 
 class PatientEducation(BaseModel):
     """Patient education provided"""
-    topics: List[str] = Field(default_factory=list)
+    topics: list[str] = Field(default_factory=list)
     education_provided: str
     patient_understanding: Literal["good", "fair", "poor"] = "good"
-    education_materials: Optional[List[Dict[str, str]]] = None
+    education_materials: list[dict[str, str]] | None = None
 
 class FollowUp(BaseModel):
     """Follow-up plan"""
     schedule_follow_up: bool = True
-    follow_up_date: Optional[date] = None
+    follow_up_date: date | None = None
     follow_up_type: Literal["in_person", "phone", "telehealth", "lab_work"] = "in_person"
     follow_up_with: Literal["same_doctor", "specialist", "other"] = "same_doctor"
-    follow_up_reason: Optional[str] = None
-    urgent_return_criteria: Optional[str] = None
+    follow_up_reason: str | None = None
+    urgent_return_criteria: str | None = None
 
 class Referral(BaseModel):
     """Referral to specialist"""
     specialty_needed: str
     reason: str
     urgency: Literal["urgent", "routine"] = "routine"
-    referred_to: Optional[str] = None  # Doctor name/ID
+    referred_to: str | None = None  # Doctor name/ID
     referral_date: date = Field(default_factory=date.today)
     status: Literal["pending", "accepted", "completed", "cancelled"] = "pending"
 
 class Disposition(BaseModel):
     """Patient disposition at end of visit"""
-    disposition: Literal["discharge", "admit", "observe", "transfer"]
+    disposition: DispositionType
     disposition_location: str  # home, hospital, ICU, etc.
-    discharge_date_time: Optional[datetime] = None
-    discharge_instructions: Optional[str] = None
-    restrictions: Optional[str] = None
+    discharge_date_time: datetime | None = None
+    discharge_instructions: str | None = None
+    restrictions: str | None = None
 
 class PlanSection(BaseModel):
     """Complete Plan (P) section of SOAP note"""
-    diagnostic_plan: List[DiagnosticPlan] = Field(default_factory=list)
-    
-    medications: List[Medication] = Field(default_factory=list)
-    non_pharmaceutical_interventions: List[NonPharmaceuticalIntervention] = Field(default_factory=list)
-    procedures: List[Procedure] = Field(default_factory=list)
-    
-    patient_education: Optional[PatientEducation] = None
-    follow_up: Optional[FollowUp] = None
-    referrals: List[Referral] = Field(default_factory=list)
-    disposition: Optional[Disposition] = None
+    diagnostic_plan: list[DiagnosticPlan] = Field(default_factory=list)
+
+    medications: list[Medication] = Field(default_factory=list)
+    non_pharmaceutical_interventions: list[NonPharmaceuticalIntervention] = Field(default_factory=list)
+    procedures: list[Procedure] = Field(default_factory=list)
+
+    patient_education: PatientEducation | None = None
+    follow_up: FollowUp | None = None
+    referrals: list[Referral] = Field(default_factory=list)
+    disposition: Disposition | None = None
 
 # ============================================================================
 # ATTACHMENT & DOCUMENT MODELS
@@ -404,7 +405,7 @@ class DoctorNote(BaseModel):
     content: str  # Markdown supported
     note_type: Literal["progress", "amendment", "clarification", "follow_up_observation"]
     visibility: Literal["doctor_only", "patient_visible", "shared"] = "doctor_only"
-    linked_to_case_section: Optional[Literal["subjective", "objective", "assessment", "plan"]] = None
+    linked_to_case_section: Literal["subjective", "objective", "assessment", "plan"] | None = None
 
 class Amendment(BaseModel):
     """Amendment to case"""
@@ -412,20 +413,20 @@ class Amendment(BaseModel):
     amended_at: datetime = Field(default_factory=datetime.utcnow)
     amended_by: str  # UUID
     reason: str  # Why amended
-    changed_fields: Dict[str, Dict[str, Any]]  # {fieldName: {oldValue, newValue}}
+    changed_fields: dict[str, dict[str, Any]]  # {fieldName: {oldValue, newValue}}
 
 class DoctorApproval(BaseModel):
     """Doctor approval workflow"""
     approved: bool = False
-    approved_by: Optional[str] = None  # UUID
-    approval_date: Optional[datetime] = None
-    approval_notes: Optional[str] = None
+    approved_by: str | None = None  # UUID
+    approval_date: datetime | None = None
+    approval_notes: str | None = None
     requires_patient_signature: bool = False
 
 class PatientConsent(BaseModel):
     """Patient consent tracking"""
     consent_given: bool = False
-    consent_date: Optional[datetime] = None
+    consent_date: datetime | None = None
     consent_type: Literal["treatment", "data_sharing", "research"]
 
 class AuditLog(BaseModel):
@@ -433,26 +434,26 @@ class AuditLog(BaseModel):
     action: Literal["created", "updated", "viewed", "approved", "amended", "shared"]
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     performed_by: str  # UUID
-    ip_address: Optional[str] = None
-    change_details: Optional[str] = None
+    ip_address: str | None = None
+    change_details: str | None = None
 
 class NLPExtraction(BaseModel):
     """NLP-extracted clinical entities"""
-    conditions: Optional[List[Dict[str, Any]]] = None  # [{code, display, confidence}]
-    medications: Optional[List[Dict[str, Any]]] = None
-    lab_values: Optional[List[Dict[str, Any]]] = None
-    procedures: Optional[List[Dict[str, Any]]] = None
+    conditions: list[dict[str, Any]] | None = None  # [{code, display, confidence}]
+    medications: list[dict[str, Any]] | None = None
+    lab_values: list[dict[str, Any]] | None = None
+    procedures: list[dict[str, Any]] | None = None
 
 class AIAnalysis(BaseModel):
     """AI/LLM analysis results"""
     generated: bool = False
-    generated_at: Optional[datetime] = None
-    model: Optional[str] = None
-    summary: Optional[str] = None  # Patient-friendly summary
-    key_insights: List[str] = Field(default_factory=list)
-    risk_assessment: Optional[str] = None
-    recommended_actions: List[str] = Field(default_factory=list)
-    nlp_extracted_entities: Optional[NLPExtraction] = None
+    generated_at: datetime | None = None
+    model: str | None = None
+    summary: str | None = None  # Patient-friendly summary
+    key_insights: list[str] = Field(default_factory=list)
+    risk_assessment: str | None = None
+    recommended_actions: list[str] = Field(default_factory=list)
+    nlp_extracted_entities: NLPExtraction | None = None
 
 # ============================================================================
 # MAIN CASE DOCUMENT MODEL
@@ -462,69 +463,69 @@ class CaseCreate(BaseModel):
     """Request model for creating case"""
     patient_id: str
     doctor_id: str
-    encounter_id: Optional[str] = None
-    
+    encounter_id: str | None = None
+
     case_type: CaseType = CaseType.ROUTINE
     chief_complaint: str = Field(..., max_length=500)
-    
-    subjective: Optional[SubjectiveSection] = None
-    objective: Optional[ObjectiveSection] = None
-    assessment: Optional[AssessmentSection] = None
-    plan: Optional[PlanSection] = None
+
+    subjective: SubjectiveSection | None = None
+    objective: ObjectiveSection | None = None
+    assessment: AssessmentSection | None = None
+    plan: PlanSection | None = None
 
 class CaseUpdate(BaseModel):
     """Request model for updating case (partial)"""
-    status: Optional[CaseStatus] = None
-    severity: Optional[SeverityLevel] = None
-    
-    subjective: Optional[SubjectiveSection] = None
-    objective: Optional[ObjectiveSection] = None
-    assessment: Optional[AssessmentSection] = None
-    plan: Optional[PlanSection] = None
+    status: CaseStatus | None = None
+    severity: SeverityLevel | None = None
+
+    subjective: SubjectiveSection | None = None
+    objective: ObjectiveSection | None = None
+    assessment: AssessmentSection | None = None
+    plan: PlanSection | None = None
 
 class Case(BaseModel):
     """Complete Case document (MongoDB + response model)"""
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     case_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8].upper())
-    
+
     # IDs
     patient_id: str
     doctor_id: str
-    encounter_id: Optional[str] = None
-    hospital_id: Optional[str] = None
-    department_id: Optional[str] = None
-    
+    encounter_id: str | None = None
+    hospital_id: str | None = None
+    department_id: str | None = None
+
     # Metadata
     case_type: CaseType = CaseType.ROUTINE
     status: CaseStatus = CaseStatus.OPEN
-    severity: Optional[SeverityLevel] = None
+    severity: SeverityLevel | None = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    closed_at: Optional[datetime] = None
-    
+    closed_at: datetime | None = None
+
     # SOAP Sections
-    subjective: Optional[SubjectiveSection] = None
-    objective: Optional[ObjectiveSection] = None
-    assessment: Optional[AssessmentSection] = None
-    plan: Optional[PlanSection] = None
-    
+    subjective: SubjectiveSection | None = None
+    objective: ObjectiveSection | None = None
+    assessment: AssessmentSection | None = None
+    plan: PlanSection | None = None
+
     # Attachments & Notes
-    attachments: List[Attachment] = Field(default_factory=list)
-    doctor_notes: List[DoctorNote] = Field(default_factory=list)
-    amendment_history: List[Amendment] = Field(default_factory=list)
-    
+    attachments: list[Attachment] = Field(default_factory=list)
+    doctor_notes: list[DoctorNote] = Field(default_factory=list)
+    amendment_history: list[Amendment] = Field(default_factory=list)
+
     # Workflow
-    approvals: Optional[DoctorApproval] = None
-    patient_consent: Optional[PatientConsent] = None
-    audit_trail: List[AuditLog] = Field(default_factory=list)
-    
+    approvals: DoctorApproval | None = None
+    patient_consent: PatientConsent | None = None
+    audit_trail: list[AuditLog] = Field(default_factory=list)
+
     # AI/LLM
-    ai_analysis: Optional[AIAnalysis] = None
-    
+    ai_analysis: AIAnalysis | None = None
+
     # Metadata
     language: str = "en"
-    tags: List[str] = Field(default_factory=list)
-    
+    tags: list[str] = Field(default_factory=list)
+
     class Config:
         use_enum_values = False
         json_schema_extra = {
@@ -547,7 +548,7 @@ class DoctorNoteCreate(BaseModel):
     content: str
     note_type: Literal["progress", "amendment", "clarification", "follow_up_observation"]
     visibility: Literal["doctor_only", "patient_visible", "shared"] = "doctor_only"
-    linked_to_case_section: Optional[Literal["subjective", "objective", "assessment", "plan"]] = None
+    linked_to_case_section: Literal["subjective", "objective", "assessment", "plan"] | None = None
 
 class DoctorNoteAmend(BaseModel):
     """Amend an existing note"""
@@ -564,8 +565,8 @@ class DoctorNoteResponse(BaseModel):
     content: str
     note_type: str
     visibility: str
-    amendment_history: Optional[List[Dict[str, Any]]] = None
-    signature_data: Optional[Dict[str, Any]] = None
+    amendment_history: list[dict[str, Any]] | None = None
+    signature_data: dict[str, Any] | None = None
 
 # ============================================================================
 # COMBINED RESPONSE MODELS
@@ -584,7 +585,7 @@ class PaginatedCaseList(BaseModel):
     total: int
     page: int
     page_size: int
-    cases: List[CaseResponse]
+    cases: list[CaseResponse]
 
 # ============================================================================
 # ERROR MODELS
@@ -595,7 +596,7 @@ class ErrorResponse(BaseModel):
     status_code: int
     error_type: str
     message: str
-    details: Optional[Dict[str, Any]] = None
+    details: dict[str, Any] | None = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 # ============================================================================

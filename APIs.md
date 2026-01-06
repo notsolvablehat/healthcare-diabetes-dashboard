@@ -35,12 +35,12 @@
 
 
 * [x] **POST** `/assignments/assign` (Admin/Doctor)
-* **Input:** `{ patient_email: str }` or `{ patient_id: UUID }`.
+* **Input:** `{ patient_email: str }` or `{ patient_id: str }`.
 * **Action:** Creates/Activates a link in `doctor_patient_assignments`.
 
 
 * [x] **POST** `/assignments/revoke` (Admin/Doctor)
-* **Input:** `{ patient_id: UUID, reason: str }`.
+* **Input:** `{ patient_id: str, reason: str }`.
 * **Action:** Sets `is_active = False` in assignment table.
 
 

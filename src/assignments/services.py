@@ -1,5 +1,5 @@
 from datetime import datetime
-from uuid import UUID
+from uuid import uuid4
 
 from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
@@ -19,7 +19,7 @@ from .models import (
 )
 
 
-def get_patients(user_id: UUID, db: DbSession) -> MyPatients:
+def get_patients(user_id: str, db: DbSession) -> MyPatients:
     user = get_user(db ,user_id)
 
     if str(user.role) != "doctor":
@@ -38,9 +38,9 @@ def get_patients(user_id: UUID, db: DbSession) -> MyPatients:
             patients=patient_list
         )
 
-def get_doctors(user_id: UUID, db: DbSession) -> MyDoctors:
+def get_doctors(user_id: str, db: DbSession) -> MyDoctors:
     user = get_user(db, user_id)
-    if str(user.role) != "patient" or str(user.role) != "admin":
+    if str(user.role) != "patient" and str(user.role) != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are not allowed to view the doctors."
@@ -77,7 +77,7 @@ def get_doctors(user_id: UUID, db: DbSession) -> MyDoctors:
         doctors=doctor_list
     )
 
-def assign_patient(db: DbSession, user_id: UUID, request_data: PatientAssignRequest):
+def assign_patient(db: DbSession, user_id: str, request_data: PatientAssignRequest):
         user = get_user(db, user_id)
         if user.role not in ["doctor", "admin"]:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to make this request.")
@@ -139,6 +139,7 @@ def assign_patient(db: DbSession, user_id: UUID, request_data: PatientAssignRequ
 
         # 7. Create Assignment
         new_assignment = Assignment(
+            id=str(uuid4()),
             doctor_user_id=best_doctor.user_id,
             patient_user_id=patient_user.id,
             is_active=True
@@ -154,7 +155,7 @@ def assign_patient(db: DbSession, user_id: UUID, request_data: PatientAssignRequ
             "current_load": qualified_doctors[0][1] + 1
         }
 
-def revoke_patient_access(db: DbSession, requester_id: UUID, request_data: RevokeAccessRequest):
+def revoke_patient_access(db: DbSession, requester_id: str, request_data: RevokeAccessRequest):
     requester = get_user(db, requester_id)
 
     if requester.role not in ["doctor", "admin"]:

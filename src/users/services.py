@@ -1,4 +1,4 @@
-from uuid import UUID, uuid4
+
 
 from fastapi import HTTPException, status
 from pydantic import EmailStr
@@ -13,7 +13,7 @@ from src.users.models import (
 )
 
 
-def get_user(db: DbSession, user_id: UUID) -> User:
+def get_user(db: DbSession, user_id: str) -> User:
     stmt = select(User).where(User.id == user_id)
     user = db.execute(stmt).scalar_one_or_none()
 
@@ -22,7 +22,7 @@ def get_user(db: DbSession, user_id: UUID) -> User:
 
     return user
 
-def get_profile(db: DbSession, user_id: UUID) -> PatientProfile | DoctorProfile:
+def get_profile(db: DbSession, user_id: str) -> PatientProfile | DoctorProfile:
     """
     Returns the user's profile.
     Possible to return either PatientProfile or DoctorProfile
@@ -42,13 +42,16 @@ def get_profile(db: DbSession, user_id: UUID) -> PatientProfile | DoctorProfile:
 
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User Profile is corrupted. Hence something went wrong.")
 
-def onboard_user(db: DbSession, user_id: UUID, request: PatientOnboarding) -> User:
+def onboard_user(db: DbSession, user_id: str, request: PatientOnboarding) -> User:
     """
     For onboarding patients.
     Returns current user.
     """
 
     user = get_user(db, user_id)
+
+    if str(user.role) == "doctor":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Doctors cannot be onboarded.")
 
     if user.patient_profile is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already onboarded.")
@@ -57,7 +60,7 @@ def onboard_user(db: DbSession, user_id: UUID, request: PatientOnboarding) -> Us
         if user.patient_profile is None:
             user.patient_profile = Patient(
                 user_id=user.id,
-                patient_id="patient_"+str(uuid4()),
+                patient_id=user.id,
                 date_of_birth=request.date_of_birth,
                 gender=request.gender,
                 phone_number=request.phone_number,
@@ -79,7 +82,7 @@ def onboard_user(db: DbSession, user_id: UUID, request: PatientOnboarding) -> Us
 
     return user
 
-def update_user(db: DbSession, user_id: UUID, request: PatientOnboarding) -> User:
+def update_user(db: DbSession, user_id: str, request: PatientOnboarding) -> User:
     """
     For updating a user's profile data.
     Returns User
@@ -114,7 +117,7 @@ def update_user(db: DbSession, user_id: UUID, request: PatientOnboarding) -> Use
 
     return user
 
-def get_patient_profile_by_email(db: DbSession, user_id: UUID, patient_email: EmailStr) -> PatientProfile:
+def get_patient_profile_by_email(db: DbSession, user_id: str, patient_email: EmailStr) -> PatientProfile:
     user = get_user(db, user_id)
 
     if user.role not in ["admin"]:

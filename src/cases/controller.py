@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from fastapi import APIRouter, HTTPException, status
 
+from src.auth.services import CurrentUser
+from src.cases.models import CaseCreate, CaseResponse, CaseUpdate, DoctorNoteCreate, CaseApprovalRequest
+from src.cases.services import case_service
 from src.database.core import DbSession
 from src.database.mongo import MongoDb
-from src.auth.services import CurrentUser
-from src.cases.models import CaseCreate, CaseUpdate, CaseResponse, DoctorNoteCreate
-from src.cases.services import case_service
 
 router = APIRouter(prefix="/cases", tags=["cases"])
 
@@ -22,7 +21,7 @@ async def create_case(
     """
     if user.role != "doctor":
         raise HTTPException(status_code=403, detail="Only doctors can create cases")
-    
+
     new_case = await case_service.create_case(
         db=db,
         mongo_db=mongo_db,
@@ -42,10 +41,10 @@ async def get_case(
     case = await case_service.get_case_by_id(db, mongo_db, case_id, user.user_id)
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
-    
+
     # Log view in audit trail
     await case_service.add_audit_log(db, mongo_db, case_id, "viewed", user.user_id)
-    
+
     return CaseResponse(**case.dict())
 
 @router.patch("/{case_id}", response_model=CaseResponse)
@@ -60,30 +59,31 @@ async def update_case(
     case = await case_service.get_case_by_id(db, mongo_db, case_id, user.user_id)
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
-    
+
     updated_case = await case_service.update_case(db, mongo_db, case_id, case_update, user.user_id)
     if not updated_case:
          raise HTTPException(status_code=403, detail="Not authorized to edit this case")
-    
+
     return CaseResponse(**updated_case.dict())
 
 @router.post("/{case_id}/approve", response_model=CaseResponse)
 async def approve_case(
     case_id: str,
     user: CurrentUser,
+    approval_data: CaseApprovalRequest,
     db: DbSession,
     mongo_db: MongoDb
 ):
-    """Doctor approval workflow"""
+    """Doctor approval workflow with optional approval notes"""
     if user.role != "doctor":
         raise HTTPException(status_code=403, detail="Only doctors can approve cases")
-    
+
     approved_case = await case_service.approve_case(
-        db, mongo_db, case_id, user.user_id
+        db, mongo_db, case_id, user.user_id, approval_data.approval_notes
     )
     if not approved_case:
         raise HTTPException(status_code=404, detail="Case not found or not owned by you")
-        
+
     return CaseResponse(**approved_case.dict())
 
 @router.get("/doctor/{doctor_id}/list")
@@ -99,7 +99,7 @@ async def list_doctor_cases(
     # Assuming CurrentUser middleware sets user_id
     if user.role != "doctor" or str(user.user_id) != doctor_id:
         raise HTTPException(status_code=403, detail="Can only view your own cases")
-    
+
     cases = await case_service.list_cases_by_doctor(
         db, doctor_id, status=status, skip=skip, limit=limit
     )
@@ -116,7 +116,7 @@ async def list_patient_cases(
     """List all cases for a patient (patient view)"""
     if user.role != "patient" or str(user.user_id) != patient_id:
         raise HTTPException(status_code=403, detail="Can only view your own cases")
-    
+
     cases = await case_service.list_cases_by_patient(
         db, patient_id, skip=skip, limit=limit
     )
@@ -133,7 +133,7 @@ async def add_doctor_note(
     """Add a note to case"""
     if user.role != "doctor":
         raise HTTPException(status_code=403, detail="Only doctors can add notes")
-    
+
     note = await case_service.add_doctor_note(
         db, mongo_db, case_id, user.user_id, note_data
     )

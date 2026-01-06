@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import date, datetime, timedelta, timezone
 from typing import Annotated
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import jwt
 from dotenv import load_dotenv
@@ -33,13 +33,14 @@ def generate_password_hash(password: str) -> str:
 def verify_password(plain_pass: str, pass_hash: str) -> bool:
     return bcrypt_context.verify(plain_pass, pass_hash)
 
-def create_access_token(email: str, user_id: UUID, expires_delta: timedelta) -> str:
+def create_access_token(email: str, user_id: str, role: str, expires_delta: timedelta) -> str:
     if not JWT_SECRET or not SECRET_ALGORITHM:
         raise RuntimeError("Secrets have not been configured correctly.")
 
     payload = {
         "sub": email,
-        "id": str(user_id),
+        "id": user_id,
+        "role": role,
         "exp": datetime.now(timezone.utc) + expires_delta
     }
 
@@ -52,7 +53,8 @@ def verify_token(token: str) -> models.TokenData:
     try:
         payload = jwt.decode(token, key=JWT_SECRET, algorithms=[SECRET_ALGORITHM])
         user_id: str = payload.get("id")
-        return models.TokenData(user_id=user_id)
+        role: str = payload.get("role")
+        return models.TokenData(user_id=user_id, role=role)
     except Exception as e:
         logging.warning(f"Token verification failed {str(e)}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e)) from e
@@ -77,7 +79,7 @@ def register_user(db: Session, request: models.RegisterUserRequest) -> None:
     try:
         pass_hash = generate_password_hash(request.password)
         create_user_model = User(
-            id=uuid4(),
+            id=str(uuid4()),
             email=request.email,
             username=request.username,
             hashed_pass=pass_hash,
@@ -106,7 +108,7 @@ def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials")
 
-    token = create_access_token(user.email, user.id, timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MIN)) # type: ignore
+    token = create_access_token(user.email, user.id, user.role, timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MIN)) # type: ignore
     return models.Token(access_token=token, token_type="bearer")
 
 # Business Logic End

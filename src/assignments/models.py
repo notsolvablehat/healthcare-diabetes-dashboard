@@ -1,5 +1,4 @@
 from datetime import date
-from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -8,7 +7,7 @@ class PatientSummary(BaseModel):
     """
     A lightweight summary of a patient for list views.
     """
-    user_id: UUID
+    user_id: str
     patient_id: str
     name: str | None = "Unknown"
     email: EmailStr
@@ -22,7 +21,7 @@ class MyPatients(BaseModel):
     """
     Used to return the patients for a particular doctor.
     """
-    doctor_id: UUID
+    doctor_id: str
     count: int
     patients: list[PatientSummary]
 
@@ -30,7 +29,7 @@ class DoctorSummary(BaseModel):
     """
     Lightweight summary of a doctor for the patient's list view.
     """
-    user_id: UUID
+    user_id: str
     doctor_id: str
     name: str
     email: EmailStr
@@ -44,7 +43,7 @@ class MyDoctors(BaseModel):
     """
     Wrapper for returning the list of doctors assigned to a patient.
     """
-    patient_id: UUID
+    patient_id: str
     count: int
     doctors: list[DoctorSummary]
 

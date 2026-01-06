@@ -9,7 +9,7 @@ from sqlalchemy import (
     Integer,
     String,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -19,7 +19,7 @@ from src.database.core import Base
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default="uuid_generate_v4()", index=True)
+    id = Column(String, primary_key=True, index=True)
     username = Column(String, unique=True)
     name = Column(String)
     email = Column(String, unique=True, index=True, nullable=False)
@@ -40,7 +40,7 @@ class Patient(Base):
     __tablename__ = "patients"
 
     # The Primary Key is also the Foreign Key to Users (1-to-1 relationship)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
+    user_id = Column(String, ForeignKey("users.id"), primary_key=True)
 
     # Business ID
     patient_id = Column(String, unique=True, nullable=False, index=True)
@@ -76,7 +76,7 @@ class Doctor(Base):
     __tablename__ = "doctors"
 
     # Primary Key + FK to users (1-to-1)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
+    user_id = Column(String, ForeignKey("users.id"), primary_key=True)
 
     # Business / Professional IDs
     doctor_id = Column(String, unique=True, nullable=False, index=True)
@@ -120,11 +120,11 @@ class Doctor(Base):
 class Assignment(Base):
     __tablename__ = "doctor_patient_assignments"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4())
+    id = Column(String, primary_key=True)
 
     # Foreign Keys linking to the users table
-    doctor_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    patient_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    doctor_user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    patient_user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     # Status control
     is_active = Column(Boolean, default=True, nullable=False)
