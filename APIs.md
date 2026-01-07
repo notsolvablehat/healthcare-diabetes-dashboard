@@ -61,14 +61,14 @@
 
 *The actual medical consultation workflow.*
 
-* [ ] **POST** `/cases` (Patient)
+* [x] **POST** `/cases` (Patient)
 * **Input:** `{ symptoms: str, vitals: dict }`.
 * Logic: 
 1. Create the document in MongoDB first. Get the string _id.
 2. Create the row in PostgreSQL with mongo_case_id and patient_id (from CurrentUser).
 3. Future Step: Trigger the "NLP Normalization Engine" mentioned in your System Design
 
-* [ ] **GET** `/cases/{case_id}`
+* [x] **GET** `/cases/{case_id}`
 * **Action:**
 * **Patient:** Returns their own case history.
 * **Doctor:** Returns cases from *their assigned* patients only.
@@ -80,13 +80,13 @@
 4. Fetch the full JSON from MongoDB.
 5. Merge them into one response (Status from SQL + Symptoms from Mongo).
 
-* [ ] **GET** `/cases`
+* [x] **GET** `/cases`
 * Logic:
 If Patient: SELECT * FROM cases WHERE patient_id = me.
 If Doctor: SELECT * FROM cases WHERE doctor_id = me.
 Note: Do not fetch MongoDB data here. Just return the SQL summaries (Date, Status, Patient Name) to keep the list fast. Merge and return.
 
-* [ ] **PATCH** `/cases/{case_id}/status` (Doctor)
+* [x] **PATCH** `/cases/{case_id}/status` (Doctor)
 * **Input:** `{ status: "Closed" | "Accepted" | "Rejeted" }`.
 * **Action:** Updates workflow state.
 * Logic:
@@ -98,19 +98,30 @@ Update doctor_notes inside the MongoDB document (append to a notes array).
 
 *Handling PDF uploads.*
 
-* [ ] **POST** `/reports/upload-url`
-* **Input:** `{ filename: str, content_type: str }`.
-* **Action:** Generates a **Supabase Signed URL** so the frontend can upload the file directly.
+* [x] **POST** `/reports/upload-url`
+* **Input:** `{ filename: str, content_type: str, patient_id: str, case_id?: str, description?: str }`.
+* **Action:** Generates a **Supabase Signed URL** for direct frontend upload. Creates pending report record in DB.
 
 
-* [ ] **POST** `/reports/link`
-* **Input:** `{ case_id: UUID, file_url: str, file_type: str }`.
-* **Action:** Saves the file metadata in your DB linked to the Case.
+* [x] **POST** `/reports/{report_id}/confirm`
+* **Input:** `{ storage_path: str, file_size_bytes?: int }`.
+* **Action:** Confirms upload and saves file size.
 
 
-* [ ] **GET** `/reports/{case_id}`
+* [x] **GET** `/reports/case/{case_id}`
 * **Action:** Lists all files attached to a case.
 
+
+* [x] **GET** `/reports/patient/{patient_id}`
+* **Action:** Lists all reports for a patient.
+
+
+* [x] **GET** `/reports/{report_id}`
+* **Action:** Get single report metadata.
+
+
+* [x] **GET** `/reports/{report_id}/download`
+* **Action:** Generates a signed download URL for viewing/downloading the file.
 
 
 #### **Priority 5: AI & Intelligence (Celery/Background)**

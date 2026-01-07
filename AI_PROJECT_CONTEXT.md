@@ -28,10 +28,19 @@ This is a **FastAPI** backend for a healthcare management system focused on diab
 │   ├── auth/                   # [DONE] Login/Register
 │   ├── users/                  # [DONE] Profiles (Patients/Doctors)
 │   ├── assignments/            # [DONE] Doctor-Patient relationships (Load balancing logic)
-│   ├── cases/                  # [PENDING] Empty module. Needs implementation.
+│   ├── cases/                  # [DONE] Medical case management
+│   ├── reports/                # [DONE] File uploads via Supabase Storage
+│   │   ├── controller.py       # Routes: /reports/*
+│   │   ├── models.py           # Pydantic schemas
+│   │   └── services.py         # Upload/Download URL generation
+│   ├── database/
+│   │   ├── core.py             # PostgreSQL (SQLAlchemy)
+│   │   ├── mongo.py            # MongoDB client
+│   │   └── supabase.py         # Supabase Storage client
 │   ├── schemas/                # SQLAlchemy models
 │       ├── users/              # User/Profile/Assignment tables
-│       └── mongo.py            # [Empty]
+│       ├── cases.py            # Cases table
+│       └── reports.py          # Reports table
 └── ...
 ```
 
@@ -45,19 +54,16 @@ This is a **FastAPI** backend for a healthcare management system focused on diab
     -   Load balancing logic exists (assign to least loaded doctor).
     -   `src/assignments` is fully implemented.
 
-### 🚧 Pending (Critical Next Steps)
-**Priority: Case Management (`src/cases`)**
--   The directory `src/cases` exists but **files are empty**.
--   **Implementation Guide:** `implementation_guide.md` contains the *exact* code needed for `controller.py`, `services.py`, and `models.py`.
--   **Schema Models:** `case_schema_models.py` contains the Pydantic models needed.
--   **Missing:**
-    -   `src/cases/controller.py` (Empty)
-    -   `src/cases/services.py` (Empty)
-    -   `src/cases/models.py` (Empty)
-    -   `src/schemas/cases.py` (Missing - needs SQLAlchemy definition)
+### ✅ Completed (Case Management)
+-   `src/cases` is fully implemented with dual-write to PostgreSQL + MongoDB.
+-   SOAP notes, doctor notes, approval workflow.
+
+### ✅ Completed (Reports)
+-   `src/reports` is fully implemented.
+-   File uploads (PDF, images) via Supabase Storage signed URLs.
+-   Access control: Patients access own reports, Doctors access assigned patients' reports.
 
 ### ⏳ Future/Roadmap
--   **Reports:** File uploads via Supabase.
 -   **AI Analysis:** Celery tasks for case summarization and NLP.
 -   **FHIR Export:** Standardized data export.
 

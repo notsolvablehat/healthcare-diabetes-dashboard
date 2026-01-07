@@ -1,5 +1,5 @@
-from contextlib import asynccontextmanager
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from slowapi import _rate_limit_exceeded_handler

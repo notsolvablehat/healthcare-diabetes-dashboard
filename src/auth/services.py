@@ -76,7 +76,7 @@ def authenticate_user(username: str, password: str, db: Session) -> User | bool:
 def register_user(db: Session, request: models.RegisterUserRequest) -> None:
     if request.role == "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to create this role.")
-    
+
     # Check if email already exists
     existing_email = db.query(User).filter(User.email == request.email).first()
     if existing_email:
@@ -84,7 +84,7 @@ def register_user(db: Session, request: models.RegisterUserRequest) -> None:
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Email '{request.email}' is already registered."
         )
-    
+
     # Check if username already exists
     existing_username = db.query(User).filter(User.username == request.username).first()
     if existing_username:
@@ -92,7 +92,7 @@ def register_user(db: Session, request: models.RegisterUserRequest) -> None:
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Username '{request.username}' is already taken."
         )
-    
+
     try:
         pass_hash = generate_password_hash(request.password)
         create_user_model = User(
@@ -112,7 +112,7 @@ def register_user(db: Session, request: models.RegisterUserRequest) -> None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create user. Please try again."
-        )
+        ) from e
 
 def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]) -> models.TokenData:
     return verify_token(token)

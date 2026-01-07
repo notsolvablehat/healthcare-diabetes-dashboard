@@ -16,19 +16,19 @@ def resolve_patient_user_id(db: Session, patient_identifier: str) -> str:
     The identifier can be:
     - patient_id (from patients table, same as user_id)
     - user_id (from users table)
-    
+
     Returns the user_id for the foreign key constraint.
     """
     # Try to find by patient_id first
     patient = db.query(Patient).filter(Patient.patient_id == patient_identifier).first()
     if patient:
         return patient.user_id
-    
+
     # If not found, assume it's already a user_id and verify it exists
     patient = db.query(Patient).filter(Patient.user_id == patient_identifier).first()
     if patient:
         return patient.user_id
-    
+
     raise ValueError(f"Patient not found with identifier: {patient_identifier}")
 
 
@@ -300,11 +300,11 @@ class CaseService:
             "approved_by": doctor_id,
             "approval_date": datetime.utcnow()
         }
-        
+
         # Add approval_notes if provided
         if approval_notes:
             approval_data["approval_notes"] = approval_notes
-        
+
         await mongo_db["cases"].update_one(
             {"_id": ObjectId(postgres_case.mongo_case_id)},
             {"$set": {

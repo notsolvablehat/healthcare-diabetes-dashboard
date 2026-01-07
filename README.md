@@ -29,11 +29,23 @@ src/
 ├── users/                  # [DONE] User Profile Management
 │   ├── controller.py       # Routes: /users/*
 │   └── services.py         # Profile updates & fetching
+├── cases/                  # [DONE] Medical Case Management
+│   ├── controller.py       # Routes: /cases/*
+│   ├── models.py           # Pydantic Schemas
+│   └── services.py         # Dual-write: Postgres + MongoDB
+├── reports/                # [DONE] File Uploads
+│   ├── controller.py       # Routes: /reports/*
+│   ├── models.py           # Pydantic Schemas
+│   └── services.py         # Supabase Storage integration
 ├── schemas/                # SQLAlchemy ORM Models
-│   └── users/
-│       └── users.py        # User, Doctor, Patient, Assignment tables
+│   ├── users/
+│   │   └── users.py        # User, Doctor, Patient, Assignment tables
+│   ├── cases.py            # Cases table
+│   └── reports.py          # Reports table
 ├── database/
-│   └── core.py             # DB Session & Engine Config
+│   ├── core.py             # PostgreSQL Session & Engine
+│   ├── mongo.py            # MongoDB Client
+│   └── supabase.py         # Supabase Storage Client
 ├── api.py                  # Central Router Registration
 ├── main.py                 # App Entrypoint & Middleware
 ├── logging.py              # Custom Logging Configuration
@@ -90,9 +102,16 @@ The system uses a **One-to-One** inheritance strategy for Users profiles, and a 
 * `PATCH /cases/{case_id}`: Update case details.
 * `POST /cases/{case_id}/approve`: Doctor approval workflow.
 
-### ⏳ Priority 4-6: Advanced Features (Pending)
+### ✅ Priority 4: Reports (Completed)
 
-* **Reports:** PDF Uploads via Supabase Signed URLs.
+* `POST /reports/upload-url`: Generate signed upload URL for Supabase Storage.
+* `POST /reports/{id}/confirm`: Confirm upload after frontend uploads file.
+* `GET /reports/case/{case_id}`: List reports for a case.
+* `GET /reports/patient/{patient_id}`: List all patient reports.
+* `GET /reports/{id}/download`: Get signed download URL.
+
+### ⏳ Priority 5-6: Advanced Features (Pending)
+
 * **AI:** Celery tasks for NLP/Prediction.
 * **FHIR:** Standardized data export.
 

@@ -1,0 +1,129 @@
+# REPORTS TESTING
+# Uses existing test users from test-1
+
+# Test Users (from test-1)
+
+patient_user_id: 2fca6905-b50c-410f-b106-76ee282590ce
+patient_access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXRpZW50MUB0ZXN0LmNvbSIsImlkIjoiMmZjYTY5MDUtYjUwYy00MTBmLWIxMDYtNzZlZTI4MjU5MGNlIiwicm9sZSI6InBhdGllbnQiLCJleHAiOjE3Njc4NjE0NTV9.A2Xi2YI7hhzGdO0WdT5OeID8B6kYqrqVoVrbEgOZ1T0
+
+doctor_user_id: 417ce47f-170e-47fa-ad57-afa66391674b
+doctor_access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkb2N0b3IxQHRlc3QuY29tIiwiaWQiOiI0MTdjZTQ3Zi0xNzBlLTQ3ZmEtYWQ1Ny1hZmE2NjM5MTY3NGIiLCJyb2xlIjoiZG9jdG9yIiwiZXhwIjoxNzY3ODYxNDkzfQ.ovLol3bpvLRPehs93BkHGM66fkTkdYx63uerN1GMCzo
+
+case_id: CASE202601062E7FAF8F
+
+# Report IDs (fill after creation)
+report_id_1: 
+report_id_2: 
+
+---
+
+[x] Reports - Upload Flow (Patient)
+    [x] Generate upload URL
+        -> http://127.0.0.1:8000/reports/upload-url
+        Expected: 201, returns upload_url, report_id, storage_path
+
+    [x] Upload file to Supabase (use returned upload_url)
+        -> PUT "<UPLOAD_URL_FROM_ABOVE>" \
+          -H "Content-Type: application/pdf" \
+          --data-binary @/path/to/your/test.pdf
+        Expected: 200 OK from Supabase
+
+    [x] Confirm upload
+        -> POST http://127.0.0.1:8000/reports/<REPORT_ID>/confirm \
+          -H "Authorization: Bearer <PATIENT_TOKEN>" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "storage_path": "<STORAGE_PATH_FROM_ABOVE>",
+            "file_size_bytes": 12345
+          }'
+        Returned:
+        {
+            "id": "ceed1d3c-7124-4f96-a8e1-6e72a32027fe",
+            "case_id": "CASE202601062E7FAF8F",
+            "patient_id": "2fca6905-b50c-410f-b106-76ee282590ce",
+            "uploaded_by": "2fca6905-b50c-410f-b106-76ee282590ce",
+            "file_name": "bmtc2025.pdf",
+            "file_type": "pdf",
+            "content_type": "application/pdf",
+            "storage_path": "2fca6905-b50c-410f-b106-76ee282590ce/20260107_084728_ceed1d3c-7124-4f96-a8e1-6e72a32027fe.pdf",
+            "file_size_bytes": null,
+            "description": "Test file upload - bmtc",
+            "created_at": "2026-01-07T08:47:29.054459"
+        }
+
+[x] Reports - Upload Flow (Doctor for assigned patient)
+    [x] Generate upload URL (doctor uploading for patient)
+        -> POST http://127.0.0.1:8000/reports/upload-url \
+          -H "Authorization: Bearer <DOCTOR_TOKEN>" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "filename": "prescription.png",
+            "content_type": "image/png",
+            "patient_id": "2fca6905-b50c-410f-b106-76ee282590ce",
+            "description": "Prescription - Diabetes medication"
+          }'
+        Returned:
+        {"Key":"medical-reports/2fca6905-b50c-410f-b106-76ee282590ce/20260107_085331_47c9fadc-b966-4090-9d49-c51c78030bfb.jpg"}
+
+[ ] Reports - List Endpoints
+    [x] Get reports by case
+        -> http://127.0.0.1:8000/reports/case/<case_id>
+        Expected: 200, list of reports linked to case
+
+    [x] Get reports by patient (patient view)
+        -> http://127.0.0.1:8000/reports/patient/<patient_id>
+        Expected: 200, all patient's reports
+
+    [x] Get reports by patient (doctor view)
+        -> http://127.0.0.1:8000/reports/patient/<patient_id>
+        Expected: 200 (doctor is assigned to this patient)
+
+    [x] Get single report
+        -> http://127.0.0.1:8000/reports/<report_id>
+        Expected: 200, report metadata
+
+[x] Reports - Download
+    [x] Get download URL
+        -> http://127.0.0.1:8000/reports/<report_id>/download \
+          -H "Authorization: Bearer <PATIENT_TOKEN>"
+        Expected: 200, returns signed download_url (valid 1 hour)
+
+    [x] Test download URL in browser
+        Open the download_url in browser
+        Expected: File downloads or displays
+
+[x] Reports - Error Cases
+    [x] Invalid content type
+        -> POST http://127.0.0.1:8000/reports/upload-url \
+          -H "Authorization: Bearer <PATIENT_TOKEN>" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "filename": "virus.exe",
+            "content_type": "application/x-msdownload",
+            "patient_id": "2fca6905-b50c-410f-b106-76ee282590ce"
+          }'
+        Expected: 400 Bad Request (unsupported content type)
+
+    [x] Doctor tries to upload for unassigned patient (patient2)
+        -> POST http://127.0.0.1:8000/reports/upload-url \
+          -H "Authorization: Bearer <DOCTOR_TOKEN>" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "filename": "test.pdf",
+            "content_type": "application/pdf",
+            "patient_id": "e60dcc5d-a4d6-4800-ab66-89e3a47c2157"
+          }'
+        Expected: 403 Forbidden (doctor not assigned to patient2 anymore)
+
+    [x] Patient tries to access another patient's reports
+        -> http://127.0.0.1:8000/reports/patient/e60dcc5d-a4d6-4800-ab66-89e3a47c2157 \
+          -H "Authorization: Bearer <PATIENT_TOKEN>"
+        Expected: Empty list (no access)
+---
+
+# Allowed Content Types:
+# - application/pdf (PDF)
+# - image/png (PNG)
+# - image/jpeg (JPEG)
+# - image/jpg (JPG)
+# - image/webp (WebP)

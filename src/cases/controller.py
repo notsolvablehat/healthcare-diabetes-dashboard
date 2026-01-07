@@ -1,7 +1,13 @@
 from fastapi import APIRouter, HTTPException, status
 
 from src.auth.services import CurrentUser
-from src.cases.models import CaseCreate, CaseResponse, CaseUpdate, DoctorNoteCreate, CaseApprovalRequest
+from src.cases.models import (
+    CaseApprovalRequest,
+    CaseCreate,
+    CaseResponse,
+    CaseUpdate,
+    DoctorNoteCreate,
+)
 from src.cases.services import case_service
 from src.database.core import DbSession
 from src.database.mongo import MongoDb
