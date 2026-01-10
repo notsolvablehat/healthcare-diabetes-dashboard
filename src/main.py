@@ -6,7 +6,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from src.api import register_routes
-from src.database.mongo import close_mongodb_connection
+from src.database.mongo import close_mongodb_connection, MongoDb
 from src.rate_limiting import limiter
 
 from .logging import LogLevels, configure_logging
@@ -16,6 +16,7 @@ configure_logging(LogLevels.info)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.info("Everything Ready...")
+    client: MongoDb = None
 
     yield
 

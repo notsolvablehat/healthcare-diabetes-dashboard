@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 from bson import ObjectId
+from fastapi import HTTPException
 from pymongo.asynchronous.database import AsyncDatabase
 from sqlalchemy.orm import Session
 
@@ -29,7 +30,10 @@ def resolve_patient_user_id(db: Session, patient_identifier: str) -> str:
     if patient:
         return patient.user_id
 
-    raise ValueError(f"Patient not found with identifier: {patient_identifier}")
+    raise HTTPException(
+        status_code=404,
+        detail=f"Patient not found with identifier: {patient_identifier}"
+    )
 
 
 class CaseService:
@@ -115,10 +119,11 @@ class CaseService:
                 mongo_case["_id"] = str(mongo_case["_id"])
                 return Case(**mongo_case)
         except Exception as e:
-            # Log the error but don't crash - MongoDB might be unavailable
-            print(f"MongoDB error in get_case_by_id: {e}")
-            # Return None or raise a more specific error
-            return None
+            # MongoDB error - raise HTTP exception with details
+            raise HTTPException(
+                status_code=500,
+                detail=f"Database error while fetching case: {str(e)}"
+            )
 
         return None
 
@@ -200,7 +205,10 @@ class CaseService:
 
         postgres_case = db.query(CaseORM).filter(CaseORM.case_id == case_id).first()
         if not postgres_case:
-            return None
+            raise HTTPException(
+                status_code=404,
+                detail=f"Case not found with ID: {case_id}"
+            )
 
         # Add to MongoDB
         await mongo_db["cases"].update_one(
@@ -215,7 +223,10 @@ class CaseService:
     async def get_doctor_notes(self, db: Session, mongo_db: AsyncDatabase, case_id: str, user_id: str):
         postgres_case = db.query(CaseORM).filter(CaseORM.case_id == case_id).first()
         if not postgres_case:
-            return []
+            raise HTTPException(
+                status_code=404,
+                detail=f"Case not found with ID: {case_id}"
+            )
 
         mongo_case = await mongo_db["cases"].find_one(
             {"_id": ObjectId(postgres_case.mongo_case_id)},
@@ -238,11 +249,17 @@ class CaseService:
         ).first()
 
         if not postgres_case:
-            return None
+            raise HTTPException(
+                status_code=404,
+                detail=f"Case not found with ID: {case_id}"
+            )
 
         # Check authorization (basic owner check)
         if str(postgres_case.doctor_id) != user_id and str(postgres_case.patient_id) != user_id:
-             return None
+            raise HTTPException(
+                status_code=403,
+                detail="You do not have permission to update this case"
+            )
 
         # Get current MongoDB document to track changes
         mongo_case = await mongo_db["cases"].find_one({
@@ -286,8 +303,17 @@ class CaseService:
         """
         postgres_case = db.query(CaseORM).filter(CaseORM.case_id == case_id).first()
 
-        if not postgres_case or str(postgres_case.doctor_id) != str(doctor_id):
-            return None
+        if not postgres_case:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Case not found with ID: {case_id}"
+            )
+        
+        if str(postgres_case.doctor_id) != str(doctor_id):
+            raise HTTPException(
+                status_code=403,
+                detail="Only the assigned doctor can approve this case"
+            )
 
         # PostgreSQL Update
         postgres_case.status = "approved_by_doctor"
