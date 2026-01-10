@@ -20,6 +20,7 @@ class Report(Base):
     storage_path = Column(String, nullable=False)  # path in Supabase bucket
     file_size_bytes = Column(Integer, nullable=True)
     description = Column(Text, nullable=True)
+    mongo_analysis_id = Column(String, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 

@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from supabase import Client
 
@@ -90,9 +91,12 @@ class ReportService:
         )
 
         # Create report record in database
+        # Handle empty case_id as None to avoid FK violation
+        case_id = request.case_id if request.case_id else None
+        
         report = ReportORM(
             id=report_id,
-            case_id=request.case_id,
+            case_id=case_id,
             patient_id=request.patient_id,
             uploaded_by=user_id,
             file_name=request.filename,
@@ -102,8 +106,16 @@ class ReportService:
             description=request.description,
             created_at=datetime.utcnow(),
         )
-        db.add(report)
-        db.commit()
+        
+        try:
+            db.add(report)
+            db.commit()
+        except IntegrityError as e:
+            db.rollback()
+            # Check if it's a FK violation for case_id
+            if "case_id" in str(e.orig):
+                raise ValueError(f"Invalid case_id: '{request.case_id}' does not exist.")
+            raise ValueError(f"Database integrity error: {e.orig}")
 
         return UploadUrlResponse(
             report_id=report_id,

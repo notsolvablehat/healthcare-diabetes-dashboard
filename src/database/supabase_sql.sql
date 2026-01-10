@@ -89,6 +89,7 @@ CREATE TABLE reports (
     storage_path VARCHAR NOT NULL,  -- path in Supabase bucket
     file_size_bytes INTEGER,
     description TEXT,
+    mongo_analysis_id VARCHAR, -- Link to AI analysis in MongoDB
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_reports_case ON reports(case_id);

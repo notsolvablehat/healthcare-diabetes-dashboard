@@ -123,7 +123,7 @@ class CaseService:
             raise HTTPException(
                 status_code=500,
                 detail=f"Database error while fetching case: {str(e)}"
-            )
+            ) from e
 
         return None
 
@@ -308,7 +308,7 @@ class CaseService:
                 status_code=404,
                 detail=f"Case not found with ID: {case_id}"
             )
-        
+
         if str(postgres_case.doctor_id) != str(doctor_id):
             raise HTTPException(
                 status_code=403,

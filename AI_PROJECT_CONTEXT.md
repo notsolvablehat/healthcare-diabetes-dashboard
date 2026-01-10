@@ -14,7 +14,7 @@ This is a **FastAPI** backend for a healthcare management system focused on diab
     -   **Dual-Write Strategy:** Critical data (Cases) is written to both. Postgres for relational integrity/lists, Mongo for flexible medical documents.
 -   **Authentication:** JWT (HS256) with Passlib (Bcrypt).
 -   **Storage:** Supabase (for PDF reports/imaging - Pending).
--   **Task Queue:** Celery (for AI analysis - Pending).
+-   **Task Queue:** Celery (Cancelled - using synchronous async endpoints).
 
 ## 2. Directory Structure
 ```text
@@ -64,7 +64,7 @@ This is a **FastAPI** backend for a healthcare management system focused on diab
 -   Access control: Patients access own reports, Doctors access assigned patients' reports.
 
 ### ⏳ Future/Roadmap
--   **AI Analysis:** Celery tasks for case summarization and NLP.
+-   **AI Analysis:** Synchronous async endpoints for report analysis and case summarization (Celery approach cancelled).
 -   **FHIR Export:** Standardized data export.
 
 ## 4. Architecture & Patterns

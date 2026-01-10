@@ -124,22 +124,35 @@ Update doctor_notes inside the MongoDB document (append to a notes array).
 * **Action:** Generates a signed download URL for viewing/downloading the file.
 
 
-#### **Priority 5: AI & Intelligence (Celery/Background)**
+#### **Priority 5: AI & Intelligence**
 
-*The "Smart" features.*
+*The "Smart" features. (Background Celery worker approach cancelled - using async endpoints instead)*
 
-* [ ] **POST** `/ai/analyze/{case_id}`
-* **Action:** Triggers the Celery task (NLP + Prediction). Returns `{ task_id }`.
+* [ ] **POST** `/ai/analyze-report/{report_id}`
+* **Action:** Analyze a single uploaded report (PDF/Image).
+* **Returns:** `{ extracted_text: str, summary: str, entities: list, keywords: list }`
+* **Note:** Synchronous - waits for AI processing to complete before responding.
 
 
-* [ ] **POST** `/ai/chat` (RAG Bot)
-* **Input:** `{ message: str, context: "patient_history" }`.
-* **Action:** Uses LLM to answer questions based on the patient's specific records.
+* [ ] **POST** `/ai/summarize-case/{case_id}`
+* **Action:** Generate AI summary of an entire case including all reports and doctor notes.
+* **Returns:** `{ case_summary: str, key_findings: list, recommendations: list }`
+
+
+* [ ] **POST** `/ai/ask`
+* **Input:** `{ patient_id: str, question: str }`
+* **Action:** RAG-based Q&A about a patient's medical history.
+* **Returns:** `{ answer: str, sources: list }`
+
+
+* [ ] **GET** `/ai/insights/{patient_id}`
+* **Action:** Get AI-generated health insights and trends for a patient.
+* **Returns:** `{ insights: list, risk_factors: list, trends: list }`
 
 
 * [ ] **POST** `/feedback/` (Doctor)
-* **Input:** `{ case_id: UUID, is_accurate: bool, correction: str }`.
-* **Action:** Saves doctor's validation for future model retraining.
+* **Input:** `{ case_id: str, is_accurate: bool, correction: str }`.
+* **Action:** Saves doctor's validation for future model improvement.
 
 
 
