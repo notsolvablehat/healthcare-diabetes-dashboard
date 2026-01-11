@@ -93,7 +93,7 @@ class ReportService:
         # Create report record in database
         # Handle empty case_id as None to avoid FK violation
         case_id = request.case_id if request.case_id else None
-        
+
         report = ReportORM(
             id=report_id,
             case_id=case_id,
@@ -106,7 +106,7 @@ class ReportService:
             description=request.description,
             created_at=datetime.utcnow(),
         )
-        
+
         try:
             db.add(report)
             db.commit()
@@ -114,8 +114,8 @@ class ReportService:
             db.rollback()
             # Check if it's a FK violation for case_id
             if "case_id" in str(e.orig):
-                raise ValueError(f"Invalid case_id: '{request.case_id}' does not exist.")
-            raise ValueError(f"Database integrity error: {e.orig}")
+                raise ValueError(f"Invalid case_id: '{request.case_id}' does not exist.") from e
+            raise ValueError(f"Database integrity error: {e.orig}") from e
 
         return UploadUrlResponse(
             report_id=report_id,

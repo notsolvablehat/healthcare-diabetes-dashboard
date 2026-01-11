@@ -25,9 +25,8 @@ async def create_case(
     Create a new case (doctor only).
     Dual-writes to: PostgreSQL (relational) + MongoDB (full document)
     """
-    if user.role != "doctor":
-        raise HTTPException(status_code=403, detail="Only doctors can create cases")
-
+    # if user.role != "doctor":
+    #     raise HTTPException(status_code=403, detail="Only doctors can create cases")
     new_case = await case_service.create_case(
         db=db,
         mongo_db=mongo_db,

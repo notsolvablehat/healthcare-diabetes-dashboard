@@ -33,6 +33,14 @@ This is a **FastAPI** backend for a healthcare management system focused on diab
 │   │   ├── controller.py       # Routes: /reports/*
 │   │   ├── models.py           # Pydantic schemas
 │   │   └── services.py         # Upload/Download URL generation
+│   ├── ai/                     # [DONE] AI-powered analysis
+│   │   ├── controller.py       # Routes: /ai/*
+│   │   ├── gemini_client.py    # Gemini 2.5 Flash integration
+│   │   ├── ml_models.py        # XGBoost diabetes predictor
+│   │   ├── models.py           # Pydantic schemas
+│   │   └── services.py         # Analysis pipeline orchestration
+│   ├── ml_model/               # Pre-trained XGBoost model
+│   │   └── diabetes_xgboost_model.json
 │   ├── database/
 │   │   ├── core.py             # PostgreSQL (SQLAlchemy)
 │   │   ├── mongo.py            # MongoDB client
@@ -63,8 +71,11 @@ This is a **FastAPI** backend for a healthcare management system focused on diab
 -   File uploads (PDF, images) via Supabase Storage signed URLs.
 -   Access control: Patients access own reports, Doctors access assigned patients' reports.
 
+### ✅ Completed (AI Analysis)
+-   `src/ai` is fully implemented with Gemini 2.5 Flash + XGBoost pipeline.
+-   Report analysis, case summarization, Q&A, and patient insights.
+
 ### ⏳ Future/Roadmap
--   **AI Analysis:** Synchronous async endpoints for report analysis and case summarization (Celery approach cancelled).
 -   **FHIR Export:** Standardized data export.
 
 ## 4. Architecture & Patterns

@@ -110,9 +110,15 @@ The system uses a **One-to-One** inheritance strategy for Users profiles, and a 
 * `GET /reports/patient/{patient_id}`: List all patient reports.
 * `GET /reports/{id}/download`: Get signed download URL.
 
-### ⏳ Priority 5-6: Advanced Features (Pending)
+### ✅ Priority 5: AI & Intelligence (Completed)
 
-* **AI:** Celery tasks for NLP/Prediction.
+* `POST /ai/analyze-report/{report_id}`: Analyze report with Gemini 2.5 Flash + XGBoost prediction.
+* `POST /ai/summarize-case/{case_id}`: Generate AI case summary.
+* `POST /ai/ask`: RAG-based Q&A about patient history.
+* `GET /ai/insights/{patient_id}`: Health insights and trends.
+
+### ⏳ Priority 6: Extras (Pending)
+
 * **FHIR:** Standardized data export.
 
 ---
