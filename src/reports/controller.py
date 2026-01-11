@@ -1,7 +1,10 @@
-from fastapi import APIRouter, HTTPException, status
+import logging
+
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 
 from src.auth.services import CurrentUser
 from src.database.core import DbSession
+from src.database.mongo import MongoDb
 from src.database.supabase import SupabaseClient
 from src.reports.models import (
     DownloadUrlResponse,
@@ -12,6 +15,8 @@ from src.reports.models import (
     UploadUrlResponse,
 )
 from src.reports.services import report_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -44,17 +49,48 @@ def generate_upload_url(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
+async def run_background_extraction(
+    report_id: str,
+    patient_id: str,
+    storage_path: str,
+    content_type: str,
+    supabase: SupabaseClient,
+    mongo_db: MongoDb,
+    db: DbSession,
+):
+    """Background task to extract report data using AI."""
+    from src.ai.services import extraction_service
+    
+    try:
+        await extraction_service.extract_report_background(
+            report_id=report_id,
+            patient_id=patient_id,
+            storage_path=storage_path,
+            content_type=content_type,
+            supabase=supabase,
+            mongo_db=mongo_db,
+            db=db,
+        )
+    except Exception as e:
+        logger.error(f"[Background Extraction] Failed for report {report_id}: {e}")
+
+
 @router.post("/{report_id}/confirm", response_model=ReportResponse)
-def confirm_upload(
+async def confirm_upload(
     report_id: str,
     request: ReportConfirmRequest,
     user: CurrentUser,
     db: DbSession,
+    supabase: SupabaseClient,
+    mongo_db: MongoDb,
+    background_tasks: BackgroundTasks,
 ):
     """
     Confirm that a file was uploaded successfully.
     Call this after uploading the file to Supabase using the signed URL.
     Optionally updates the file size.
+    
+    Triggers background AI extraction of medical data from the report.
     """
     result = report_service.confirm_upload(
         db=db,
@@ -68,6 +104,19 @@ def confirm_upload(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Report not found or you are not authorized to confirm this upload."
         )
+    
+    # Trigger background extraction
+    logger.info(f"[Reports] Triggering background extraction | report_id={report_id}")
+    background_tasks.add_task(
+        run_background_extraction,
+        report_id=report_id,
+        patient_id=result.patient_id,
+        storage_path=result.storage_path,
+        content_type=result.content_type,
+        supabase=supabase,
+        mongo_db=mongo_db,
+        db=db,
+    )
 
     return result
 

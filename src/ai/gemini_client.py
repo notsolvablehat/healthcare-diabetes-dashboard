@@ -4,13 +4,14 @@ Gemini 2.5 Flash client for AI operations.
 Uses google-genai SDK with async support via client.aio
 """
 import json
+from typing import Optional
 
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types as genai_types
 from pydantic import BaseModel, Field
 
-from src.ai.models import ExtractedFeatures, PredictionResult
+from src.ai.models import ExtractedFeatures, PredictionResult, ReportExtraction
 
 load_dotenv()
 
@@ -40,8 +41,197 @@ class InsightsSchema(BaseModel):
     trends: list[str] = Field(description="Trends observed across multiple reports if available.")
 
 
+class ChatTitleSchema(BaseModel):
+    """Schema for chat title generation."""
+    title: str = Field(description="Short descriptive title for the chat (max 20 chars)")
+
+
 # ============================================================================
-# Feature Extraction from Medical Reports
+# Full Report Extraction (General Medical - not diabetes-specific)
+# ============================================================================
+
+REPORT_EXTRACTION_PROMPT = """
+You are a medical document analyzer. Extract ALL relevant information from this medical report.
+
+IMPORTANT RULES:
+1. Extract EVERYTHING you can find in the document
+2. If a value is not found, use "N/A" as the value
+3. For lab results, extract ALL tests found with their values, units, reference ranges
+4. Identify the report type (Lab Report, Prescription, Imaging, Discharge Summary, etc.)
+5. Extract all diagnoses, medications, and recommendations mentioned
+{keywords_hint}
+Extract the complete medical data from this document:
+"""
+
+
+async def extract_report_data(
+    file_bytes: bytes,
+    mime_type: str,
+) -> tuple[ReportExtraction, str]:
+    """
+    Extract complete medical data from a report using Gemini.
+    
+    Uses TF-IDF to identify important keywords first, then includes them
+    in the extraction prompt to ensure nothing important is missed.
+    
+    Args:
+        file_bytes: Raw file bytes (PDF or image)
+        mime_type: MIME type of the file
+        
+    Returns:
+        Tuple of (ReportExtraction structured data, raw_text)
+    """
+    from src.ai.text_analysis import extract_keywords_tfidf, format_keywords_for_prompt
+    
+    # Create file part for multimodal input
+    file_part = genai_types.Part.from_bytes(
+        data=file_bytes,
+        mime_type=mime_type
+    )
+    
+    # First, extract raw text
+    raw_text_response = await client.aio.models.generate_content(
+        model="gemini-2.5-pro",
+        contents=[
+            "Extract ALL text from this document verbatim. Include every word, number, and label you can see:",
+            file_part
+        ],
+        config=genai_types.GenerateContentConfig(
+            temperature=0.1,
+        )
+    )
+    raw_text = raw_text_response.text
+    
+    # Extract important keywords using TF-IDF
+    keywords = extract_keywords_tfidf(raw_text, top_n=25)
+    keywords_hint = format_keywords_for_prompt(keywords)
+    
+    # Build prompt with keywords
+    extraction_prompt = REPORT_EXTRACTION_PROMPT.format(keywords_hint=keywords_hint)
+    
+    # Then extract structured data with keyword hints
+    response = await client.aio.models.generate_content(
+        model=MODEL_NAME,
+        contents=[extraction_prompt, file_part],
+        config={
+            "temperature": 0.1,
+            "response_mime_type": "application/json",
+            "response_json_schema": ReportExtraction.model_json_schema(),
+        }
+    )
+    
+    extracted = ReportExtraction.model_validate_json(response.text)
+    return extracted, raw_text
+
+
+# ============================================================================
+# Chat System Functions
+# ============================================================================
+
+CHAT_RESPONSE_PROMPT = """
+You are a helpful medical AI assistant. You have access to the patient's medical records.
+
+PATIENT MEDICAL CONTEXT:
+{context}
+
+CONVERSATION HISTORY:
+{history}
+
+USER MESSAGE: {message}
+
+Provide a helpful, accurate response based on the patient's medical records.
+- Be clear and professional
+- Only reference information from the provided context
+- If information is not available, say so clearly
+- Do NOT provide medical advice or diagnoses
+- Suggest consulting a doctor for medical decisions
+"""
+
+
+async def generate_chat_response(
+    context: str,
+    history: list[dict],
+    message: str,
+) -> str:
+    """
+    Generate a chat response with medical context and conversation history.
+    
+    Args:
+        context: Pre-built context from patient reports (built once, reused)
+        history: Last 10 messages as list of {"role": "user"|"assistant", "content": str}
+        message: Current user message
+        
+    Returns:
+        Assistant response text
+    """
+    # Format history
+    history_str = ""
+    for msg in history[-10:]:  # Limit to last 10 messages
+        role = "User" if msg["role"] == "user" else "Assistant"
+        history_str += f"{role}: {msg['content']}\n\n"
+    
+    if not history_str:
+        history_str = "(No previous messages)"
+    
+    prompt = CHAT_RESPONSE_PROMPT.format(
+        context=context[:50000],  # Limit context to ~50k chars
+        history=history_str,
+        message=message
+    )
+    
+    response = await client.aio.models.generate_content(
+        model=MODEL_NAME,
+        contents=[prompt],
+        config=genai_types.GenerateContentConfig(
+            temperature=0.7,
+        )
+    )
+    
+    return response.text
+
+
+TITLE_GENERATION_PROMPT = """
+Based on this conversation, generate a SHORT title (max 50 characters) that describes what the chat is about.
+
+User asked: {question}
+Assistant responded: {response}
+
+Generate a concise, descriptive title:
+"""
+
+
+async def generate_chat_title(question: str, response: str) -> str:
+    """
+    Generate a short title for a chat based on the first Q&A exchange.
+    
+    Args:
+        question: First user message
+        response: First assistant response
+        
+    Returns:
+        Short title string (max 50 chars)
+    """
+    prompt = TITLE_GENERATION_PROMPT.format(
+        question=question[:500],
+        response=response[:500]
+    )
+    
+    result = await client.aio.models.generate_content(
+        model=MODEL_NAME,
+        contents=[prompt],
+        config={
+            "temperature": 0.5,
+            "response_mime_type": "application/json",
+            "response_json_schema": ChatTitleSchema.model_json_schema(),
+        }
+    )
+    
+    title_data = ChatTitleSchema.model_validate_json(result.text)
+    return title_data.title[:50]  # Ensure max 50 chars
+
+
+# ============================================================================
+# Legacy Functions (kept for compatibility)
 # ============================================================================
 
 FEATURE_EXTRACTION_PROMPT = """
@@ -69,42 +259,29 @@ async def extract_features_from_report(
 ) -> ExtractedFeatures:
     """
     Extract clinical features from a medical report using Gemini.
-    Args:
-        file_bytes: Raw file bytes (PDF or image)
-        mime_type: MIME type of the file
-        patient_context: Optional dict with known patient info (age, gender, etc.)
-    Returns:
-        ExtractedFeatures with 8 diabetes prediction features
+    (Legacy function for diabetes prediction)
     """
-    # Build prompt with optional context
     prompt = FEATURE_EXTRACTION_PROMPT
     if patient_context:
-        prompt += f"# IF DATA IS NOT AVAILABLE, DO NOT PUT SOME VALUE, INSTEAD PUT `N/A`\n\nKNOWN PATIENT CONTEXT:\n{json.dumps(patient_context, indent=2)}\n\nDocument:"
+        prompt += f"\n\nKNOWN PATIENT CONTEXT:\n{json.dumps(patient_context, indent=2)}\n\nDocument:"
 
-    # Create file part for multimodal input
     file_part = genai_types.Part.from_bytes(
         data=file_bytes,
         mime_type=mime_type
     )
 
-    # Call Gemini with async client and JSON schema
     response = await client.aio.models.generate_content(
         model=MODEL_NAME,
         contents=[prompt, file_part],
         config={
-            "temperature": 0.1,  # Low temperature for structured extraction
+            "temperature": 0.1,
             "response_mime_type": "application/json",
             "response_json_schema": ExtractedFeatures.model_json_schema(),
         }
     )
 
-    # Parse and validate with Pydantic
     return ExtractedFeatures.model_validate_json(response.text)
 
-
-# ============================================================================
-# Narrative Generation
-# ============================================================================
 
 NARRATIVE_PROMPT = """
 You are a medical AI assistant explaining diabetes risk assessment results to a healthcare provider.
@@ -131,15 +308,7 @@ async def generate_narrative(
     features: ExtractedFeatures,
     prediction: PredictionResult
 ) -> str:
-    """
-    Generate a human-readable narrative explanation of the analysis.
-    Args:
-        features: Extracted clinical features
-        prediction: XGBoost prediction result
-    Returns:
-        Narrative text explanation
-    """
-    # Build feature summary (exclude raw_text)
+    """Generate a human-readable narrative explanation of the analysis."""
     feature_dict = features.model_dump(exclude={"raw_text"})
     feature_str = "\n".join(f"- {k}: {v}" for k, v in feature_dict.items())
 
@@ -153,16 +322,12 @@ async def generate_narrative(
         model=MODEL_NAME,
         contents=[prompt],
         config=genai_types.GenerateContentConfig(
-            temperature=0.7,  # Slightly higher for natural language
+            temperature=0.7,
         )
     )
 
     return response.text
 
-
-# ============================================================================
-# Case Summarization
-# ============================================================================
 
 CASE_SUMMARY_PROMPT = """
 You are a medical AI assistant summarizing a patient case for a healthcare provider.
@@ -178,13 +343,7 @@ Generate a structured summary with:
 
 
 async def summarize_case(case_data: dict) -> CaseSummarySchema:
-    """
-    Generate an AI summary of an entire medical case.
-    Args:
-        case_data: Dictionary containing case details, notes, and reports
-    Returns:
-        CaseSummarySchema with summary, key_findings, and recommendations
-    """
+    """Generate an AI summary of an entire medical case."""
     prompt = CASE_SUMMARY_PROMPT.format(
         case_data=json.dumps(case_data, indent=2, default=str)
     )
@@ -202,10 +361,6 @@ async def summarize_case(case_data: dict) -> CaseSummarySchema:
     return CaseSummarySchema.model_validate_json(response.text)
 
 
-# ============================================================================
-# RAG Question Answering
-# ============================================================================
-
 QA_PROMPT = """
 You are a medical AI assistant answering questions about a patient's medical history.
 
@@ -221,14 +376,7 @@ Do not make up information or provide medical advice.
 
 
 async def answer_question(context: str, question: str) -> str:
-    """
-    Answer a question about patient data using provided context.
-    Args:
-        context: Relevant medical records/notes as text
-        question: User's question
-    Returns:
-        Answer text
-    """
+    """Answer a question about patient data using provided context."""
     prompt = QA_PROMPT.format(context=context, question=question)
 
     response = await client.aio.models.generate_content(
@@ -242,10 +390,6 @@ async def answer_question(context: str, question: str) -> str:
     return response.text
 
 
-# ============================================================================
-# Patient Insights
-# ============================================================================
-
 INSIGHTS_PROMPT = """
 You are a medical AI assistant analyzing a patient's health data for insights.
 
@@ -254,7 +398,7 @@ PATIENT DATA:
 
 HISTORICAL REPORTS:
 {reports_summary}
-
+{keywords_hint}
 Generate health insights including:
 1. General health observations
 2. Potential risk factors based on the data
@@ -263,17 +407,17 @@ Generate health insights including:
 
 
 async def generate_insights(patient_data: dict, reports_summary: str) -> InsightsSchema:
-    """
-    Generate health insights for a patient based on their data.
-    Args:
-        patient_data: Patient profile information
-        reports_summary: Summary of patient's medical reports
-    Returns:
-        InsightsSchema with insights, risk_factors, and trends lists
-    """
+    """Generate health insights for a patient based on their data."""
+    from src.ai.text_analysis import extract_keywords_tfidf, format_keywords_for_prompt
+    
+    # Extract keywords from reports summary
+    keywords = extract_keywords_tfidf(reports_summary, top_n=25)
+    keywords_hint = format_keywords_for_prompt(keywords)
+    
     prompt = INSIGHTS_PROMPT.format(
         patient_data=json.dumps(patient_data, indent=2, default=str),
-        reports_summary=reports_summary
+        reports_summary=reports_summary,
+        keywords_hint=keywords_hint
     )
 
     response = await client.aio.models.generate_content(
