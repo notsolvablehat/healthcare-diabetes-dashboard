@@ -4,7 +4,6 @@ Gemini 2.5 Flash client for AI operations.
 Uses google-genai SDK with async support via client.aio
 """
 import json
-from typing import Optional
 
 from dotenv import load_dotenv
 from google import genai
@@ -70,25 +69,22 @@ async def extract_report_data(
 ) -> tuple[ReportExtraction, str]:
     """
     Extract complete medical data from a report using Gemini.
-    
     Uses TF-IDF to identify important keywords first, then includes them
     in the extraction prompt to ensure nothing important is missed.
-    
     Args:
         file_bytes: Raw file bytes (PDF or image)
         mime_type: MIME type of the file
-        
     Returns:
         Tuple of (ReportExtraction structured data, raw_text)
     """
     from src.ai.text_analysis import extract_keywords_tfidf, format_keywords_for_prompt
-    
+
     # Create file part for multimodal input
     file_part = genai_types.Part.from_bytes(
         data=file_bytes,
         mime_type=mime_type
     )
-    
+
     # First, extract raw text
     raw_text_response = await client.aio.models.generate_content(
         model="gemini-2.5-pro",
@@ -101,14 +97,14 @@ async def extract_report_data(
         )
     )
     raw_text = raw_text_response.text
-    
+
     # Extract important keywords using TF-IDF
     keywords = extract_keywords_tfidf(raw_text, top_n=25)
     keywords_hint = format_keywords_for_prompt(keywords)
-    
+
     # Build prompt with keywords
     extraction_prompt = REPORT_EXTRACTION_PROMPT.format(keywords_hint=keywords_hint)
-    
+
     # Then extract structured data with keyword hints
     response = await client.aio.models.generate_content(
         model=MODEL_NAME,
@@ -119,7 +115,7 @@ async def extract_report_data(
             "response_json_schema": ReportExtraction.model_json_schema(),
         }
     )
-    
+
     extracted = ReportExtraction.model_validate_json(response.text)
     return extracted, raw_text
 
@@ -155,12 +151,10 @@ async def generate_chat_response(
 ) -> str:
     """
     Generate a chat response with medical context and conversation history.
-    
     Args:
         context: Pre-built context from patient reports (built once, reused)
         history: Last 10 messages as list of {"role": "user"|"assistant", "content": str}
         message: Current user message
-        
     Returns:
         Assistant response text
     """
@@ -169,16 +163,16 @@ async def generate_chat_response(
     for msg in history[-10:]:  # Limit to last 10 messages
         role = "User" if msg["role"] == "user" else "Assistant"
         history_str += f"{role}: {msg['content']}\n\n"
-    
+
     if not history_str:
         history_str = "(No previous messages)"
-    
+
     prompt = CHAT_RESPONSE_PROMPT.format(
         context=context[:50000],  # Limit context to ~50k chars
         history=history_str,
         message=message
     )
-    
+
     response = await client.aio.models.generate_content(
         model=MODEL_NAME,
         contents=[prompt],
@@ -186,7 +180,7 @@ async def generate_chat_response(
             temperature=0.7,
         )
     )
-    
+
     return response.text
 
 
@@ -203,11 +197,9 @@ Generate a concise, descriptive title:
 async def generate_chat_title(question: str, response: str) -> str:
     """
     Generate a short title for a chat based on the first Q&A exchange.
-    
     Args:
         question: First user message
         response: First assistant response
-        
     Returns:
         Short title string (max 50 chars)
     """
@@ -215,7 +207,7 @@ async def generate_chat_title(question: str, response: str) -> str:
         question=question[:500],
         response=response[:500]
     )
-    
+
     result = await client.aio.models.generate_content(
         model=MODEL_NAME,
         contents=[prompt],
@@ -225,7 +217,7 @@ async def generate_chat_title(question: str, response: str) -> str:
             "response_json_schema": ChatTitleSchema.model_json_schema(),
         }
     )
-    
+
     title_data = ChatTitleSchema.model_validate_json(result.text)
     return title_data.title[:50]  # Ensure max 50 chars
 
@@ -409,11 +401,11 @@ Generate health insights including:
 async def generate_insights(patient_data: dict, reports_summary: str) -> InsightsSchema:
     """Generate health insights for a patient based on their data."""
     from src.ai.text_analysis import extract_keywords_tfidf, format_keywords_for_prompt
-    
+
     # Extract keywords from reports summary
     keywords = extract_keywords_tfidf(reports_summary, top_n=25)
     keywords_hint = format_keywords_for_prompt(keywords)
-    
+
     prompt = INSIGHTS_PROMPT.format(
         patient_data=json.dumps(patient_data, indent=2, default=str),
         reports_summary=reports_summary,

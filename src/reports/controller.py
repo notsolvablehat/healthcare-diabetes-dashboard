@@ -60,7 +60,7 @@ async def run_background_extraction(
 ):
     """Background task to extract report data using AI."""
     from src.ai.services import extraction_service
-    
+
     try:
         await extraction_service.extract_report_background(
             report_id=report_id,
@@ -89,7 +89,6 @@ async def confirm_upload(
     Confirm that a file was uploaded successfully.
     Call this after uploading the file to Supabase using the signed URL.
     Optionally updates the file size.
-    
     Triggers background AI extraction of medical data from the report.
     """
     result = report_service.confirm_upload(
@@ -104,7 +103,7 @@ async def confirm_upload(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Report not found or you are not authorized to confirm this upload."
         )
-    
+
     # Trigger background extraction
     logger.info(f"[Reports] Triggering background extraction | report_id={report_id}")
     background_tasks.add_task(

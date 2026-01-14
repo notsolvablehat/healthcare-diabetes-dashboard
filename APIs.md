@@ -126,12 +126,49 @@ Update doctor_notes inside the MongoDB document (append to a notes array).
 
 #### **Priority 5: AI & Intelligence**
 
-*The "Smart" features. (Background Celery worker approach cancelled - using async endpoints instead)*
+*Full AI pipeline with Gemini 2.5 Flash, TF-IDF keyword extraction, and chat system.*
 
-* [x] **POST** `/ai/analyze-report/{report_id}`
-* **Action:** Analyze a single uploaded report (PDF/Image).
+* [x] **POST** `/ai/extract-report/{report_id}`
+* **Action:** Extract complete medical data from a report (general, not diabetes-specific).
+* **Returns:** `{ extracted_data, raw_text, mongo_analysis_id, processing_time_ms }`
+* **Note:** Uses TF-IDF to identify important keywords, then Gemini for structured extraction.
+* **Auto-triggered:** Background extraction runs automatically on report upload confirmation.
+
+
+* [x] **POST** `/ai/chat/start`
+* **Input:** `{ patient_id?: str, report_ids?: list[str] }`
+* **Action:** Start a new chat session with optional report attachment.
+* **Returns:** `{ chat_id, patient_id, attached_report_ids, created_at }`
+
+
+* [x] **POST** `/ai/chat/{chat_id}/message`
+* **Input:** `{ message: str, attach_report_ids?: list[str] }`
+* **Action:** Send message and get AI response. Context built once on first message.
+* **Returns:** `{ message_id, response, sources, title?, timestamp }`
+
+
+* [x] **GET** `/ai/chat/{chat_id}/history`
+* **Action:** Get full chat history with all messages.
+* **Returns:** `{ chat_id, patient_id, title, messages: list, created_at, updated_at }`
+
+
+* [x] **GET** `/ai/chats`
+* **Action:** List all chats for the current user.
+* **Returns:** `{ total, chats: list }`
+
+
+* [x] **DELETE** `/ai/chat/{chat_id}`
+* **Action:** Delete a chat and all its messages.
+
+
+* [x] **PATCH** `/ai/chat/{chat_id}/reports`
+* **Input:** `{ report_ids: list[str], action: "add"|"remove"|"replace" }`
+* **Action:** Attach or detach reports from a chat.
+
+
+* [x] **POST** `/ai/analyze-report/{report_id}` *(Legacy)*
+* **Action:** Analyze report with XGBoost diabetes prediction.
 * **Returns:** `{ extracted_features, prediction, narrative, mongo_analysis_id }`
-* **Note:** Uses Gemini 2.5 Flash + XGBoost diabetes prediction model.
 
 
 * [x] **POST** `/ai/summarize-case/{case_id}`
@@ -139,7 +176,7 @@ Update doctor_notes inside the MongoDB document (append to a notes array).
 * **Returns:** `{ summary, key_findings: list, recommendations: list }`
 
 
-* [x] **POST** `/ai/ask`
+* [x] **POST** `/ai/ask` *(Legacy - use chat instead)*
 * **Input:** `{ patient_id: str, question: str }`
 * **Action:** RAG-based Q&A about a patient's medical history.
 * **Returns:** `{ answer: str, sources: list }`
@@ -148,6 +185,7 @@ Update doctor_notes inside the MongoDB document (append to a notes array).
 * [x] **GET** `/ai/insights/{patient_id}`
 * **Action:** Get AI-generated health insights and trends for a patient.
 * **Returns:** `{ insights: list, risk_factors: list, trends: list }`
+* **Note:** Uses TF-IDF keyword extraction to highlight important terms.
 
 
 * [ ] **POST** `/feedback/` (Doctor)

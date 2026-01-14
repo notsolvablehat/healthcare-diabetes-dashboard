@@ -112,12 +112,20 @@ The system uses a **One-to-One** inheritance strategy for Users profiles, and a 
 
 ### ✅ Priority 5: AI & Intelligence (Completed)
 
-* `POST /ai/analyze-report/{report_id}`: Analyze report with Gemini 2.5 Flash + XGBoost prediction.
-* `POST /ai/summarize-case/{case_id}`: Generate AI case summary.
-* `POST /ai/ask`: RAG-based Q&A about patient history.
-* `GET /ai/insights/{patient_id}`: Health insights and trends.
+* `POST /ai/extract-report/{report_id}`: Full medical data extraction with TF-IDF + Gemini.
+* `POST /ai/chat/start`: Start chat session with optional report attachment.
+* `POST /ai/chat/{id}/message`: Send message, get AI response (context built once).
+* `GET /ai/chat/{id}/history`: Get full chat history.
+* `GET /ai/chats`: List user's chats.
+* `DELETE /ai/chat/{id}`: Delete chat.
+* `PATCH /ai/chat/{id}/reports`: Attach/detach reports.
+* `POST /ai/analyze-report/{id}`: Legacy diabetes analysis with XGBoost.
+* `POST /ai/summarize-case/{id}`: AI case summary.
+* `POST /ai/ask`: Legacy Q&A (use chat instead).
+* `GET /ai/insights/{patient_id}`: Health insights with TF-IDF keywords.
 
 ### ⏳ Priority 6: Extras (Pending)
+
 
 * **FHIR:** Standardized data export.
 

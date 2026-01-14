@@ -2,10 +2,9 @@
 Pydantic models for AI analysis operations.
 """
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
-
 
 # ============================================================================
 # Report Extraction Models (General Medical, not diabetes-specific)
@@ -47,20 +46,20 @@ class ReportExtraction(BaseModel):
     patient_age: str = Field(default="N/A", description="Patient age")
     patient_sex: str = Field(default="N/A", description="Male/Female/Other")
     date_of_birth: str = Field(default="N/A", description="Date of birth if found")
-    
+
     # Mandatory report info
     report_date: str = Field(default="N/A", description="Date of the report")
     report_type: str = Field(default="N/A", description="Lab Report, Prescription, Imaging, etc.")
-    
+
     # Vital signs
     vital_signs: VitalSigns = Field(default_factory=VitalSigns)
-    
+
     # Clinical data
     lab_results: list[LabResult] = Field(default_factory=list, description="All lab test results")
     diagnoses: list[str] = Field(default_factory=list, description="Diagnosed conditions")
     medications: list[Medication] = Field(default_factory=list, description="Prescribed medications")
     recommendations: list[str] = Field(default_factory=list, description="Doctor recommendations")
-    
+
     # Additional notes
     additional_notes: str = Field(default="N/A", description="Any other relevant information")
 
@@ -141,11 +140,11 @@ class ExtractReportResponse(BaseModel):
 
 class StartChatRequest(BaseModel):
     """Request for POST /ai/chat/start"""
-    patient_id: Optional[str] = Field(
+    patient_id: str | None = Field(
         default=None,
         description="Required for doctors, auto-filled for patients"
     )
-    report_ids: Optional[list[str]] = Field(
+    report_ids: list[str] | None = Field(
         default=None,
         description="Optional: attach specific reports to this chat"
     )
@@ -162,7 +161,7 @@ class StartChatResponse(BaseModel):
 class ChatMessageRequest(BaseModel):
     """Request for POST /ai/chat/{chat_id}/message"""
     message: str = Field(min_length=1, max_length=2000)
-    attach_report_ids: Optional[list[str]] = Field(
+    attach_report_ids: list[str] | None = Field(
         default=None,
         description="Optionally attach more reports with this message"
     )
@@ -176,7 +175,7 @@ class ChatMessageResponse(BaseModel):
         default_factory=list,
         description="Report IDs used in response"
     )
-    title: Optional[str] = Field(
+    title: str | None = Field(
         default=None,
         description="Generated title (only on first message)"
     )
@@ -195,14 +194,14 @@ class ChatMessage(BaseModel):
     role: Literal["user", "assistant"]
     content: str
     timestamp: datetime
-    sources: Optional[list[str]] = None
+    sources: list[str] | None = None
 
 
 class ChatHistoryResponse(BaseModel):
     """Response for GET /ai/chat/{chat_id}/history"""
     chat_id: str
     patient_id: str
-    title: Optional[str]
+    title: str | None
     attached_report_ids: list[str]
     messages: list[ChatMessage]
     created_at: datetime
@@ -213,7 +212,7 @@ class ChatListItem(BaseModel):
     """Chat summary for list view."""
     chat_id: str
     patient_id: str
-    title: Optional[str]
+    title: str | None
     message_count: int
     created_at: datetime
     updated_at: datetime
@@ -294,7 +293,7 @@ class ChatDocument(BaseModel):
     user_id: str
     user_role: Literal["patient", "doctor"]
     patient_id: str
-    title: Optional[str] = None
+    title: str | None = None
     attached_report_ids: list[str] = Field(default_factory=list)
     context: str = Field(default="", description="Pre-built context from reports (set on first message)")
     messages: list[dict] = Field(default_factory=list)

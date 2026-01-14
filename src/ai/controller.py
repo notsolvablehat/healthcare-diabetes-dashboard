@@ -3,24 +3,24 @@ AI Controller - API routes for AI-powered analysis.
 """
 import logging
 
-from fastapi import APIRouter, Request, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 
 from src.ai.models import (
     AnalyzeReportResponse,
     AskRequest,
     AskResponse,
+    AttachReportsRequest,
     CaseSummaryResponse,
-    InsightsResponse,
-    ExtractReportResponse,
-    StartChatRequest,
-    StartChatResponse,
-    ChatMessageRequest,
-    ChatMessageResponse,
     ChatHistoryResponse,
     ChatListResponse,
-    AttachReportsRequest,
+    ChatMessageRequest,
+    ChatMessageResponse,
+    ExtractReportResponse,
+    InsightsResponse,
+    StartChatRequest,
+    StartChatResponse,
 )
-from src.ai.services import ai_service, extraction_service, chat_service
+from src.ai.services import ai_service, chat_service, extraction_service
 from src.auth.services import CurrentUser
 from src.database.core import DbSession
 from src.database.mongo import MongoDb
@@ -48,15 +48,14 @@ async def extract_report(
 ):
     """
     Extract complete medical data from a report.
-    
     Extracts all text, patient info, lab results, diagnoses, medications,
     and stores in MongoDB for later use in chat context.
     """
     logger.info(f"[AI] extract_report called | report_id={report_id} | user={user.user_id}")
-    
+
     if not user or not user.user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    
+
     result = await extraction_service.extract_report(
         report_id=report_id,
         db=db,
@@ -65,7 +64,7 @@ async def extract_report(
         user_id=user.user_id,
         user_role=user.role or "patient",
     )
-    
+
     logger.info(f"[AI] extract_report complete | report_id={report_id} | type={result.extracted_data.report_type}")
     return result
 
@@ -90,10 +89,10 @@ async def start_chat(
     - Optionally attach specific reports to the chat
     """
     logger.info(f"[AI] start_chat called | user={user.user_id} | patient_id={body.patient_id}")
-    
+
     if not user or not user.user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    
+
     result = await chat_service.start_chat(
         db=db,
         mongo_db=mongo_db,
@@ -102,7 +101,7 @@ async def start_chat(
         patient_id=body.patient_id,
         report_ids=body.report_ids,
     )
-    
+
     logger.info(f"[AI] start_chat complete | chat_id={result.chat_id}")
     return result
 
@@ -119,17 +118,16 @@ async def send_message(
 ):
     """
     Send a message in a chat and get AI response.
-    
     - Context is built once on first message and reused
     - Title is generated after first message
     - Last 10 messages used for conversation history
     - Can optionally attach more reports with this message
     """
     logger.info(f"[AI] send_message called | chat_id={chat_id} | user={user.user_id} | msg_len={len(body.message)}")
-    
+
     if not user or not user.user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    
+
     result = await chat_service.send_message(
         chat_id=chat_id,
         message=body.message,
@@ -138,7 +136,7 @@ async def send_message(
         mongo_db=mongo_db,
         user_id=user.user_id,
     )
-    
+
     logger.info(f"[AI] send_message complete | chat_id={chat_id} | msg_id={result.message_id}")
     return result
 
@@ -155,16 +153,16 @@ async def get_chat_history(
     Get full chat history with all messages.
     """
     logger.info(f"[AI] get_chat_history called | chat_id={chat_id} | user={user.user_id}")
-    
+
     if not user or not user.user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    
+
     result = await chat_service.get_history(
         chat_id=chat_id,
         mongo_db=mongo_db,
         user_id=user.user_id,
     )
-    
+
     logger.info(f"[AI] get_chat_history complete | chat_id={chat_id} | messages={len(result.messages)}")
     return result
 
@@ -180,15 +178,15 @@ async def list_chats(
     List all chats for the current user.
     """
     logger.info(f"[AI] list_chats called | user={user.user_id}")
-    
+
     if not user or not user.user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    
+
     result = await chat_service.list_chats(
         mongo_db=mongo_db,
         user_id=user.user_id,
     )
-    
+
     logger.info(f"[AI] list_chats complete | total={result.total}")
     return result
 
@@ -205,16 +203,16 @@ async def delete_chat(
     Delete a chat and all its messages.
     """
     logger.info(f"[AI] delete_chat called | chat_id={chat_id} | user={user.user_id}")
-    
+
     if not user or not user.user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    
+
     result = await chat_service.delete_chat(
         chat_id=chat_id,
         mongo_db=mongo_db,
         user_id=user.user_id,
     )
-    
+
     logger.info(f"[AI] delete_chat complete | chat_id={chat_id}")
     return result
 
@@ -231,17 +229,16 @@ async def update_chat_reports(
 ):
     """
     Add, remove, or replace attached reports in a chat.
-    
     Actions:
     - add: Add new reports to existing
     - remove: Remove specified reports
     - replace: Replace all with new reports
     """
     logger.info(f"[AI] update_chat_reports called | chat_id={chat_id} | action={body.action}")
-    
+
     if not user or not user.user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    
+
     result = await chat_service.update_reports(
         chat_id=chat_id,
         report_ids=body.report_ids,
@@ -250,7 +247,7 @@ async def update_chat_reports(
         mongo_db=mongo_db,
         user_id=user.user_id,
     )
-    
+
     logger.info(f"[AI] update_chat_reports complete | chat_id={chat_id}")
     return result
 
@@ -376,4 +373,3 @@ async def get_insights(
 
     logger.info(f"[AI] get_insights complete | patient_id={patient_id}")
     return result
-

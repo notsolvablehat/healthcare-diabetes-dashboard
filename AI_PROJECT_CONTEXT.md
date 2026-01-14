@@ -72,10 +72,14 @@ This is a **FastAPI** backend for a healthcare management system focused on diab
 -   Access control: Patients access own reports, Doctors access assigned patients' reports.
 
 ### ✅ Completed (AI Analysis)
--   `src/ai` is fully implemented with Gemini 2.5 Flash + XGBoost pipeline.
--   Report analysis, case summarization, Q&A, and patient insights.
+-   `src/ai` is fully implemented with Gemini 2.5 Flash + TF-IDF keyword extraction.
+-   **Report Extraction:** Full medical data extraction (patient info, lab results, diagnoses, medications).
+-   **Chat System:** Conversational AI with history, context built once, optional report attachment.
+-   **Legacy:** XGBoost diabetes prediction, case summarization, Q&A, patient insights.
+-   **TF-IDF:** Important keywords extracted and highlighted to Gemini for better accuracy.
 
 ### ⏳ Future/Roadmap
+
 -   **FHIR Export:** Standardized data export.
 
 ## 4. Architecture & Patterns

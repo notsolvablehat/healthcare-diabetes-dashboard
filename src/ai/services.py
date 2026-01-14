@@ -472,7 +472,7 @@ class AIService:
 
 class ExtractionService:
     """Service for extracting data from medical reports."""
-    
+
     async def extract_report(
         self,
         report_id: str,
@@ -485,24 +485,25 @@ class ExtractionService:
         """
         Extract complete medical data from a report.
         """
+        import time
+
         from src.ai.gemini_client import extract_report_data
         from src.ai.models import AnalysisDocument, ExtractReportResponse
-        import time
-        
+
         start_time = time.time()
         logger.info(f"[Extraction] Starting | report_id={report_id}")
-        
+
         # Fetch report
         report = db.query(ReportORM).filter(ReportORM.id == report_id).first()
         if not report:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Report {report_id} not found")
-        
+
         # Access control
         if user_role == "patient" and report.patient_id != user_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
         if user_role == "doctor" and not check_doctor_patient_access(db, user_id, report.patient_id):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
-        
+
         # Download file
         logger.info(f"[Extraction] Downloading file | path={report.storage_path}")
         try:
@@ -510,7 +511,7 @@ class ExtractionService:
         except Exception as e:
             logger.error(f"[Extraction] Download failed | error={e}")
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e)) from e
-        
+
         # Extract data using Gemini
         logger.info("[Extraction] Calling Gemini for extraction")
         try:
@@ -519,9 +520,9 @@ class ExtractionService:
         except Exception as e:
             logger.error(f"[Extraction] Gemini extraction failed | error={e}")
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)) from e
-        
+
         processing_time = int((time.time() - start_time) * 1000)
-        
+
         # Save to MongoDB
         doc = AnalysisDocument(
             report_id=report_id,
@@ -532,17 +533,17 @@ class ExtractionService:
             processing_time_ms=processing_time,
             created_at=datetime.utcnow()
         )
-        
+
         result = await mongo_db.report_analysis.insert_one(doc.model_dump())
         mongo_id = str(result.inserted_id)
         logger.info(f"[Extraction] Saved to MongoDB | _id={mongo_id}")
-        
+
         # Update Postgres
         report.mongo_analysis_id = mongo_id
         db.commit()
-        
+
         logger.info(f"[Extraction] COMPLETE | report_id={report_id} | time={processing_time}ms")
-        
+
         return ExtractReportResponse(
             report_id=report_id,
             status="completed",
@@ -552,7 +553,7 @@ class ExtractionService:
             processing_time_ms=processing_time,
             extracted_at=datetime.utcnow()
         )
-    
+
     async def extract_report_background(
         self,
         report_id: str,
@@ -566,22 +567,23 @@ class ExtractionService:
         """
         Background task for extracting report data after upload confirmation.
         """
+        import time
+
         from src.ai.gemini_client import extract_report_data
         from src.ai.models import AnalysisDocument
-        import time
-        
+
         start_time = time.time()
         logger.info(f"[Background Extraction] Starting | report_id={report_id}")
-        
+
         try:
             # Download file
             file_bytes = supabase.storage.from_(BUCKET_NAME).download(storage_path)
             logger.info(f"[Background Extraction] Downloaded | size={len(file_bytes)}")
-            
+
             # Extract
             extracted_data, raw_text = await extract_report_data(file_bytes, content_type)
             processing_time = int((time.time() - start_time) * 1000)
-            
+
             # Save to MongoDB
             doc = AnalysisDocument(
                 report_id=report_id,
@@ -592,18 +594,18 @@ class ExtractionService:
                 processing_time_ms=processing_time,
                 created_at=datetime.utcnow()
             )
-            
+
             result = await mongo_db.report_analysis.insert_one(doc.model_dump())
             mongo_id = str(result.inserted_id)
-            
+
             # Update Postgres
             report = db.query(ReportORM).filter(ReportORM.id == report_id).first()
             if report:
                 report.mongo_analysis_id = mongo_id
                 db.commit()
-            
+
             logger.info(f"[Background Extraction] COMPLETE | report_id={report_id} | time={processing_time}ms")
-            
+
         except Exception as e:
             logger.error(f"[Background Extraction] FAILED | report_id={report_id} | error={e}")
             # Save error status
@@ -625,7 +627,7 @@ class ExtractionService:
 
 class ChatService:
     """Service for chat operations with context stored once."""
-    
+
     async def start_chat(
         self,
         db: Session,
@@ -636,9 +638,10 @@ class ChatService:
         report_ids: list[str] | None,
     ):
         """Create a new chat session."""
-        from src.ai.models import ChatDocument, StartChatResponse
         import uuid
-        
+
+        from src.ai.models import ChatDocument, StartChatResponse
+
         # Determine patient_id
         if user_role == "patient":
             patient_id = user_id
@@ -648,7 +651,7 @@ class ChatService:
             # Verify doctor access
             if not check_doctor_patient_access(db, user_id, patient_id):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not assigned to this patient")
-        
+
         # Validate report_ids if provided
         attached_report_ids = []
         if report_ids:
@@ -656,10 +659,10 @@ class ChatService:
                 report = db.query(ReportORM).filter(ReportORM.id == rid, ReportORM.patient_id == patient_id).first()
                 if report:
                     attached_report_ids.append(rid)
-        
+
         chat_id = str(uuid.uuid4())
         now = datetime.utcnow()
-        
+
         doc = ChatDocument(
             chat_id=chat_id,
             user_id=user_id,
@@ -672,17 +675,17 @@ class ChatService:
             created_at=now,
             updated_at=now
         )
-        
+
         await mongo_db.chats.insert_one(doc.model_dump())
         logger.info(f"[Chat] Created | chat_id={chat_id} | patient={patient_id}")
-        
+
         return StartChatResponse(
             chat_id=chat_id,
             patient_id=patient_id,
             attached_report_ids=attached_report_ids,
             created_at=now
         )
-    
+
     async def send_message(
         self,
         chat_id: str,
@@ -693,24 +696,25 @@ class ChatService:
         user_id: str,
     ):
         """Send a message and get AI response."""
+        import uuid
+
         from src.ai.gemini_client import generate_chat_response, generate_chat_title
         from src.ai.models import ChatMessageResponse
-        import uuid
-        
+
         # Fetch chat
         chat = await mongo_db.chats.find_one({"chat_id": chat_id})
         if not chat:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found")
-        
+
         if chat["user_id"] != user_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your chat")
-        
+
         # Attach new reports if provided
         if attach_report_ids:
             existing = set(chat.get("attached_report_ids", []))
             for rid in attach_report_ids:
                 report = db.query(ReportORM).filter(
-                    ReportORM.id == rid, 
+                    ReportORM.id == rid,
                     ReportORM.patient_id == chat["patient_id"]
                 ).first()
                 if report:
@@ -720,25 +724,25 @@ class ChatService:
                 {"$set": {"attached_report_ids": list(existing)}}
             )
             chat["attached_report_ids"] = list(existing)
-        
+
         now = datetime.utcnow()
         messages = chat.get("messages", [])
         is_first_message = len(messages) == 0
-        
+
         # Build context on first message only
         context = chat.get("context", "")
         if is_first_message or not context:
             logger.info(f"[Chat] Building context for first message | chat_id={chat_id}")
             context = await self._build_context(
-                db, mongo_db, 
-                chat["patient_id"], 
+                db, mongo_db,
+                chat["patient_id"],
                 chat.get("attached_report_ids", [])
             )
             await mongo_db.chats.update_one(
                 {"chat_id": chat_id},
                 {"$set": {"context": context}}
             )
-        
+
         # Get AI response
         logger.info(f"[Chat] Generating response | chat_id={chat_id}")
         try:
@@ -746,7 +750,7 @@ class ChatService:
         except Exception as e:
             logger.error(f"[Chat] Response generation failed | error={e}")
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)) from e
-        
+
         # Generate title on first message
         title = None
         if is_first_message:
@@ -759,11 +763,11 @@ class ChatService:
                 logger.info(f"[Chat] Title generated | title={title}")
             except Exception as e:
                 logger.warning(f"[Chat] Title generation failed | error={e}")
-        
+
         # Save messages
         user_msg_id = str(uuid.uuid4())
         assistant_msg_id = str(uuid.uuid4())
-        
+
         user_msg = {
             "id": user_msg_id,
             "role": "user",
@@ -777,7 +781,7 @@ class ChatService:
             "sources": chat.get("attached_report_ids", []),
             "timestamp": now.isoformat()
         }
-        
+
         await mongo_db.chats.update_one(
             {"chat_id": chat_id},
             {
@@ -785,9 +789,9 @@ class ChatService:
                 "$set": {"updated_at": now}
             }
         )
-        
+
         logger.info(f"[Chat] Message saved | chat_id={chat_id} | msg_id={assistant_msg_id}")
-        
+
         return ChatMessageResponse(
             message_id=assistant_msg_id,
             response=response_text,
@@ -795,18 +799,18 @@ class ChatService:
             title=title,
             timestamp=now
         )
-    
+
     async def get_history(self, chat_id: str, mongo_db: AsyncDatabase, user_id: str):
         """Get full chat history."""
         from src.ai.models import ChatHistoryResponse, ChatMessage
-        
+
         chat = await mongo_db.chats.find_one({"chat_id": chat_id})
         if not chat:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found")
-        
+
         if chat["user_id"] != user_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your chat")
-        
+
         messages = [
             ChatMessage(
                 id=m["id"],
@@ -817,7 +821,7 @@ class ChatService:
             )
             for m in chat.get("messages", [])
         ]
-        
+
         return ChatHistoryResponse(
             chat_id=chat_id,
             patient_id=chat["patient_id"],
@@ -827,14 +831,14 @@ class ChatService:
             created_at=chat["created_at"],
             updated_at=chat["updated_at"]
         )
-    
+
     async def list_chats(self, mongo_db: AsyncDatabase, user_id: str):
         """List all chats for a user."""
-        from src.ai.models import ChatListResponse, ChatListItem
-        
+        from src.ai.models import ChatListItem, ChatListResponse
+
         cursor = mongo_db.chats.find({"user_id": user_id}).sort("updated_at", -1)
         chats = await cursor.to_list(length=100)
-        
+
         items = [
             ChatListItem(
                 chat_id=c["chat_id"],
@@ -846,22 +850,22 @@ class ChatService:
             )
             for c in chats
         ]
-        
+
         return ChatListResponse(total=len(items), chats=items)
-    
+
     async def delete_chat(self, chat_id: str, mongo_db: AsyncDatabase, user_id: str):
         """Delete a chat."""
         chat = await mongo_db.chats.find_one({"chat_id": chat_id})
         if not chat:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found")
-        
+
         if chat["user_id"] != user_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your chat")
-        
+
         await mongo_db.chats.delete_one({"chat_id": chat_id})
         logger.info(f"[Chat] Deleted | chat_id={chat_id}")
         return {"status": "deleted", "chat_id": chat_id}
-    
+
     async def update_reports(
         self,
         chat_id: str,
@@ -875,10 +879,10 @@ class ChatService:
         chat = await mongo_db.chats.find_one({"chat_id": chat_id})
         if not chat:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found")
-        
+
         if chat["user_id"] != user_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your chat")
-        
+
         # Validate report_ids belong to patient
         valid_ids = []
         for rid in report_ids:
@@ -888,24 +892,24 @@ class ChatService:
             ).first()
             if report:
                 valid_ids.append(rid)
-        
+
         current = set(chat.get("attached_report_ids", []))
-        
+
         if action == "add":
             current.update(valid_ids)
         elif action == "remove":
             current -= set(valid_ids)
         elif action == "replace":
             current = set(valid_ids)
-        
+
         await mongo_db.chats.update_one(
             {"chat_id": chat_id},
             {"$set": {"attached_report_ids": list(current), "updated_at": datetime.utcnow()}}
         )
-        
+
         logger.info(f"[Chat] Reports updated | chat_id={chat_id} | action={action} | count={len(current)}")
         return {"status": "updated", "attached_report_ids": list(current)}
-    
+
     async def _build_context(
         self,
         db: Session,
@@ -915,7 +919,7 @@ class ChatService:
     ) -> str:
         """Build context from patient reports (called once on first message)."""
         context_parts = []
-        
+
         # If specific reports attached, use those
         if report_ids:
             for rid in report_ids:
@@ -941,7 +945,7 @@ class ChatService:
                             f"Raw Text:\n{analysis.get('raw_text', '')[:5000]}\n\n"
                             f"Extracted Data:\n{analysis.get('extracted_data', {})}\n"
                         )
-        
+
         return "\n\n".join(context_parts)[:50000]  # Limit total context
 
 
