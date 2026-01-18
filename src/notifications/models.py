@@ -11,6 +11,8 @@ class NotificationType(str, Enum):
     """Notification type enum."""
     # Patient notifications
     CASE_STATUS_CHANGED = "case_status_changed"
+    CASE_CREATED = "case_created"  # Doctor created case for patient
+    CASE_UPDATED = "case_updated"  # Doctor updated case data
     DOCTOR_ASSIGNED = "doctor_assigned"
     REPORT_ANALYZED = "report_analyzed"
     DOCTOR_NOTE_ADDED = "doctor_note_added"

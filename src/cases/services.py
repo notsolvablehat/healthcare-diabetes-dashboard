@@ -10,8 +10,10 @@ from src.cases.models import Case, CaseCreate, CaseUpdate, DoctorNote, DoctorNot
 from src.schemas.cases import Case as CaseORM
 from src.schemas.users.users import Patient, User
 from src.notifications.services import (
+    notify_case_created_for_patient,
     notify_case_needs_approval,
     notify_case_status_changed,
+    notify_case_updated,
     notify_doctor_note_added,
     notify_new_case_assigned,
 )
@@ -42,7 +44,14 @@ def resolve_patient_user_id(db: Session, patient_identifier: str) -> str:
 
 
 class CaseService:
-    async def create_case(self, db: Session, mongo_db: AsyncDatabase, doctor_id: str, case_data: CaseCreate) -> Case:
+    async def create_case(
+        self, 
+        db: Session, 
+        mongo_db: AsyncDatabase, 
+        doctor_id: str, 
+        case_data: CaseCreate,
+        creating_user_role: str = "doctor"  # Add role parameter
+    ) -> Case:
         """
         Create case in BOTH PostgreSQL and MongoDB.
         Returns complete Case object.
@@ -92,13 +101,26 @@ class CaseService:
         postgres_case.mongo_case_id = mongo_id
         db.commit()
 
-        # Notify doctor
-        patient_user = db.query(User).filter(User.id == patient_user_id).first()
-        patient_name = patient_user.name if patient_user else "Patient"
+        # Notifications: 
+        # - If patient creates case → notify doctor
+        # - If doctor creates case → notify patient (case created for them)
         
-        notify_new_case_assigned(
-            db, doctor_id, case_id, patient_name, case_data.chief_complaint
-        )
+        if creating_user_role == "doctor":
+            # Doctor created case for patient - notify the patient
+            doctor_user = db.query(User).filter(User.id == doctor_id).first()
+            doctor_name = doctor_user.name if doctor_user and doctor_user.name else "Your doctor"
+            
+            notify_case_created_for_patient(
+                db, patient_user_id, case_id, doctor_name, case_data.chief_complaint
+            )
+        else:
+            # Patient created case - notify the doctor
+            patient_user = db.query(User).filter(User.id == patient_user_id).first()
+            patient_name = patient_user.name if patient_user and patient_user.name else "Patient"
+            
+            notify_new_case_assigned(
+                db, doctor_id, case_id, patient_name, case_data.chief_complaint
+            )
 
         return Case(**case_document)
 
@@ -143,27 +165,28 @@ class CaseService:
     async def list_cases_by_doctor(
         self, db: Session, doctor_id: str, skip: int = 0, limit: int = 20, status: str = None
     ) -> list[dict]:
-        """List cases for a doctor (Postgres only for list view)"""
-        query = db.query(CaseORM).filter(CaseORM.doctor_id == doctor_id)
+        """List cases for a doctor with patient names (Postgres only for list view)"""
+        from src.schemas.users.users import User
+        
+        # Join cases with users table to get patient information
+        query = db.query(CaseORM, User).join(
+            User, CaseORM.patient_id == User.id
+        ).filter(CaseORM.doctor_id == doctor_id)
 
         if status:
             query = query.filter(CaseORM.status == status)
 
-        cases = query.offset(skip).limit(limit).all()
+        results = query.offset(skip).limit(limit).all()
 
-        # Return summary list
-        # We assume the frontend needs basic info.
-        # Adapt to CaseResponse or a summary model if needed.
-        # For now, converting ORM to dict manually or using Pydantic if we had a summary model.
-        # We will return list of dicts.
         return [
             {
-                "case_id": c.case_id,
-                "created_at": c.created_at,
-                "chief_complaint": c.chief_complaint,
-                "status": c.status,
-                "patient_id": str(c.patient_id)
-            } for c in cases
+                "case_id": case.case_id,
+                "created_at": case.created_at,
+                "chief_complaint": case.chief_complaint,
+                "status": case.status,
+                "patient_id": str(case.patient_id),
+                "patient_name": patient.name if patient.name else patient.username
+            } for case, patient in results
         ]
 
     async def list_cases_by_patient(
@@ -295,20 +318,47 @@ class CaseService:
             "_id": ObjectId(postgres_case.mongo_case_id)
         })
 
-        # In a real app, strict diffing logic here (as per your guide)
-        # For MVP, we apply updates.
-
-        # Update PostgreSQL
-        postgres_case.updated_at = datetime.utcnow()
-        if case_update.status:
-            postgres_case.status = case_update.status
-
-        # Update MongoDB
+        # Validate that no protected fields are being edited
+        # These fields should not be in the update payload
         update_dict = case_update.model_dump(mode="json", exclude_unset=True)
+        
+        # Protected fields that should never be updated via this endpoint
+        PROTECTED_FIELDS = {
+            "case_id",        # System generated
+            "id",             # System generated
+            "patient_id",     # Assignment shouldn't change
+            "doctor_id",      # Assignment shouldn't change
+            "created_at",     # Historical timestamp
+            "updated_at",     # Automatically managed
+            "audit_trail",    # Historical record only
+        }
+        
+        # Check if any protected fields are in the update
+        protected_in_update = PROTECTED_FIELDS.intersection(update_dict.keys())
+        if protected_in_update:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot update protected fields: {', '.join(protected_in_update)}. "
+                       f"These fields are system-managed or require dedicated endpoints."
+            )
+        
+        # Also reject status updates here - should use dedicated endpoints
+        if "status" in update_dict:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot update status directly. Use dedicated endpoints: "
+                       "POST /cases/{case_id}/approve for approval, "
+                       "PATCH /cases/{case_id} with specific status transition endpoints."
+            )
+
         if not update_dict:
              mongo_case["_id"] = str(mongo_case["_id"]) # ensure ID stringification if no update
              return Case(**mongo_case)
 
+        # Update PostgreSQL timestamp
+        postgres_case.updated_at = datetime.utcnow()
+
+        # Update MongoDB
         update_dict["updated_at"] = datetime.utcnow().isoformat()
 
         await mongo_db["cases"].update_one(
@@ -323,22 +373,15 @@ class CaseService:
             "_id": ObjectId(postgres_case.mongo_case_id)
         })
         updated_mongo["_id"] = str(updated_mongo["_id"])
-        # Notifications for status change
-        if case_update.status:
-            if case_update.status == "under_review":
-                # Notify doctor
-                patient_user = db.query(User).filter(User.id == postgres_case.patient_id).first()
-                patient_name = patient_user.name if patient_user else "Patient"
-                
-                notify_case_needs_approval(
-                    db, str(postgres_case.doctor_id), case_id, patient_name
-                )
+
+        # Notify patient if doctor made the update
+        if str(postgres_case.doctor_id) == user_id:
+            doctor_user = db.query(User).filter(User.id == user_id).first()
+            doctor_name = doctor_user.name if doctor_user and doctor_user.name else "Your doctor"
             
-            elif case_update.status in ["closed"]:
-                # Notify patient
-                notify_case_status_changed(
-                    db, str(postgres_case.patient_id), case_id, case_update.status
-                )
+            notify_case_updated(
+                db, str(postgres_case.patient_id), case_id, doctor_name
+            )
 
         return Case(**updated_mongo)
 

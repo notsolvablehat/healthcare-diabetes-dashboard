@@ -242,3 +242,37 @@ def notify_case_needs_approval(
         message=f"Case #{case_id} from {patient_name} is ready for your review.",
         link=f"/cases/{case_id}",
     )
+
+def notify_case_created_for_patient(
+    db: Session,
+    patient_id: str,
+    case_id: str,
+    doctor_name: str,
+    chief_complaint: str,
+) -> NotificationORM:
+    """Notify patient when doctor creates a case for them."""
+    return create_notification(
+        db=db,
+        user_id=patient_id,
+        notification_type=NotificationType.CASE_CREATED,
+        title="New Case Created",
+        message=f"Dr. {doctor_name} created a new case for you: {chief_complaint[:50]}{'...' if len(chief_complaint) > 50 else ''}",
+        link=f"/cases/{case_id}",
+    )
+
+
+def notify_case_updated(
+    db: Session,
+    patient_id: str,
+    case_id: str,
+    doctor_name: str,
+) -> NotificationORM:
+    """Notify patient when doctor updates their case."""
+    return create_notification(
+        db=db,
+        user_id=patient_id,
+        notification_type=NotificationType.CASE_UPDATED,
+        title="Case Updated",
+        message=f"Dr. {doctor_name} updated your case #{case_id}.",
+        link=f"/cases/{case_id}",
+    )

@@ -31,7 +31,8 @@ async def create_case(
         db=db,
         mongo_db=mongo_db,
         doctor_id=user.user_id,
-        case_data=case_data
+        case_data=case_data,
+        creating_user_role=user.role  # Pass the role to determine notification recipient
     )
     return CaseResponse(**new_case.dict())
 

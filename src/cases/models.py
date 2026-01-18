@@ -474,8 +474,18 @@ class CaseCreate(BaseModel):
     plan: PlanSection | None = None
 
 class CaseUpdate(BaseModel):
-    """Request model for updating case (partial)"""
-    status: CaseStatus | None = None
+    """
+    Request model for updating case (partial).
+    
+    Protected fields NOT allowed:
+    - case_id: System generated
+    - patient_id: Assignment shouldn't change  
+    - doctor_id: Assignment shouldn't change
+    - created_at: Historical timestamp
+    - updated_at: Automatically managed
+    - status: Use dedicated endpoints (approve, close, etc.)
+    - audit_trail: Historical record only
+    """
     severity: SeverityLevel | None = None
 
     subjective: SubjectiveSection | None = None
