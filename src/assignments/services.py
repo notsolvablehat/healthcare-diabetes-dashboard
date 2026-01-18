@@ -143,6 +143,15 @@ def assign_patient(db: DbSession, user_id: str, request_data: PatientAssignReque
         db.commit()
         db.refresh(new_assignment)
 
+        # Notify patient
+        from src.notifications.services import notify_doctor_assigned
+        
+        # Get doctor name
+        doctor_user = db.query(User).filter(User.id == best_doctor.user_id).first()
+        doctor_name = doctor_user.name if doctor_user else "Doctor"
+        
+        notify_doctor_assigned(db, patient_user.id, doctor_name, best_doctor.specialisation)
+
         return {
             "status": "success",
             "assigned_doctor": str(best_doctor),

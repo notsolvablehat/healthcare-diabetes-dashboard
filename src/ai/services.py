@@ -180,6 +180,10 @@ class AIService:
         db.commit()
         logger.info(f"[Service] Postgres updated | report.mongo_analysis_id={mongo_analysis_id}")
 
+        # Notify patient
+        from src.notifications.services import notify_report_analyzed
+        notify_report_analyzed(db, str(report.patient_id), report.id, report.file_name)
+
         logger.info(f"[Service] analyze_report pipeline COMPLETE | report_id={report_id}")
 
         return AnalyzeReportResponse(
@@ -603,6 +607,10 @@ class ExtractionService:
             if report:
                 report.mongo_analysis_id = mongo_id
                 db.commit()
+
+                # Notify patient
+                from src.notifications.services import notify_report_analyzed
+                notify_report_analyzed(db, str(report.patient_id), report.id, report.file_name)
 
             logger.info(f"[Background Extraction] COMPLETE | report_id={report_id} | time={processing_time}ms")
 

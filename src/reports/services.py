@@ -148,6 +148,29 @@ class ReportService:
             db.commit()
             db.refresh(report)
 
+        # Notify assigned doctors
+        from src.notifications.services import notify_new_report_uploaded
+        from src.schemas.users.users import Assignment, User
+
+        # Get patient name
+        patient_user = db.query(User).filter(User.id == report.patient_id).first()
+        patient_name = patient_user.name if patient_user else "Patient"
+
+        # Get assigned doctors
+        assignments = db.query(Assignment).filter(
+            Assignment.patient_user_id == report.patient_id,
+            Assignment.is_active == True
+        ).all()
+
+        for assignment in assignments:
+            notify_new_report_uploaded(
+                db, 
+                assignment.doctor_user_id, 
+                patient_name, 
+                report.id, 
+                report.file_name
+            )
+
         return ReportResponse.model_validate(report)
 
     def get_reports_by_case(

@@ -123,6 +123,7 @@ class PatientDashboardResponse(BaseModel):
     health_charts: HealthCharts
     alerts: list[AlertItem] = Field(default_factory=list)
     ai_stats: AIStats
+    notifications_unread: int = 0
 
 
 # ============================================================================
@@ -180,3 +181,4 @@ class DoctorDashboardResponse(BaseModel):
     pending_approvals: list[PendingApprovalItem] = Field(default_factory=list)
     alerts: list[AlertItem] = Field(default_factory=list)
     ai_stats: AIStats
+    notifications_unread: int = 0

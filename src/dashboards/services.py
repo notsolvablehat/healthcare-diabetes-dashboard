@@ -29,6 +29,7 @@ from src.dashboards.models import (
     ReportSummaryItem,
     WeightReading,
 )
+from src.notifications.services import get_unread_count
 from src.schemas.cases import Case as CaseORM
 from src.schemas.reports import Report as ReportORM
 from src.schemas.users.users import Assignment, Doctor, Patient, User
@@ -152,6 +153,9 @@ async def get_patient_dashboard(
     # Get AI stats from MongoDB
     ai_stats = await _get_ai_stats(mongo_db, user_id)
 
+    # Get notifications unread count
+    unread_count_response = get_unread_count(db, user_id)
+
     return PatientDashboardResponse(
         user_info=user_info,
         assigned_doctors=assigned_doctors,
@@ -159,7 +163,8 @@ async def get_patient_dashboard(
         reports=reports,
         health_charts=health_charts,
         alerts=alerts,
-        ai_stats=ai_stats
+        ai_stats=ai_stats,
+        notifications_unread=unread_count_response.count
     )
 
 
@@ -267,13 +272,17 @@ async def get_doctor_dashboard(
     # Get AI stats from MongoDB
     ai_stats = await _get_ai_stats(mongo_db, user_id)
 
+    # Get notifications unread count
+    unread_count_response = get_unread_count(db, user_id)
+
     return DoctorDashboardResponse(
         user_info=user_info,
         patient_stats=patient_stats,
         cases=cases,
         pending_approvals=pending_approvals,
         alerts=alerts,
-        ai_stats=ai_stats
+        ai_stats=ai_stats,
+        notifications_unread=unread_count_response.count
     )
 
 

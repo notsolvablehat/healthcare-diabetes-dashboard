@@ -8,8 +8,13 @@ from sqlalchemy.orm import Session
 
 from src.cases.models import Case, CaseCreate, CaseUpdate, DoctorNote, DoctorNoteCreate
 from src.schemas.cases import Case as CaseORM
-from src.schemas.users.users import Patient
-
+from src.schemas.users.users import Patient, User
+from src.notifications.services import (
+    notify_case_needs_approval,
+    notify_case_status_changed,
+    notify_doctor_note_added,
+    notify_new_case_assigned,
+)
 
 def resolve_patient_user_id(db: Session, patient_identifier: str) -> str:
     """
@@ -86,6 +91,14 @@ class CaseService:
         # Update PostgreSQL with MongoDB reference
         postgres_case.mongo_case_id = mongo_id
         db.commit()
+
+        # Notify doctor
+        patient_user = db.query(User).filter(User.id == patient_user_id).first()
+        patient_name = patient_user.name if patient_user else "Patient"
+        
+        notify_new_case_assigned(
+            db, doctor_id, case_id, patient_name, case_data.chief_complaint
+        )
 
         return Case(**case_document)
 
@@ -224,6 +237,16 @@ class CaseService:
 
         await self.add_audit_log(db, mongo_db, case_id, "note_added", doctor_id)
 
+        await self.add_audit_log(db, mongo_db, case_id, "note_added", doctor_id)
+
+        # Notify patient
+        doctor_user = db.query(User).filter(User.id == doctor_id).first()
+        doctor_name = doctor_user.name if doctor_user else "Doctor"
+        
+        notify_doctor_note_added(
+            db, str(postgres_case.patient_id), case_id, doctor_name
+        )
+
         return note
 
     async def get_doctor_notes(self, db: Session, mongo_db: AsyncDatabase, case_id: str, user_id: str):
@@ -300,6 +323,23 @@ class CaseService:
             "_id": ObjectId(postgres_case.mongo_case_id)
         })
         updated_mongo["_id"] = str(updated_mongo["_id"])
+        # Notifications for status change
+        if case_update.status:
+            if case_update.status == "under_review":
+                # Notify doctor
+                patient_user = db.query(User).filter(User.id == postgres_case.patient_id).first()
+                patient_name = patient_user.name if patient_user else "Patient"
+                
+                notify_case_needs_approval(
+                    db, str(postgres_case.doctor_id), case_id, patient_name
+                )
+            
+            elif case_update.status in ["closed"]:
+                # Notify patient
+                notify_case_status_changed(
+                    db, str(postgres_case.patient_id), case_id, case_update.status
+                )
+
         return Case(**updated_mongo)
 
     async def approve_case(self, db: Session, mongo_db: AsyncDatabase, case_id: str, doctor_id: str, approval_notes: str | None = None) -> Case | None:
@@ -343,6 +383,18 @@ class CaseService:
                 "status": "approved_by_doctor",
                 "approvals": approval_data
             }}
+        )
+
+        # Notify patient
+        doctor_user = db.query(User).filter(User.id == doctor_id).first()
+        doctor_name = doctor_user.name if doctor_user else "Doctor"
+
+        notify_case_status_changed(
+            db, 
+            str(postgres_case.patient_id), 
+            case_id, 
+            "approved_by_doctor",
+            doctor_name
         )
 
         # Return full case
