@@ -10,7 +10,7 @@ from . import models, services
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=models.Token, status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/hour")
 async def register_user(request: Request, user_data: models.RegisterUserRequest, db: DbSession):
     return services.register_user(db=db, request=user_data)

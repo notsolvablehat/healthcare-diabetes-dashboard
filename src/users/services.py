@@ -115,6 +115,8 @@ def update_user(db: DbSession, user_id: str, request: PatientOnboarding) -> User
             if field in ALLOWED_FIELDS:
                 setattr(user.doctor_profile, field, value)
 
+    db.commit()
+    db.refresh(user)
     return user
 
 def update_user_name(db: DbSession, user_id: str, name_of_user: str) -> User:

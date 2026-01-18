@@ -157,18 +157,24 @@ class CaseService:
         self, db: Session, patient_id: str, skip: int = 0, limit: int = 20
     ) -> list[dict]:
         """List cases for a patient"""
-        query = db.query(CaseORM).filter(CaseORM.patient_id == patient_id)
+        from src.schemas.users.users import User
+        
+        # Join cases with users table to get doctor information
+        query = db.query(CaseORM, User).join(
+            User, CaseORM.doctor_id == User.id
+        ).filter(CaseORM.patient_id == patient_id)
 
-        cases = query.offset(skip).limit(limit).all()
+        results = query.offset(skip).limit(limit).all()
 
         return [
              {
-                "case_id": c.case_id,
-                "created_at": c.created_at,
-                "chief_complaint": c.chief_complaint,
-                "status": c.status,
-                "doctor_id": str(c.doctor_id)
-            } for c in cases
+                "case_id": case.case_id,
+                "created_at": case.created_at,
+                "chief_complaint": case.chief_complaint,
+                "status": case.status,
+                "doctor_id": str(case.doctor_id),
+                "doctor_name": doctor.name if doctor.name else doctor.username
+            } for case, doctor in results
         ]
 
     async def add_audit_log(self, db: Session, mongo_db: AsyncDatabase, case_id: str, action: str, user_id: str):

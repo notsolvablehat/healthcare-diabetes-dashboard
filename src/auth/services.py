@@ -73,7 +73,7 @@ def authenticate_user(username: str, password: str, db: Session) -> User | bool:
 # Security Logic End
 
 # Business Logic Start
-def register_user(db: Session, request: models.RegisterUserRequest) -> None:
+def register_user(db: Session, request: models.RegisterUserRequest) -> models.Token:
     if request.role == "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to create this role.")
 
@@ -107,6 +107,22 @@ def register_user(db: Session, request: models.RegisterUserRequest) -> None:
 
         db.add(create_user_model)
         db.commit()
+        db.refresh(create_user_model)
+        
+        # Create access token for the newly registered user
+        token = create_access_token(
+            create_user_model.email, 
+            create_user_model.id, 
+            create_user_model.role, 
+            timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MIN)
+        )
+        
+        return models.Token(
+            access_token=token,
+            token_type="bearer",
+            role=create_user_model.role,
+            is_onboarded=create_user_model.is_onboarded
+        )
     except Exception as e:
         logging.error(f"Failed to create a user: {str(e)}")
         raise HTTPException(
@@ -129,6 +145,11 @@ def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials")
 
     token = create_access_token(user.email, user.id, user.role, timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MIN)) # type: ignore
-    return models.Token(access_token=token, token_type="bearer")
+    return models.Token(
+        access_token=token, 
+        token_type="bearer",
+        role=user.role,  # type: ignore
+        is_onboarded=user.is_onboarded  # type: ignore
+    )
 
 # Business Logic End

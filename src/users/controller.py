@@ -16,8 +16,17 @@ from .services import (
 router = APIRouter(prefix="/users", tags=["user"])
 
 @router.get("/me")
-def read_users_me(user: CurrentUser):
-    return {"user": user}
+def read_users_me(user: CurrentUser, db: DbSession):
+    from .services import get_user
+    user_data = get_user(db, user.user_id)  # type: ignore
+    return {
+        "user_id": user_data.id,
+        "role": user_data.role,
+        "is_onboarded": user_data.is_onboarded,
+        "email": user_data.email,
+        "username": user_data.username,
+        "name": user_data.name
+    }
 
 @router.get("/profile")
 def get_my_profile(user: CurrentUser, db: DbSession):
