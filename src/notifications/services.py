@@ -275,3 +275,73 @@ def notify_case_updated(
         message=f"Dr. {doctor_name} updated your case #{case_id}.",
         link=f"/cases/{case_id}",
     )
+
+
+# ============================================================================
+# Appointment Notifications
+# ============================================================================
+
+def notify_appointment_created(
+    db: Session,
+    doctor_id: str,
+    patient_name: str,
+    appointment_time: datetime,
+    appointment_type: str,
+) -> NotificationORM:
+    """Notify doctor when a patient books an appointment."""
+    time_str = appointment_time.strftime("%B %d, %Y at %I:%M %p")
+    return create_notification(
+        db=db,
+        user_id=doctor_id,
+        notification_type=NotificationType.INFO,
+        title="New Appointment Booked",
+        message=f"{patient_name} has booked a {appointment_type} appointment on {time_str}.",
+        link="/appointments/doctor",
+    )
+
+
+def notify_appointment_completed(
+    db: Session,
+    patient_id: str,
+    doctor_name: str,
+    appointment_time: datetime,
+) -> NotificationORM:
+    """Notify patient when their appointment is marked as completed."""
+    time_str = appointment_time.strftime("%B %d, %Y at %I:%M %p")
+    return create_notification(
+        db=db,
+        user_id=patient_id,
+        notification_type=NotificationType.INFO,
+        title="Appointment Completed",
+        message=f"Your appointment with Dr. {doctor_name} on {time_str} has been completed.",
+        link="/appointments/patient",
+    )
+
+
+def notify_appointment_cancelled(
+    db: Session,
+    patient_id: str,
+    doctor_name: str,
+    appointment_time: datetime,
+    cancelled_by: str,
+    reason: str | None = None,
+) -> NotificationORM:
+    """Notify patient when their appointment is cancelled."""
+    time_str = appointment_time.strftime("%B %d, %Y at %I:%M %p")
+    
+    if cancelled_by == "doctor":
+        message = f"Dr. {doctor_name} cancelled your appointment on {time_str}."
+        if reason:
+            message += f" Reason: {reason}"
+    else:
+        message = f"Your appointment with Dr. {doctor_name} on {time_str} has been cancelled."
+    
+    return create_notification(
+        db=db,
+        user_id=patient_id,
+        notification_type=NotificationType.ALERT,
+        title="Appointment Cancelled",
+        message=message,
+        link="/appointments/patient",
+    )
+

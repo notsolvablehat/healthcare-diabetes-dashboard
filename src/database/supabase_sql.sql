@@ -94,3 +94,43 @@ CREATE TABLE reports (
 );
 CREATE INDEX idx_reports_case ON reports(case_id);
 CREATE INDEX idx_reports_patient ON reports(patient_id);
+
+-- Appointments table (added for scheduling patient-doctor consultations)
+CREATE TABLE appointments (
+    id VARCHAR PRIMARY KEY,
+    doctor_user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    patient_user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    start_time TIMESTAMPTZ NOT NULL,
+    end_time TIMESTAMPTZ NOT NULL,
+    type VARCHAR NOT NULL,
+    status VARCHAR NOT NULL DEFAULT 'Scheduled',
+    reason VARCHAR,
+    notes VARCHAR,
+    cancellation_reason VARCHAR,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Trigger to auto-update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_appointments_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER appointments_updated_at_trigger
+BEFORE UPDATE ON appointments
+FOR EACH ROW
+EXECUTE FUNCTION update_appointments_updated_at();
+
+-- Note: Indexes commented out for low data volume (avoid slowing inserts/updates)
+-- Uncomment these if appointments grow large or queries slow down:
+-- CREATE INDEX idx_appointments_doctor_user ON appointments(doctor_user_id);
+-- CREATE INDEX idx_appointments_patient_user ON appointments(patient_user_id);
+-- CREATE INDEX idx_appointments_start_time ON appointments(start_time);
+-- CREATE INDEX idx_appointments_status ON appointments(status);
+-- CREATE INDEX idx_appointments_doctor_time ON appointments(doctor_user_id, start_time);
+-- CREATE INDEX idx_appointments_patient_time ON appointments(patient_user_id, start_time);
+-- CREATE INDEX idx_appointments_status_time ON appointments(status, start_time);

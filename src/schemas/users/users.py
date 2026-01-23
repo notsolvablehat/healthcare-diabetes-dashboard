@@ -147,3 +147,38 @@ class Assignment(Base):
 
     def __repr__(self):
         return f"<Assignment(doc={self.doctor_user_id}, patient={self.patient_user_id}, active={self.is_active})>"
+
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+
+    id = Column(String, primary_key=True)
+
+    # Foreign Keys
+    doctor_user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    patient_user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # Appointment details
+    start_time = Column(DateTime(timezone=True), nullable=False, index=True)
+    end_time = Column(DateTime(timezone=True), nullable=False)
+    type = Column(String, nullable=False)  # Consultation, Follow-up, Emergency
+    status = Column(String, default="Scheduled", nullable=False, index=True)  # Scheduled, Completed, Cancelled, No-show
+
+    # Notes and reasons
+    reason = Column(String, nullable=True)  # Patient's reason for appointment
+    notes = Column(String, nullable=True)  # Doctor's internal notes
+    cancellation_reason = Column(String, nullable=True)  # Reason if cancelled
+
+    # Audit trail
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    # Indexes for common queries
+    __table_args__ = (
+        Index('idx_appointments_doctor_time', 'doctor_user_id', 'start_time'),
+        Index('idx_appointments_patient_time', 'patient_user_id', 'start_time'),
+        Index('idx_appointments_status_time', 'status', 'start_time'),
+    )
+
+    def __repr__(self):
+        return f"<Appointment(id={self.id}, doctor={self.doctor_user_id}, patient={self.patient_user_id}, status={self.status})>"
