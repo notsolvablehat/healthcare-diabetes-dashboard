@@ -58,7 +58,7 @@ async def patient_dashboard(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e)
-        )
+        ) from e
 
 
 @router.get("/doctor/dashboard", response_model=DoctorDashboardResponse)
@@ -102,4 +102,4 @@ async def doctor_dashboard(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e)
-        )
+        ) from e

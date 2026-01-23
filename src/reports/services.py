@@ -159,15 +159,15 @@ class ReportService:
         # Get assigned doctors
         assignments = db.query(Assignment).filter(
             Assignment.patient_user_id == report.patient_id,
-            Assignment.is_active == True
+            Assignment.is_active
         ).all()
 
         for assignment in assignments:
             notify_new_report_uploaded(
-                db, 
-                assignment.doctor_user_id, 
-                patient_name, 
-                report.id, 
+                db,
+                assignment.doctor_user_id,
+                patient_name,
+                report.id,
                 report.file_name
             )
 
@@ -255,6 +255,336 @@ class ReportService:
             return None
 
         return ReportResponse.model_validate(report)
+
+    def get_all_my_reports(
+        self,
+        db: Session,
+        user_id: str,
+        user_role: str,
+    ) -> list[ReportResponse]:
+        """
+        Get all reports for the authenticated user.
+        - Patients: Returns their own reports with their name
+        - Doctors: Returns reports for all assigned patients with patient names
+        """
+        from src.schemas.users.users import Assignment, User
+
+        if user_role == "patient":
+            # Get patient's own reports
+            reports = db.query(ReportORM).filter(ReportORM.patient_id == user_id).all()
+
+            # Get patient name
+            patient_user = db.query(User).filter(User.id == user_id).first()
+            patient_name = patient_user.name if patient_user else None
+
+            # Build response with patient name
+            report_list = []
+            for report in reports:
+                report_data = ReportResponse.model_validate(report)
+                report_data.patient_name = patient_name
+                report_list.append(report_data)
+
+            return report_list
+
+        elif user_role == "doctor":
+            # Get all assigned patients
+            assignments = db.query(Assignment).filter(
+                Assignment.doctor_user_id == user_id,
+                Assignment.is_active
+            ).all()
+
+            patient_ids = [a.patient_user_id for a in assignments]
+
+            if not patient_ids:
+                return []
+
+            # Get reports with patient names via JOIN
+            results = db.query(ReportORM, User.name).join(
+                User, ReportORM.patient_id == User.id
+            ).filter(
+                ReportORM.patient_id.in_(patient_ids)
+            ).order_by(ReportORM.created_at.desc()).all()
+
+            # Build response with patient names
+            report_list = []
+            for report_orm, patient_name in results:
+                report_data = ReportResponse.model_validate(report_orm)
+                report_data.patient_name = patient_name
+                report_list.append(report_data)
+
+            return report_list
+
+        # For other roles (admin, etc.), return empty list
+        return []
+
+
+    async def log_activity(
+        self,
+        mongo_db,
+        report_id: str,
+        patient_id: str,
+        user_id: str,
+        user_role: str,
+        activity_type: str,
+        status: str = "completed",
+        metadata: dict | None = None,
+        error_message: str | None = None,
+    ) -> str:
+        """
+        Log an activity for a report in MongoDB.
+        Returns the inserted activity log ID.
+
+        Activity types:
+        - upload: Report file uploaded
+        - analysis: AI diabetes analysis performed
+        - extraction: Report data extraction performed
+        - explanation_request: User requested explanation for selected text
+        - download: Report file downloaded
+        """
+        from src.schemas.mongo import ReportActivityLog
+
+        activity_log = ReportActivityLog(
+            report_id=report_id,
+            patient_id=patient_id,
+            user_id=user_id,
+            user_role=user_role,
+            activity_type=activity_type,
+            status=status,
+            metadata=metadata,
+            error_message=error_message,
+        )
+
+        result = await mongo_db.report_activities.insert_one(
+            activity_log.model_dump()
+        )
+
+        return str(result.inserted_id)
+
+    async def get_analysis_status(
+        self,
+        db: Session,
+        mongo_db,
+        user_id: str,
+        user_role: str,
+        report_id: str,
+    ) -> dict | None:
+        """
+        Check if a report has been analyzed and get status.
+        """
+        from src.reports.models import AnalysisStatusResponse
+
+        # Check if report exists and user has access
+        report = db.query(ReportORM).filter(ReportORM.id == report_id).first()
+        if not report:
+            return None
+
+        if not check_patient_access(db, user_id, user_role, report.patient_id):
+            return None
+
+        # Count all analyses for this report
+        analyses_count = await mongo_db.report_analysis.count_documents(
+            {"report_id": report_id}
+        )
+
+        # Get latest analysis
+        latest_analysis = await mongo_db.report_analysis.find_one(
+            {"report_id": report_id},
+            sort=[("created_at", -1)]
+        )
+
+        latest_id = None
+        latest_date = None
+        if latest_analysis:
+            latest_id = str(latest_analysis["_id"])
+            latest_date = latest_analysis.get("created_at")
+
+        return AnalysisStatusResponse(
+            report_id=report_id,
+            is_analyzed=analyses_count > 0,
+            analysis_count=analyses_count,
+            latest_analysis_id=latest_id,
+            latest_analysis_date=latest_date,
+        ).model_dump()
+
+    async def get_all_analyses(
+        self,
+        db: Session,
+        mongo_db,
+        user_id: str,
+        user_role: str,
+        report_id: str,
+    ) -> dict | None:
+        """
+        Get all analyses performed on a report.
+        """
+        from src.reports.models import AnalysesListResponse, AnalysisSummary
+
+        # Check if report exists and user has access
+        report = db.query(ReportORM).filter(ReportORM.id == report_id).first()
+        if not report:
+            return None
+
+        if not check_patient_access(db, user_id, user_role, report.patient_id):
+            return None
+
+        # Fetch all analyses, sorted by created_at (newest first)
+        cursor = mongo_db.report_analysis.find(
+            {"report_id": report_id}
+        ).sort("created_at", -1)
+
+        analyses_raw = await cursor.to_list(length=None)
+
+        # Convert to AnalysisSummary models
+        analyses = []
+        for analysis in analyses_raw:
+            # Determine analysis type
+            analysis_type = None
+            if "extracted_data" in analysis:
+                analysis_type = "extraction"
+            elif "prediction" in analysis:
+                analysis_type = "diabetes_analysis"
+
+            # Extract relevant fields based on type
+            summary = AnalysisSummary(
+                mongo_id=str(analysis["_id"]),
+                status=analysis.get("status", "completed"),
+                analysis_type=analysis_type,
+                created_at=analysis.get("created_at"),
+                processing_time_ms=analysis.get("processing_time_ms"),
+            )
+
+            # Add type-specific fields
+            if analysis_type == "extraction":
+                extracted = analysis.get("extracted_data", {})
+                summary.report_type = extracted.get("report_type")
+                summary.lab_results_count = len(extracted.get("lab_results", []))
+                summary.medications_count = len(extracted.get("medications", []))
+            elif analysis_type == "diabetes_analysis":
+                prediction = analysis.get("prediction", {})
+                summary.prediction_label = prediction.get("label")
+                summary.prediction_confidence = prediction.get("confidence")
+
+            analyses.append(summary)
+
+        return AnalysesListResponse(
+            report_id=report_id,
+            total_analyses=len(analyses),
+            analyses=analyses,
+        ).model_dump()
+
+    async def get_analysis_by_id(
+        self,
+        db: Session,
+        mongo_db,
+        user_id: str,
+        user_role: str,
+        report_id: str,
+        analysis_id: str,
+    ) -> dict | None:
+        """
+        Get detailed data for a specific analysis.
+        """
+        from bson import ObjectId
+
+        from src.reports.models import AnalysisDetailResponse
+
+        # Check if report exists and user has access
+        report = db.query(ReportORM).filter(ReportORM.id == report_id).first()
+        if not report:
+            return None
+
+        if not check_patient_access(db, user_id, user_role, report.patient_id):
+            return None
+
+        # Fetch specific analysis from MongoDB
+        try:
+            analysis = await mongo_db.report_analysis.find_one(
+                {"_id": ObjectId(analysis_id), "report_id": report_id}
+            )
+        except Exception:
+            # Invalid ObjectId format
+            return None
+
+        if not analysis:
+            return None
+
+        # Build response with all available data
+        return AnalysisDetailResponse(
+            analysis_id=str(analysis["_id"]),
+            report_id=analysis.get("report_id"),
+            patient_id=analysis.get("patient_id"),
+            status=analysis.get("status", "completed"),
+            created_at=analysis.get("created_at"),
+            processing_time_ms=analysis.get("processing_time_ms"),
+            raw_text=analysis.get("raw_text"),
+            extracted_data=analysis.get("extracted_data"),
+            extracted_features=analysis.get("extracted_features"),
+            prediction=analysis.get("prediction"),
+            narrative=analysis.get("narrative"),
+            error=analysis.get("error"),
+        ).model_dump()
+
+    async def get_report_activity(
+        self,
+        db: Session,
+        mongo_db,
+        user_id: str,
+        user_role: str,
+        report_id: str,
+    ) -> dict | None:
+        """
+        Get all activity logs for a report.
+        Returns activity history with summary counts.
+        """
+        from src.reports.models import ActivityEvent, ReportActivityResponse
+
+        # First check if report exists and user has access
+        report = db.query(ReportORM).filter(ReportORM.id == report_id).first()
+        if not report:
+            return None
+
+        if not check_patient_access(db, user_id, user_role, report.patient_id):
+            return None
+
+        # Fetch all activities from MongoDB, sorted by timestamp (newest first)
+        cursor = mongo_db.report_activities.find(
+            {"report_id": report_id}
+        ).sort("timestamp", -1)
+
+        activities_raw = await cursor.to_list(length=None)
+
+        # Convert to ActivityEvent models
+        activities = [
+            ActivityEvent(
+                activity_type=act["activity_type"],
+                user_id=act["user_id"],
+                user_role=act["user_role"],
+                status=act["status"],
+                timestamp=act["timestamp"],
+                metadata=act.get("metadata"),
+                error_message=act.get("error_message"),
+            )
+            for act in activities_raw
+        ]
+
+        # Calculate summary counts
+        upload_count = sum(1 for a in activities if a.activity_type == "upload")
+        analysis_count = sum(1 for a in activities if a.activity_type == "analysis")
+        extraction_count = sum(1 for a in activities if a.activity_type == "extraction")
+        explanation_count = sum(1 for a in activities if a.activity_type == "explanation_request")
+        download_count = sum(1 for a in activities if a.activity_type == "download")
+
+        return ReportActivityResponse(
+            report_id=report_id,
+            patient_id=report.patient_id,
+            total_activities=len(activities),
+            activities=activities,
+            upload_count=upload_count,
+            analysis_count=analysis_count,
+            extraction_count=extraction_count,
+            explanation_count=explanation_count,
+            download_count=download_count,
+        ).model_dump()
 
 
 report_service = ReportService()

@@ -4,7 +4,6 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from src.notifications.models import (
@@ -55,12 +54,12 @@ def get_notifications(
     query = db.query(NotificationORM).filter(NotificationORM.user_id == user_id)
 
     if unread_only:
-        query = query.filter(NotificationORM.is_read == False)
+        query = query.filter(not NotificationORM.is_read)
 
     total = query.count()
     unread_count = db.query(NotificationORM).filter(
         NotificationORM.user_id == user_id,
-        NotificationORM.is_read == False
+        not NotificationORM.is_read
     ).count()
 
     offset = (page - 1) * limit
@@ -79,7 +78,7 @@ def get_unread_count(db: Session, user_id: str) -> UnreadCountResponse:
     """Get unread notification count for badge."""
     count = db.query(NotificationORM).filter(
         NotificationORM.user_id == user_id,
-        NotificationORM.is_read == False
+        not NotificationORM.is_read
     ).count()
 
     return UnreadCountResponse(count=count)
@@ -104,7 +103,7 @@ def mark_all_as_read(db: Session, user_id: str) -> int:
     """Mark all notifications as read. Returns count updated."""
     result = db.query(NotificationORM).filter(
         NotificationORM.user_id == user_id,
-        NotificationORM.is_read == False
+        not NotificationORM.is_read
     ).update({"is_read": True})
 
     db.commit()

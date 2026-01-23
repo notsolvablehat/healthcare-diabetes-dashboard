@@ -108,15 +108,15 @@ def register_user(db: Session, request: models.RegisterUserRequest) -> models.To
         db.add(create_user_model)
         db.commit()
         db.refresh(create_user_model)
-        
+
         # Create access token for the newly registered user
         token = create_access_token(
-            create_user_model.email, 
-            create_user_model.id, 
-            create_user_model.role, 
+            create_user_model.email,
+            create_user_model.id,
+            create_user_model.role,
             timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MIN)
         )
-        
+
         return models.Token(
             access_token=token,
             token_type="bearer",
@@ -146,7 +146,7 @@ def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
 
     token = create_access_token(user.email, user.id, user.role, timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MIN)) # type: ignore
     return models.Token(
-        access_token=token, 
+        access_token=token,
         token_type="bearer",
         role=user.role,  # type: ignore
         is_onboarded=user.is_onboarded  # type: ignore

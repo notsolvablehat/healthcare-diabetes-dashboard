@@ -10,12 +10,16 @@ from src.schemas.users.users import Assignment, Doctor, Patient, User
 from src.users.services import get_user
 
 from .models import (
+    DoctorHistoryEntry,
     DoctorSummary,
     MyDoctors,
     MyPatients,
     PatientAssignRequest,
+    PatientDetailResponse,
+    PatientHistoryEntry,
     PatientSummary,
     RevokeAccessRequest,
+    Specialities,
 )
 
 
@@ -25,22 +29,55 @@ def get_patients(user_id: str, db: DbSession) -> MyPatients:
     if str(user.role) != "doctor":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to access patient records.")
 
+    # Get active patients
     stmt = select(User, Patient).join(User, Patient.user_id == User.id).join(Assignment, Assignment.patient_user_id == Patient.user_id).filter(Assignment.doctor_user_id == user.id, Assignment.is_active)
     results = db.execute(stmt).all()
 
     patient_list = []
     for user_row, patient_row in results:
-        patient_list.append(PatientSummary(user_id=user_id, patient_id=patient_row.patient_id, name=user_row.name, email=user_row.email, gender=patient_row.gender, date_of_birth=patient_row.date_of_birth))
+        patient_list.append(PatientSummary(user_id=user_row.id, patient_id=patient_row.patient_id, name=user_row.name, email=user_row.email, gender=patient_row.gender, date_of_birth=patient_row.date_of_birth))
+
+    # Get historical (revoked) patients
+    history_stmt = (
+        select(User, Patient, Assignment)
+        .join(User, Patient.user_id == User.id)
+        .join(Assignment, Assignment.patient_user_id == Patient.user_id)
+        .filter(
+            Assignment.doctor_user_id == user.id,
+            not Assignment.is_active
+        )
+        .order_by(Assignment.revoked_at.desc())
+    )
+
+    history_results = db.execute(history_stmt).all()
+
+    history_list = []
+    for user_row, patient_row, assignment_row in history_results:
+        history_list.append(
+            PatientHistoryEntry(
+                user_id=user_row.id,
+                patient_id=patient_row.patient_id,
+                name=user_row.name,
+                email=user_row.email,
+                gender=patient_row.gender,
+                date_of_birth=patient_row.date_of_birth,
+                assigned_at=assignment_row.assigned_at,
+                revoked_at=assignment_row.revoked_at,
+                reason=None  # Reason is not stored in the database yet
+            )
+        )
 
     return MyPatients(
             doctor_id=user.id,
             count=len(patient_list),
-            patients=patient_list
+            patients=patient_list,
+            history=history_list
         )
 
 def get_doctors(user_id: str, db: DbSession) -> MyDoctors:
     user = get_user(db, user_id)
 
+    # Get active doctors
     stmt = (
         select(User, Doctor)
         .join(User, Doctor.user_id == User.id)
@@ -66,10 +103,41 @@ def get_doctors(user_id: str, db: DbSession) -> MyDoctors:
             )
         )
 
+    # Get historical (revoked) doctors
+    history_stmt = (
+        select(User, Doctor, Assignment)
+        .join(User, Doctor.user_id == User.id)
+        .join(Assignment, Assignment.doctor_user_id == Doctor.user_id)
+        .filter(
+            Assignment.patient_user_id == user.id,
+            not Assignment.is_active
+        )
+        .order_by(Assignment.revoked_at.desc())
+    )
+
+    history_results = db.execute(history_stmt).all()
+
+    history_list = []
+    for user_row, doctor_row, assignment_row in history_results:
+        history_list.append(
+            DoctorHistoryEntry(
+                user_id=user_row.id,
+                doctor_id=doctor_row.doctor_id,
+                name=user_row.name,
+                email=user_row.email,
+                specialisation=doctor_row.specialisation,
+                department=getattr(doctor_row, "department", "N/A"),
+                assigned_at=assignment_row.assigned_at,
+                revoked_at=assignment_row.revoked_at,
+                reason=None  # Reason is not stored in the database yet
+            )
+        )
+
     return MyDoctors(
         patient_id=user.id,
         count=len(doctor_list),
-        doctors=doctor_list
+        doctors=doctor_list,
+        history=history_list
     )
 
 def assign_patient(db: DbSession, user_id: str, request_data: PatientAssignRequest):
@@ -145,11 +213,11 @@ def assign_patient(db: DbSession, user_id: str, request_data: PatientAssignReque
 
         # Notify patient
         from src.notifications.services import notify_doctor_assigned
-        
+
         # Get doctor name
         doctor_user = db.query(User).filter(User.id == best_doctor.user_id).first()
         doctor_name = doctor_user.name if doctor_user else "Doctor"
-        
+
         notify_doctor_assigned(db, patient_user.id, doctor_name, best_doctor.specialisation)
 
         return {
@@ -204,3 +272,65 @@ def revoke_patient_access(db: DbSession, requester_id: str, request_data: Revoke
         "status": "success",
         "message": f"Access revoked for patient {request_data.patient_email}."
     })
+
+def get_specialities(db: DbSession) -> Specialities:
+    """
+    Fetch all unique specializations available from doctors in the system.
+    """
+    stmt = select(Doctor.specialisation).distinct().order_by(Doctor.specialisation)
+    results = db.scalars(stmt).all()
+
+    specialities_list = [spec for spec in results if spec]  # Filter out None values
+
+    return Specialities(
+        count=len(specialities_list),
+        specialities=specialities_list
+    )
+
+def get_patient_by_email(db: DbSession, doctor_user_id: str, patient_email: str) -> PatientDetailResponse | None:
+    """
+    Get complete patient information by email if patient is assigned to the doctor.
+    Returns None if patient not found or not assigned to the requesting doctor.
+    """
+    # Find patient by email
+    stmt = select(User, Patient).join(Patient, User.id == Patient.user_id).filter(User.email == patient_email)
+    result = db.execute(stmt).first()
+
+    if not result:
+        return None
+
+    user_row, patient_row = result
+
+    # Check if patient is assigned to this doctor
+    assignment_stmt = select(Assignment).filter(
+        Assignment.doctor_user_id == doctor_user_id,
+        Assignment.patient_user_id == user_row.id,
+        Assignment.is_active
+    )
+    assignment = db.scalars(assignment_stmt).first()
+
+    if not assignment:
+        return None
+
+    # Build response with complete patient data
+    return PatientDetailResponse(
+        user_id=user_row.id,
+        patient_id=patient_row.patient_id,
+        name=user_row.name,
+        email=user_row.email,
+        username=user_row.username,
+        is_onboarded=user_row.is_onboarded,
+        created_at=user_row.created_at,
+        date_of_birth=patient_row.date_of_birth,
+        gender=patient_row.gender,
+        phone_number=patient_row.phone_number,
+        address=patient_row.address,
+        blood_group=patient_row.blood_group,
+        height_cm=patient_row.height_cm,
+        weight_kg=patient_row.weight_kg,
+        allergies=patient_row.allergies,
+        current_medications=patient_row.current_medications,
+        medical_history=patient_row.medical_history,
+        emergency_contact_name=patient_row.emergency_contact_name,
+        emergency_contact_phone=patient_row.emergency_contact_phone
+    )

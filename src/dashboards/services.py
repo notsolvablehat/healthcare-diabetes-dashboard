@@ -13,7 +13,6 @@ from src.dashboards.models import (
     BloodPressureReading,
     CasesSummary,
     CaseSummaryItem,
-    CaseWithPatient,
     DoctorDashboardResponse,
     DoctorSummaryItem,
     DoctorUserInfo,
@@ -22,7 +21,6 @@ from src.dashboards.models import (
     PaginationInfo,
     PatientDashboardResponse,
     PatientStats,
-    PatientSummaryItem,
     PatientUserInfo,
     PendingApprovalItem,
     ReportsSummary,
@@ -32,7 +30,7 @@ from src.dashboards.models import (
 from src.notifications.services import get_unread_count
 from src.schemas.cases import Case as CaseORM
 from src.schemas.reports import Report as ReportORM
-from src.schemas.users.users import Assignment, Doctor, Patient, User
+from src.schemas.users.users import Assignment, Doctor, User
 
 
 def _calculate_pagination(total: int, page: int, limit: int) -> PaginationInfo:
@@ -76,7 +74,7 @@ async def get_patient_dashboard(
         .join(Assignment, Assignment.doctor_user_id == Doctor.user_id)
         .filter(
             Assignment.patient_user_id == user_id,
-            Assignment.is_active == True
+            Assignment.is_active
         )
     )
     doctor_results = db.execute(stmt).all()
@@ -99,7 +97,7 @@ async def get_patient_dashboard(
         CaseORM.status, func.count(CaseORM.id)
     ).filter(CaseORM.patient_id == user_id).group_by(CaseORM.status).all()
 
-    status_map = {status: count for status, count in status_counts}
+    status_map = dict(status_counts)
 
     # Paginated cases
     cases_offset = (cases_page - 1) * cases_limit
@@ -193,7 +191,7 @@ async def get_doctor_dashboard(
     # Get patient stats
     active_patients = db.query(Assignment).filter(
         Assignment.doctor_user_id == user_id,
-        Assignment.is_active == True
+        Assignment.is_active
     ).count()
 
     max_patients = doctor.max_patients or 10
@@ -218,7 +216,7 @@ async def get_doctor_dashboard(
         CaseORM.status, func.count(CaseORM.id)
     ).filter(CaseORM.doctor_id == user_id).group_by(CaseORM.status).all()
 
-    status_map = {status: count for status, count in status_counts}
+    status_map = dict(status_counts)
 
     # Paginated cases
     cases_offset = (cases_page - 1) * cases_limit

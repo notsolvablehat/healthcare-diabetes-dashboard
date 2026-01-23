@@ -45,16 +45,47 @@ async def extract_report(
     db: DbSession,
     supabase: SupabaseClient,
     mongo_db: MongoDb,
+    analyze_again: bool = False,
 ):
     """
     Extract complete medical data from a report.
     Extracts all text, patient info, lab results, diagnoses, medications,
     and stores in MongoDB for later use in chat context.
+
+    Parameters:
+    - analyze_again: If True, performs extraction even if already extracted.
+                     If False (default), returns existing extraction if available.
     """
-    logger.info(f"[AI] extract_report called | report_id={report_id} | user={user.user_id}")
+    logger.info(f"[AI] extract_report called | report_id={report_id} | user={user.user_id} | analyze_again={analyze_again}")
 
     if not user or not user.user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+
+    # Check if already extracted (unless analyze_again is True)
+    if not analyze_again:
+        from bson import ObjectId
+
+        from src.schemas.reports import Report as ReportORM
+
+        report = db.query(ReportORM).filter(ReportORM.id == report_id).first()
+        if report and report.mongo_analysis_id:
+            # Fetch existing extraction
+            existing = await mongo_db.report_analysis.find_one(
+                {"_id": ObjectId(report.mongo_analysis_id)}
+            )
+            if existing and existing.get("extracted_data"):
+                # Return existing extraction
+                logger.info(f"[AI] Returning existing extraction | report_id={report_id}")
+                from src.ai.models import ReportExtraction
+                return ExtractReportResponse(
+                    report_id=report_id,
+                    status="completed",
+                    extracted_data=ReportExtraction(**existing.get("extracted_data", {})),
+                    raw_text=existing.get("raw_text", ""),
+                    mongo_analysis_id=str(existing["_id"]),
+                    processing_time_ms=existing.get("processing_time_ms", 0),
+                    extracted_at=existing.get("created_at"),
+                )
 
     result = await extraction_service.extract_report(
         report_id=report_id,
@@ -265,14 +296,45 @@ async def analyze_report(
     db: DbSession,
     supabase: SupabaseClient,
     mongo_db: MongoDb,
+    analyze_again: bool = False,
 ):
     """
     Analyze a single uploaded report (PDF/Image) - Legacy diabetes prediction.
+
+    Parameters:
+    - analyze_again: If True, performs analysis even if already analyzed.
+                     If False (default), returns existing analysis if available.
     """
-    logger.info(f"[AI] analyze_report called | report_id={report_id} | user={user.user_id}")
+    logger.info(f"[AI] analyze_report called | report_id={report_id} | user={user.user_id} | analyze_again={analyze_again}")
 
     if not user or not user.role or not user.user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+
+    # Check if already analyzed (unless analyze_again is True)
+    if not analyze_again:
+        from bson import ObjectId
+
+        from src.schemas.reports import Report as ReportORM
+
+        report = db.query(ReportORM).filter(ReportORM.id == report_id).first()
+        if report and report.mongo_analysis_id:
+            # Fetch existing analysis
+            existing = await mongo_db.report_analysis.find_one(
+                {"_id": ObjectId(report.mongo_analysis_id)}
+            )
+            if existing and existing.get("prediction"):
+                # Return existing diabetes analysis
+                logger.info(f"[AI] Returning existing analysis | report_id={report_id}")
+                from src.ai.models import ExtractedFeatures, PredictionResult
+                return AnalyzeReportResponse(
+                    report_id=report_id,
+                    status="completed",
+                    extracted_features=ExtractedFeatures(**existing.get("extracted_features", {})),
+                    prediction=PredictionResult(**existing.get("prediction", {})),
+                    narrative=existing.get("narrative", ""),
+                    mongo_analysis_id=str(existing["_id"]),
+                    analyzed_at=existing.get("created_at"),
+                )
 
     result = await ai_service.analyze_report(
         report_id=report_id,

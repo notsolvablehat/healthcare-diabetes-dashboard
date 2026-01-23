@@ -87,7 +87,7 @@ async def extract_report_data(
 
     # First, extract raw text
     raw_text_response = await client.aio.models.generate_content(
-        model="gemini-2.5-pro",
+        model="gemini-2.5-flash",
         contents=[
             "Extract ALL text from this document verbatim. Include every word, number, and label you can see:",
             file_part

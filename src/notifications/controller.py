@@ -7,7 +7,12 @@ from src.auth.services import CurrentUser
 from src.database.core import DbSession
 
 from .models import NotificationListResponse, UnreadCountResponse
-from .services import get_notifications, get_unread_count, mark_all_as_read, mark_as_read
+from .services import (
+    get_notifications,
+    get_unread_count,
+    mark_all_as_read,
+    mark_as_read,
+)
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 

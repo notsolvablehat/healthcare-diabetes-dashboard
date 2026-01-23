@@ -137,6 +137,23 @@ class AIService:
             logger.info(f"[Service] Features extracted | HbA1c={features.HbA1c_level} | glucose={features.blood_glucose_level} | bmi={features.bmi}")
         except Exception as e:
             logger.error(f"[Service] Feature extraction failed | error={str(e)}")
+
+            # Log failed activity
+            try:
+                from src.reports.services import report_service
+                await report_service.log_activity(
+                    mongo_db=mongo_db,
+                    report_id=report_id,
+                    patient_id=report.patient_id,
+                    user_id=user_id,
+                    user_role=user_role,
+                    activity_type="analysis",
+                    status="failed",
+                    error_message=str(e),
+                )
+            except Exception as log_error:
+                logger.warning(f"[Service] Failed to log error activity | error={log_error}")
+
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=f"Feature extraction failed: {str(e)}"
@@ -161,6 +178,7 @@ class AIService:
         logger.info("[Service] Step 6: Saving analysis to MongoDB")
         analysis_doc = AnalysisDocument(
             report_id=report_id,
+            patient_id=report.patient_id,
             raw_text=features.raw_text,
             extracted_features=features.model_dump(exclude={"raw_text"}),
             prediction=prediction.model_dump(),
@@ -179,6 +197,29 @@ class AIService:
         report.mongo_analysis_id = mongo_analysis_id
         db.commit()
         logger.info(f"[Service] Postgres updated | report.mongo_analysis_id={mongo_analysis_id}")
+
+        # 8. Log activity to MongoDB
+        logger.debug("[Service] Step 8: Logging analysis activity")
+        try:
+            from src.reports.services import report_service
+            await report_service.log_activity(
+                mongo_db=mongo_db,
+                report_id=report_id,
+                patient_id=report.patient_id,
+                user_id=user_id,
+                user_role=user_role,
+                activity_type="analysis",
+                status="completed",
+                metadata={
+                    "prediction_label": prediction.label,
+                    "confidence": prediction.confidence,
+                    "HbA1c_level": features.HbA1c_level,
+                    "blood_glucose_level": features.blood_glucose_level,
+                    "bmi": features.bmi,
+                },
+            )
+        except Exception as e:
+            logger.warning(f"[Service] Failed to log activity | error={e}")
 
         # Notify patient
         from src.notifications.services import notify_report_analyzed
@@ -546,6 +587,28 @@ class ExtractionService:
         report.mongo_analysis_id = mongo_id
         db.commit()
 
+        # Log activity
+        try:
+            from src.reports.services import report_service
+            await report_service.log_activity(
+                mongo_db=mongo_db,
+                report_id=report_id,
+                patient_id=report.patient_id,
+                user_id=user_id,
+                user_role=user_role,
+                activity_type="extraction",
+                status="completed",
+                metadata={
+                    "report_type": extracted_data.report_type,
+                    "lab_results_count": len(extracted_data.lab_results),
+                    "medications_count": len(extracted_data.medications),
+                    "diagnoses_count": len(extracted_data.diagnoses),
+                    "processing_time_ms": processing_time,
+                },
+            )
+        except Exception as e:
+            logger.warning(f"[Extraction] Failed to log activity | error={e}")
+
         logger.info(f"[Extraction] COMPLETE | report_id={report_id} | time={processing_time}ms")
 
         return ExtractReportResponse(
@@ -608,13 +671,70 @@ class ExtractionService:
                 report.mongo_analysis_id = mongo_id
                 db.commit()
 
+            # Log activity
+            try:
+                from src.reports.services import report_service
+                # Use system user for background tasks
+                await report_service.log_activity(
+                    mongo_db=mongo_db,
+                    report_id=report_id,
+                    patient_id=patient_id,
+                    user_id="system",
+                    user_role="system",
+                    activity_type="extraction",
+                    status="completed",
+                    metadata={
+                        "report_type": extracted_data.report_type,
+                        "lab_results_count": len(extracted_data.lab_results),
+                        "medications_count": len(extracted_data.medications),
+                        "diagnoses_count": len(extracted_data.diagnoses),
+                        "processing_time_ms": processing_time,
+                        "triggered_by": "upload_confirmation",
+                    },
+                )
+            except Exception as e:
+                logger.warning(f"[Background Extraction] Failed to log activity | error={e}")
+
+            logger.info(f"[Background Extraction] COMPLETE | report_id={report_id} | time={processing_time}ms")
+
+        except Exception as e:
+            logger.error(f"[Background Extraction] FAILED | report_id={report_id} | error={e}")
+
+            # Log failed activity
+            try:
+                from src.reports.services import report_service
+                await report_service.log_activity(
+                    mongo_db=mongo_db,
+                    report_id=report_id,
+                    patient_id=patient_id,
+                    user_id="system",
+                    user_role="system",
+                    activity_type="extraction",
+                    status="failed",
+                    error_message=str(e),
+                    metadata={
+                        "triggered_by": "upload_confirmation",
+                    },
+                )
+            except Exception as log_error:
+                logger.warning(f"[Background Extraction] Failed to log error activity | error={log_error}")
+
+            result = await mongo_db.report_analysis.insert_one(doc.model_dump())
+            mongo_id = str(result.inserted_id)
+
+            # Update Postgres
+            report = db.query(ReportORM).filter(ReportORM.id == report_id).first()
+            if report:
+                report.mongo_analysis_id = mongo_id
+                db.commit()
+
                 # Notify patient
                 from src.notifications.services import notify_report_analyzed
                 notify_report_analyzed(db, str(report.patient_id), report.id, report.file_name)
 
             logger.info(f"[Background Extraction] COMPLETE | report_id={report_id} | time={processing_time}ms")
 
-        except Exception as e:
+        except Exception as e: # type: ignore
             logger.error(f"[Background Extraction] FAILED | report_id={report_id} | error={e}")
             # Save error status
             try:
