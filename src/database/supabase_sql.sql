@@ -125,12 +125,26 @@ BEFORE UPDATE ON appointments
 FOR EACH ROW
 EXECUTE FUNCTION update_appointments_updated_at();
 
--- Note: Indexes commented out for low data volume (avoid slowing inserts/updates)
--- Uncomment these if appointments grow large or queries slow down:
--- CREATE INDEX idx_appointments_doctor_user ON appointments(doctor_user_id);
--- CREATE INDEX idx_appointments_patient_user ON appointments(patient_user_id);
--- CREATE INDEX idx_appointments_start_time ON appointments(start_time);
--- CREATE INDEX idx_appointments_status ON appointments(status);
--- CREATE INDEX idx_appointments_doctor_time ON appointments(doctor_user_id, start_time);
--- CREATE INDEX idx_appointments_patient_time ON appointments(patient_user_id, start_time);
--- CREATE INDEX idx_appointments_status_time ON appointments(status, start_time);
+CREATE TABLE personal_documents (
+    id VARCHAR PRIMARY KEY,
+    user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    file_name VARCHAR NOT NULL,
+    file_type VARCHAR NOT NULL,
+    category VARCHAR NOT NULL,
+    storage_path VARCHAR NOT NULL,
+    file_size_bytes INTEGER,
+    description VARCHAR,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE shared_links (
+    id VARCHAR PRIMARY KEY,
+    token VARCHAR UNIQUE NOT NULL,
+    user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    resource_type VARCHAR NOT NULL CHECK (resource_type IN ('report', 'document')),
+    resource_id VARCHAR NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
+    views INTEGER DEFAULT 0 NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

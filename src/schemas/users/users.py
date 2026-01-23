@@ -173,12 +173,53 @@ class Appointment(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    # Indexes for common queries
-    __table_args__ = (
-        Index('idx_appointments_doctor_time', 'doctor_user_id', 'start_time'),
-        Index('idx_appointments_patient_time', 'patient_user_id', 'start_time'),
-        Index('idx_appointments_status_time', 'status', 'start_time'),
-    )
-
     def __repr__(self):
         return f"<Appointment(id={self.id}, doctor={self.doctor_user_id}, patient={self.patient_user_id}, status={self.status})>"
+
+
+class PersonalDocument(Base):
+    __tablename__ = "personal_documents"
+
+    id = Column(String, primary_key=True)
+
+    # Foreign Key
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # Document details
+    file_name = Column(String, nullable=False)
+    file_type = Column(String, nullable=False)  # pdf or image
+    category = Column(String, nullable=False, index=True)  # insurance, identity, bill, prescription, other
+    storage_path = Column(String, nullable=False)
+    file_size_bytes = Column(Integer, nullable=True)
+    description = Column(String, nullable=True)
+
+    # Audit trail
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    def __repr__(self):
+        return f"<PersonalDocument(id={self.id}, user={self.user_id}, category={self.category})>"
+
+
+class SharedLink(Base):
+    __tablename__ = "shared_links"
+
+    id = Column(String, primary_key=True)
+    token = Column(String, unique=True, nullable=False, index=True)
+
+    # Owner
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # Resource being shared
+    resource_type = Column(String, nullable=False)  # report or document
+    resource_id = Column(String, nullable=False, index=True)
+
+    # Access control
+    expires_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    is_active = Column(Boolean, default=True, nullable=False, index=True)
+
+    # Tracking
+    views = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    def __repr__(self):
+        return f"<SharedLink(id={self.id}, token={self.token}, resource={self.resource_type}:{self.resource_id})>"
