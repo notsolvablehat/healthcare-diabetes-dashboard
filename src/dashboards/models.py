@@ -181,3 +181,84 @@ class DoctorDashboardResponse(BaseModel):
     alerts: list[AlertItem] = Field(default_factory=list)
     ai_stats: AIStats
     notifications_unread: int = 0
+
+
+# ============================================================================
+# Diabetes Dashboard Models
+# ============================================================================
+
+class DiabetesPrediction(BaseModel):
+    """Single diabetes prediction from AI analysis."""
+    analysis_id: str
+    report_id: str
+    report_name: str | None = None
+    prediction_label: str  # "diabetes" or "no_diabetes"
+    confidence: float
+    analyzed_at: datetime
+
+
+class HbA1cReading(BaseModel):
+    """HbA1c reading extracted from reports."""
+    date: date
+    value: float  # percentage
+    report_id: str | None = None
+    status: str | None = None  # "Normal", "Pre-diabetic", "Diabetic"
+
+
+class FastingGlucoseReading(BaseModel):
+    """Fasting glucose reading extracted from reports."""
+    date: date
+    value: float  # mg/dL
+    report_id: str | None = None
+    status: str | None = None  # "Normal", "High", "Low"
+
+
+class BMIReading(BaseModel):
+    """BMI reading extracted from reports."""
+    date: date
+    value: float
+    report_id: str | None = None
+    category: str | None = None  # "Underweight", "Normal", "Overweight", "Obese"
+
+
+class DiabetesRiskFactor(BaseModel):
+    """Risk factor identified from analyses."""
+    factor: str
+    severity: str  # "low", "medium", "high"
+    description: str | None = None
+
+
+class DiabetesTrends(BaseModel):
+    """Aggregated trends for diabetes monitoring."""
+    hba1c_readings: list[HbA1cReading] = Field(default_factory=list)
+    fasting_glucose: list[FastingGlucoseReading] = Field(default_factory=list)
+    bmi_history: list[BMIReading] = Field(default_factory=list)
+
+
+class DiabetesDashboardResponse(BaseModel):
+    """Complete diabetes dashboard response."""
+    has_diabetes_data: bool = False
+    diabetes_status: str | None = None  # "diabetic", "pre-diabetic", "at-risk", None
+    
+    # Latest prediction
+    latest_prediction: DiabetesPrediction | None = None
+    
+    # All predictions history
+    prediction_history: list[DiabetesPrediction] = Field(default_factory=list)
+    
+    # Trends from extracted data
+    trends: DiabetesTrends = Field(default_factory=DiabetesTrends)
+    
+    # Risk factors
+    risk_factors: list[DiabetesRiskFactor] = Field(default_factory=list)
+    
+    # AI recommendations
+    recommendations: list[str] = Field(default_factory=list)
+    
+    # Summary stats
+    total_analyses: int = 0
+    diabetic_predictions_count: int = 0
+    average_confidence: float | None = None
+    
+    # Message for empty state
+    message: str | None = None

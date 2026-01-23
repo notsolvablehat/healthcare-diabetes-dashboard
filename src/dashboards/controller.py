@@ -7,8 +7,8 @@ from src.auth.services import CurrentUser
 from src.database.core import DbSession
 from src.database.mongo import MongoDb
 
-from .models import DoctorDashboardResponse, PatientDashboardResponse
-from .services import get_doctor_dashboard, get_patient_dashboard
+from .models import DiabetesDashboardResponse, DoctorDashboardResponse, PatientDashboardResponse
+from .services import get_diabetes_dashboard, get_doctor_dashboard, get_patient_dashboard
 
 router = APIRouter(tags=["dashboards"])
 
@@ -97,6 +97,120 @@ async def doctor_dashboard(
             user_id=user.user_id,
             cases_page=cases_page,
             cases_limit=cases_limit,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        ) from e
+
+
+# ============================================================================
+# Diabetes Dashboard Endpoints
+# ============================================================================
+
+@router.get("/patient/diabetes-dashboard", response_model=DiabetesDashboardResponse)
+async def patient_diabetes_dashboard(
+    user: CurrentUser,
+    db: DbSession,
+    mongo_db: MongoDb,
+):
+    """
+    Get diabetes-specific dashboard for the authenticated patient.
+    
+    Returns diabetes-related data including:
+    - Diabetes status (diabetic, at-risk, monitoring)
+    - Latest and historical AI predictions
+    - HbA1c trends over time
+    - Fasting glucose readings
+    - BMI history
+    - Risk factors assessment
+    - Personalized recommendations
+    
+    Access is granted if:
+    - Patient has "diabetes" in their medical history, OR
+    - Any AI analysis has predicted diabetes for this patient
+    
+    Returns empty response with message if no diabetes data exists.
+    """
+    if not user or not user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+
+    if user.role != "patient":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint is only accessible to patients"
+        )
+
+    try:
+        return await get_diabetes_dashboard(
+            db=db,
+            mongo_db=mongo_db,
+            patient_id=user.user_id,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        ) from e
+
+
+@router.get("/patient/{patient_id}/diabetes-dashboard", response_model=DiabetesDashboardResponse)
+async def doctor_view_patient_diabetes_dashboard(
+    patient_id: str,
+    user: CurrentUser,
+    db: DbSession,
+    mongo_db: MongoDb,
+):
+    """
+    Get diabetes-specific dashboard for a specific patient (doctor access).
+    
+    Allows doctors to view diabetes data for their assigned patients.
+    
+    Returns diabetes-related data including:
+    - Diabetes status (diabetic, at-risk, monitoring)
+    - Latest and historical AI predictions
+    - HbA1c trends over time
+    - Fasting glucose readings
+    - BMI history
+    - Risk factors assessment
+    - Personalized recommendations
+    
+    Access requirements:
+    - User must be a doctor
+    - Patient must be assigned to this doctor
+    
+    Returns empty response with message if no diabetes data exists.
+    """
+    from src.assignments.services import is_patient_assigned_to_doctor
+    
+    if not user or not user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+
+    if user.role != "doctor":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint is only accessible to doctors"
+        )
+
+    # Verify patient is assigned to this doctor
+    if not is_patient_assigned_to_doctor(db, patient_id=patient_id, doctor_id=user.user_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Patient is not assigned to you"
+        )
+
+    try:
+        return await get_diabetes_dashboard(
+            db=db,
+            mongo_db=mongo_db,
+            patient_id=patient_id,
         )
     except ValueError as e:
         raise HTTPException(

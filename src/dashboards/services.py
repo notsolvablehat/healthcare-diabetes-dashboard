@@ -11,12 +11,19 @@ from src.dashboards.models import (
     AIStats,
     AlertItem,
     BloodPressureReading,
+    BMIReading,
     CasesSummary,
     CaseSummaryItem,
+    DiabetesDashboardResponse,
+    DiabetesPrediction,
+    DiabetesRiskFactor,
+    DiabetesTrends,
     DoctorDashboardResponse,
     DoctorSummaryItem,
     DoctorUserInfo,
+    FastingGlucoseReading,
     GlucoseReading,
+    HbA1cReading,
     HealthCharts,
     PaginationInfo,
     PatientDashboardResponse,
@@ -413,3 +420,402 @@ async def _get_ai_stats(mongo_db: AsyncDatabase, user_id: str) -> AIStats:
         chat_count=chat_count,
         analyses_count=analyses_count
     )
+
+
+# ============================================================================
+# Diabetes Dashboard
+# ============================================================================
+
+async def get_diabetes_dashboard(
+    db: Session,
+    mongo_db: AsyncDatabase,
+    patient_id: str,
+) -> DiabetesDashboardResponse:
+    """
+    Get diabetes-specific dashboard data for a patient.
+    
+    Access is granted if:
+    - Patient has "diabetes" in their medical_history, OR
+    - Any AI analysis predicted diabetes for this patient
+    """
+    from datetime import date as date_type
+    
+    # Check if patient exists
+    user = db.query(User).filter(User.id == patient_id).first()
+    if not user:
+        raise ValueError("Patient not found")
+    
+    # Check medical history for diabetes
+    has_diabetes_in_history = False
+    if user.patient_profile and user.patient_profile.medical_history:
+        for condition in user.patient_profile.medical_history:
+            if "diabetes" in condition.lower():
+                has_diabetes_in_history = True
+                break
+    
+    # Fetch all diabetes analyses from MongoDB
+    analyses_collection = mongo_db["report_analysis"]
+    
+    # Get all analyses with predictions for this patient
+    cursor = analyses_collection.find({
+        "patient_id": patient_id,
+        "prediction": {"$exists": True, "$ne": None}
+    }).sort("created_at", -1)
+    
+    analyses = await cursor.to_list(length=100)
+    
+    # Check if any prediction indicates diabetes
+    has_diabetes_prediction = any(
+        a.get("prediction", {}).get("label") == "diabetes" 
+        for a in analyses
+    )
+    
+    # If neither condition met, return empty response
+    if not has_diabetes_in_history and not has_diabetes_prediction and len(analyses) == 0:
+        return DiabetesDashboardResponse(
+            has_diabetes_data=False,
+            message="No diabetic activity found. Upload medical reports for AI analysis to track diabetes indicators."
+        )
+    
+    # Build prediction history
+    prediction_history: list[DiabetesPrediction] = []
+    diabetic_count = 0
+    total_confidence = 0.0
+    
+    # Get report names for context
+    report_ids = [a.get("report_id") for a in analyses if a.get("report_id")]
+    reports_map = {}
+    if report_ids:
+        reports = db.query(ReportORM).filter(ReportORM.id.in_(report_ids)).all()
+        reports_map = {r.id: r.file_name for r in reports}
+    
+    for analysis in analyses:
+        prediction = analysis.get("prediction", {})
+        if prediction:
+            pred_label = prediction.get("label", "unknown")
+            pred_confidence = prediction.get("confidence", 0.0)
+            
+            prediction_history.append(DiabetesPrediction(
+                analysis_id=str(analysis["_id"]),
+                report_id=analysis.get("report_id", ""),
+                report_name=reports_map.get(analysis.get("report_id")),
+                prediction_label=pred_label,
+                confidence=pred_confidence,
+                analyzed_at=analysis.get("created_at", datetime.utcnow())
+            ))
+            
+            if pred_label == "diabetes":
+                diabetic_count += 1
+            total_confidence += pred_confidence
+    
+    # Latest prediction
+    latest_prediction = prediction_history[0] if prediction_history else None
+    
+    # Calculate average confidence
+    avg_confidence = total_confidence / len(prediction_history) if prediction_history else None
+    
+    # Determine diabetes status
+    diabetes_status = None
+    if has_diabetes_in_history:
+        diabetes_status = "diabetic"
+    elif diabetic_count > 0:
+        if diabetic_count == len(prediction_history):
+            diabetes_status = "diabetic"
+        else:
+            diabetes_status = "at-risk"
+    elif len(prediction_history) > 0:
+        diabetes_status = "monitoring"
+    
+    # Extract trends from analyses with extracted_data or extracted_features
+    hba1c_readings: list[HbA1cReading] = []
+    fasting_glucose_readings: list[FastingGlucoseReading] = []
+    bmi_readings: list[BMIReading] = []
+    
+    # Also check extraction analyses
+    extraction_cursor = analyses_collection.find({
+        "patient_id": patient_id,
+        "extracted_data": {"$exists": True, "$ne": None}
+    }).sort("created_at", -1)
+    
+    extraction_analyses = await extraction_cursor.to_list(length=100)
+    
+    for analysis in extraction_analyses:
+        extracted = analysis.get("extracted_data", {})
+        analysis_date = analysis.get("created_at", datetime.utcnow())
+        report_id = analysis.get("report_id")
+        
+        if isinstance(analysis_date, datetime):
+            reading_date = analysis_date.date()
+        else:
+            reading_date = date_type.today()
+        
+        # Extract lab results
+        lab_results = extracted.get("lab_results", [])
+        for lab in lab_results:
+            test_name = lab.get("test_name", "").lower()
+            value_str = lab.get("value", "")
+            status = lab.get("status")
+            
+            try:
+                value = float(value_str.replace(",", "").split()[0])
+            except (ValueError, IndexError):
+                continue
+            
+            # HbA1c
+            if "hba1c" in test_name or "glycosylated" in test_name or "hemoglobin a1c" in test_name:
+                hba1c_status = None
+                if value < 5.7:
+                    hba1c_status = "Normal"
+                elif value < 6.5:
+                    hba1c_status = "Pre-diabetic"
+                else:
+                    hba1c_status = "Diabetic"
+                    
+                hba1c_readings.append(HbA1cReading(
+                    date=reading_date,
+                    value=value,
+                    report_id=report_id,
+                    status=hba1c_status
+                ))
+            
+            # Fasting glucose
+            elif "fasting" in test_name and ("glucose" in test_name or "sugar" in test_name or "blood" in test_name):
+                glucose_status = None
+                if value < 100:
+                    glucose_status = "Normal"
+                elif value < 126:
+                    glucose_status = "Pre-diabetic"
+                else:
+                    glucose_status = "Diabetic"
+                    
+                fasting_glucose_readings.append(FastingGlucoseReading(
+                    date=reading_date,
+                    value=value,
+                    report_id=report_id,
+                    status=glucose_status
+                ))
+        
+        # Extract vital signs for BMI
+        vital_signs = extracted.get("vital_signs", {})
+        bmi_str = vital_signs.get("bmi", "")
+        if bmi_str and bmi_str != "N/A":
+            try:
+                bmi_value = float(bmi_str.replace(",", "").split()[0])
+                bmi_category = None
+                if bmi_value < 18.5:
+                    bmi_category = "Underweight"
+                elif bmi_value < 25:
+                    bmi_category = "Normal"
+                elif bmi_value < 30:
+                    bmi_category = "Overweight"
+                else:
+                    bmi_category = "Obese"
+                    
+                bmi_readings.append(BMIReading(
+                    date=reading_date,
+                    value=bmi_value,
+                    report_id=report_id,
+                    category=bmi_category
+                ))
+            except (ValueError, IndexError):
+                pass
+    
+    # Also extract from diabetes analyses (extracted_features)
+    for analysis in analyses:
+        features = analysis.get("extracted_features", {})
+        analysis_date = analysis.get("created_at", datetime.utcnow())
+        report_id = analysis.get("report_id")
+        
+        if isinstance(analysis_date, datetime):
+            reading_date = analysis_date.date()
+        else:
+            reading_date = date_type.today()
+        
+        # HbA1c from features
+        hba1c = features.get("HbA1c_level")
+        if hba1c and hba1c > 0:
+            hba1c_status = None
+            if hba1c < 5.7:
+                hba1c_status = "Normal"
+            elif hba1c < 6.5:
+                hba1c_status = "Pre-diabetic"
+            else:
+                hba1c_status = "Diabetic"
+                
+            hba1c_readings.append(HbA1cReading(
+                date=reading_date,
+                value=hba1c,
+                report_id=report_id,
+                status=hba1c_status
+            ))
+        
+        # Blood glucose from features
+        glucose = features.get("blood_glucose_level")
+        if glucose and glucose > 0:
+            glucose_status = None
+            if glucose < 100:
+                glucose_status = "Normal"
+            elif glucose < 126:
+                glucose_status = "Pre-diabetic"
+            else:
+                glucose_status = "Diabetic"
+                
+            fasting_glucose_readings.append(FastingGlucoseReading(
+                date=reading_date,
+                value=glucose,
+                report_id=report_id,
+                status=glucose_status
+            ))
+        
+        # BMI from features
+        bmi = features.get("bmi")
+        if bmi and bmi > 0:
+            bmi_category = None
+            if bmi < 18.5:
+                bmi_category = "Underweight"
+            elif bmi < 25:
+                bmi_category = "Normal"
+            elif bmi < 30:
+                bmi_category = "Overweight"
+            else:
+                bmi_category = "Obese"
+                
+            bmi_readings.append(BMIReading(
+                date=reading_date,
+                value=bmi,
+                report_id=report_id,
+                category=bmi_category
+            ))
+    
+    # Remove duplicates and sort by date
+    hba1c_readings = sorted(
+        {(r.date, r.value): r for r in hba1c_readings}.values(),
+        key=lambda x: x.date,
+        reverse=True
+    )[:20]
+    
+    fasting_glucose_readings = sorted(
+        {(r.date, r.value): r for r in fasting_glucose_readings}.values(),
+        key=lambda x: x.date,
+        reverse=True
+    )[:20]
+    
+    bmi_readings = sorted(
+        {(r.date, r.value): r for r in bmi_readings}.values(),
+        key=lambda x: x.date,
+        reverse=True
+    )[:20]
+    
+    # Build risk factors
+    risk_factors: list[DiabetesRiskFactor] = []
+    
+    # Check latest BMI
+    if bmi_readings:
+        latest_bmi = bmi_readings[0]
+        if latest_bmi.value >= 30:
+            risk_factors.append(DiabetesRiskFactor(
+                factor="Obesity",
+                severity="high",
+                description=f"BMI of {latest_bmi.value:.1f} indicates obesity, a major risk factor for diabetes."
+            ))
+        elif latest_bmi.value >= 25:
+            risk_factors.append(DiabetesRiskFactor(
+                factor="Overweight",
+                severity="medium",
+                description=f"BMI of {latest_bmi.value:.1f} indicates overweight status."
+            ))
+    
+    # Check latest HbA1c
+    if hba1c_readings:
+        latest_hba1c = hba1c_readings[0]
+        if latest_hba1c.value >= 6.5:
+            risk_factors.append(DiabetesRiskFactor(
+                factor="Elevated HbA1c",
+                severity="high",
+                description=f"HbA1c of {latest_hba1c.value:.1f}% indicates diabetic range."
+            ))
+        elif latest_hba1c.value >= 5.7:
+            risk_factors.append(DiabetesRiskFactor(
+                factor="Pre-diabetic HbA1c",
+                severity="medium",
+                description=f"HbA1c of {latest_hba1c.value:.1f}% indicates pre-diabetic range."
+            ))
+    
+    # Check latest fasting glucose
+    if fasting_glucose_readings:
+        latest_glucose = fasting_glucose_readings[0]
+        if latest_glucose.value >= 126:
+            risk_factors.append(DiabetesRiskFactor(
+                factor="High Fasting Glucose",
+                severity="high",
+                description=f"Fasting glucose of {latest_glucose.value:.0f} mg/dL indicates diabetic range."
+            ))
+        elif latest_glucose.value >= 100:
+            risk_factors.append(DiabetesRiskFactor(
+                factor="Elevated Fasting Glucose",
+                severity="medium",
+                description=f"Fasting glucose of {latest_glucose.value:.0f} mg/dL indicates pre-diabetic range."
+            ))
+    
+    # Build recommendations based on status and risk factors
+    recommendations: list[str] = []
+    
+    if diabetes_status == "diabetic":
+        recommendations.extend([
+            "Monitor blood glucose levels daily",
+            "Follow your prescribed medication regimen",
+            "Maintain a balanced diet low in refined sugars",
+            "Exercise regularly - aim for 30 minutes of moderate activity daily",
+            "Schedule regular check-ups with your healthcare provider",
+            "Get HbA1c tested every 3 months"
+        ])
+    elif diabetes_status == "at-risk" or diabetes_status == "monitoring":
+        recommendations.extend([
+            "Monitor blood glucose levels regularly",
+            "Maintain a healthy weight through diet and exercise",
+            "Limit intake of processed foods and sugars",
+            "Stay physically active - 150 minutes of exercise per week",
+            "Get HbA1c tested every 6 months",
+            "Upload new reports regularly for AI monitoring"
+        ])
+    else:
+        recommendations.extend([
+            "Upload medical reports for diabetes screening",
+            "Maintain a healthy lifestyle",
+            "Get regular health check-ups"
+        ])
+    
+    return DiabetesDashboardResponse(
+        has_diabetes_data=True,
+        diabetes_status=diabetes_status,
+        latest_prediction=latest_prediction,
+        prediction_history=prediction_history,
+        trends=DiabetesTrends(
+            hba1c_readings=hba1c_readings,
+            fasting_glucose=fasting_glucose_readings,
+            bmi_history=bmi_readings
+        ),
+        risk_factors=risk_factors,
+        recommendations=recommendations,
+        total_analyses=len(prediction_history),
+        diabetic_predictions_count=diabetic_count,
+        average_confidence=avg_confidence
+    )
+
+
+def check_diabetes_access(db: Session, patient_id: str) -> bool:
+    """
+    Check if a patient has diabetes-related data.
+    Used to determine if diabetes dashboard should be accessible.
+    """
+    user = db.query(User).filter(User.id == patient_id).first()
+    if not user:
+        return False
+    
+    # Check medical history
+    if user.patient_profile and user.patient_profile.medical_history:
+        for condition in user.patient_profile.medical_history:
+            if "diabetes" in condition.lower():
+                return True
+    
+    return True  # Allow access for AI prediction check (done in service)

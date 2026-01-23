@@ -140,6 +140,28 @@ def get_doctors(user_id: str, db: DbSession) -> MyDoctors:
         history=history_list
     )
 
+
+def is_patient_assigned_to_doctor(db: DbSession, patient_id: str, doctor_id: str) -> bool:
+    """
+    Check if a patient is currently assigned to a specific doctor.
+    
+    Args:
+        db: Database session
+        patient_id: The user_id of the patient
+        doctor_id: The user_id of the doctor
+        
+    Returns:
+        True if the patient is actively assigned to the doctor, False otherwise
+    """
+    stmt = select(Assignment).filter(
+        Assignment.patient_user_id == patient_id,
+        Assignment.doctor_user_id == doctor_id,
+        Assignment.is_active == True
+    )
+    result = db.execute(stmt).first()
+    return result is not None
+
+
 def assign_patient(db: DbSession, user_id: str, request_data: PatientAssignRequest):
         user = get_user(db, user_id)
         if user.role not in ["doctor", "admin"]:
