@@ -10,6 +10,7 @@ from src.reports.models import (
     AnalysesListResponse,
     AnalysisDetailResponse,
     AnalysisStatusResponse,
+    AvailablePatientsResponse,
     DownloadUrlResponse,
     ExplanationRequest,
     ReportActivityResponse,
@@ -24,6 +25,25 @@ from src.reports.services import report_service
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+@router.get("/available-patients", response_model=AvailablePatientsResponse)
+def get_available_patients(
+    user: CurrentUser,
+    db: DbSession,
+):
+    """
+    Get list of patients that the doctor can upload reports for.
+    Only accessible by doctors.
+    Returns all active patient assignments.
+    """
+    if user.role != "doctor":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only doctors can access this endpoint. Patients can only upload reports for themselves."
+        )
+    
+    return report_service.get_available_patients(db=db, doctor_id=user.user_id)
 
 
 @router.get("", response_model=ReportListResponse)

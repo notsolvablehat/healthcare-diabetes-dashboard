@@ -7,13 +7,15 @@ from sqlalchemy.orm import Session
 from supabase import Client
 
 from src.reports.models import (
+    AvailablePatient,
+    AvailablePatientsResponse,
     FileType,
     ReportResponse,
     UploadUrlRequest,
     UploadUrlResponse,
 )
 from src.schemas.reports import Report as ReportORM
-from src.schemas.users.users import Assignment
+from src.schemas.users.users import Assignment, Patient, User
 
 # Bucket name for medical reports
 BUCKET_NAME = "medical-reports"
@@ -59,6 +61,43 @@ def check_patient_access(db: Session, user_id: str, user_role: str, patient_id: 
 
 
 class ReportService:
+    def get_available_patients(self, db: Session, doctor_id: str) -> AvailablePatientsResponse:
+        """
+        Get list of patients that a doctor can upload reports for.
+        Returns only active assignments.
+        """
+        # Query for active patient assignments
+        stmt = (
+            select(User, Patient)
+            .join(Patient, Patient.user_id == User.id)
+            .join(Assignment, Assignment.patient_user_id == Patient.user_id)
+            .filter(
+                Assignment.doctor_user_id == doctor_id,
+                Assignment.is_active == True
+            )
+            .order_by(User.name)
+        )
+        
+        results = db.execute(stmt).all()
+        
+        patients = []
+        for user_row, patient_row in results:
+            patients.append(
+                AvailablePatient(
+                    user_id=user_row.id,
+                    patient_id=patient_row.patient_id,
+                    name=user_row.name,
+                    email=user_row.email,
+                    gender=patient_row.gender,
+                    date_of_birth=patient_row.date_of_birth,
+                )
+            )
+        
+        return AvailablePatientsResponse(
+            total=len(patients),
+            patients=patients,
+        )
+
     def generate_upload_url(
         self,
         supabase: Client,
@@ -76,7 +115,14 @@ class ReportService:
 
         # Access control check
         if not check_patient_access(db, user_id, user_role, request.patient_id):
-            raise PermissionError("You do not have access to upload reports for this patient.")
+            if user_role == "doctor":
+                raise PermissionError(
+                    f"You do not have access to upload reports for this patient. "
+                    f"The patient (ID: {request.patient_id}) is not assigned to you. "
+                    f"Please check your assigned patients using GET /reports/available-patients"
+                )
+            else:
+                raise PermissionError("You do not have access to upload reports for this patient.")
 
         # Generate unique storage path
         report_id = str(uuid.uuid4())

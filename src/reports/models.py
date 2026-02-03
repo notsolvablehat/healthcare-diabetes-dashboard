@@ -9,6 +9,22 @@ class FileType(str, Enum):
     IMAGE = "image"
 
 
+class AvailablePatient(BaseModel):
+    """Simplified patient info for report upload selection."""
+    user_id: str = Field(..., description="Patient's user ID")
+    patient_id: str = Field(..., description="Patient's medical ID")
+    name: str = Field(..., description="Patient's full name")
+    email: str = Field(..., description="Patient's email")
+    gender: str | None = Field(None, description="Patient's gender")
+    date_of_birth: datetime | None = Field(None, description="Patient's date of birth")
+
+
+class AvailablePatientsResponse(BaseModel):
+    """Response for listing patients available for report upload."""
+    total: int = Field(..., description="Total number of patients")
+    patients: list[AvailablePatient] = Field(..., description="List of patients the doctor can upload reports for")
+
+
 class UploadUrlRequest(BaseModel):
     """Request to generate a signed upload URL."""
     filename: str = Field(..., description="Original filename with extension")

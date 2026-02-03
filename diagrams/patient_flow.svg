@@ -1,0 +1,716 @@
+<svg id="graph-240" width="100%" xmlns="http://www.w3.org/2000/svg" class="flowchart" style="overflow: hidden; max-width: 100%; touch-action: none; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);" role="graphics-document document" aria-roledescription="flowchart-v2" height="100%" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events">
+  <g id="viewport-20260124055309602" class="svg-pan-zoom_viewport" transform="matrix(0.28472101027366115,0,0,0.28472101027366115,305.49886053377384,25.293745096183514)" style="transform: matrix(0.284721, 0, 0, 0.284721, 305.499, 25.2937);">
+    <style>#graph-240{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#graph-240 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#graph-240 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#graph-240 .error-icon{fill:#552222;}#graph-240 .error-text{fill:#552222;stroke:#552222;}#graph-240 .edge-thickness-normal{stroke-width:1px;}#graph-240 .edge-thickness-thick{stroke-width:3.5px;}#graph-240 .edge-pattern-solid{stroke-dasharray:0;}#graph-240 .edge-thickness-invisible{stroke-width:0;fill:none;}#graph-240 .edge-pattern-dashed{stroke-dasharray:3;}#graph-240 .edge-pattern-dotted{stroke-dasharray:2;}#graph-240 .marker{fill:#333333;stroke:#333333;}#graph-240 .marker.cross{stroke:#333333;}#graph-240 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#graph-240 p{margin:0;}#graph-240 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#graph-240 .cluster-label text{fill:#333;}#graph-240 .cluster-label span{color:#333;}#graph-240 .cluster-label span p{background-color:transparent;}#graph-240 .label text,#graph-240 span{fill:#333;color:#333;}#graph-240 .node rect,#graph-240 .node circle,#graph-240 .node ellipse,#graph-240 .node polygon,#graph-240 .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#graph-240 .rough-node .label text,#graph-240 .node .label text,#graph-240 .image-shape .label,#graph-240 .icon-shape .label{text-anchor:middle;}#graph-240 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#graph-240 .rough-node .label,#graph-240 .node .label,#graph-240 .image-shape .label,#graph-240 .icon-shape .label{text-align:center;}#graph-240 .node.clickable{cursor:pointer;}#graph-240 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#graph-240 .arrowheadPath{fill:#333333;}#graph-240 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#graph-240 .flowchart-link{stroke:#333333;fill:none;}#graph-240 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#graph-240 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#graph-240 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#graph-240 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#graph-240 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#graph-240 .cluster text{fill:#333;}#graph-240 .cluster span{color:#333;}#graph-240 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#graph-240 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#graph-240 rect.text{fill:none;stroke-width:0;}#graph-240 .icon-shape,#graph-240 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#graph-240 .icon-shape p,#graph-240 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#graph-240 .icon-shape rect,#graph-240 .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#graph-240 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#graph-240 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#graph-240 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style>
+    <g>
+    <marker id="graph-240_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;">
+      </path>
+    </marker>
+    <marker id="graph-240_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;">
+      </path>
+    </marker>
+    <marker id="graph-240_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+      <circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;">
+      </circle>
+    </marker>
+    <marker id="graph-240_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+      <circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;">
+      </circle>
+    </marker>
+    <marker id="graph-240_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+      <path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;">
+      </path>
+    </marker>
+    <marker id="graph-240_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+      <path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;">
+      </path>
+    </marker>
+    <g class="root">
+      <g class="clusters">
+      </g>
+      <g class="edgePaths">
+        <path d="M321.652,64.083L303.176,69.403C284.7,74.722,247.749,85.361,229.273,94.181C210.797,103,210.797,110,210.797,113.5L210.797,117" id="L_Start_Auth_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Start_Auth_0" data-points="W3sieCI6MzIxLjY1MjI0MDIxMDQ2OTYsInkiOjY0LjA4MzAxMzQxNjEwODUzfSx7IngiOjIxMC43OTY4NzUsInkiOjk2fSx7IngiOjIxMC43OTY4NzUsInkiOjEyMX1d" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M173.176,245.207L162.369,257.644C151.561,270.081,129.947,294.955,119.139,318.99C108.332,343.026,108.332,366.224,108.332,377.823L108.332,389.422" id="L_Auth_Login_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Auth_Login_0" data-points="W3sieCI6MTczLjE3NjAwMjMyOTc0OTksInkiOjI0NS4yMDcyNTIzMjk3NDk5fSx7IngiOjEwOC4zMzIwMzEyNSwieSI6MzE5LjgyODEyNX0seyJ4IjoxMDguMzMyMDMxMjUsInkiOjM5My40MjE4NzV9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M248.418,245.207L259.225,257.644C270.032,270.081,291.647,294.955,302.454,312.891C313.262,330.828,313.262,341.828,313.262,347.328L313.262,352.828" id="L_Auth_Role_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Auth_Role_0" data-points="W3sieCI6MjQ4LjQxNzc0NzY3MDI1MDEsInkiOjI0NS4yMDcyNTIzMjk3NDk5fSx7IngiOjMxMy4yNjE3MTg3NSwieSI6MzE5LjgyODEyNX0seyJ4IjozMTMuMjYxNzE4NzUsInkiOjM1Ni44MjgxMjV9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M293.265,464.019L288.907,473.518C284.55,483.018,275.836,502.017,271.478,522.183C267.121,542.349,267.121,563.682,267.121,583.016C267.121,602.349,267.121,619.682,267.121,631.849C267.121,644.016,267.121,651.016,267.121,654.516L267.121,658.016" id="L_Role_GetPatientData_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Role_GetPatientData_0" data-points="W3sieCI6MjkzLjI2NDY2MzcyMzkxMTIsInkiOjQ2NC4wMTg1Njk5NzM5MTEyfSx7IngiOjI2Ny4xMjEwOTM3NSwieSI6NTIxLjAxNTYyNX0seyJ4IjoyNjcuMTIxMDkzNzUsInkiOjU4NS4wMTU2MjV9LHsieCI6MjY3LjEyMTA5Mzc1LCJ5Ijo2MzcuMDE1NjI1fSx7IngiOjI2Ny4xMjEwOTM3NSwieSI6NjYyLjAxNTYyNX1d" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M366.107,431.17L439.733,446.144C513.358,461.118,660.609,491.067,734.234,511.541C807.859,532.016,807.859,543.016,807.859,548.516L807.859,554.016" id="L_Role_SelectPatient_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Role_SelectPatient_0" data-points="W3sieCI6MzY2LjEwNzQ0MDkzNTk0MzMsInkiOjQzMS4xNjk5MDI4MTQwNTY3fSx7IngiOjgwNy44NTkzNzUsInkiOjUyMS4wMTU2MjV9LHsieCI6ODA3Ljg1OTM3NSwieSI6NTU4LjAxNTYyNX1d" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M807.859,612.016L807.859,616.182C807.859,620.349,807.859,628.682,807.859,636.349C807.859,644.016,807.859,651.016,807.859,654.516L807.859,658.016" id="L_SelectPatient_GetDoctorData_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_SelectPatient_GetDoctorData_0" data-points="W3sieCI6ODA3Ljg1OTM3NSwieSI6NjEyLjAxNTYyNX0seyJ4Ijo4MDcuODU5Mzc1LCJ5Ijo2MzcuMDE1NjI1fSx7IngiOjgwNy44NTkzNzUsInkiOjY2Mi4wMTU2MjV9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M267.121,740.016L267.121,744.182C267.121,748.349,267.121,756.682,270.366,768.589C273.61,780.495,280.099,795.975,283.343,803.714L286.588,811.454" id="L_GetPatientData_CheckData_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_GetPatientData_CheckData_0" data-points="W3sieCI6MjY3LjEyMTA5Mzc1LCJ5Ijo3NDAuMDE1NjI1fSx7IngiOjI2Ny4xMjEwOTM3NSwieSI6NzY1LjAxNTYyNX0seyJ4IjoyODguMTM0MTczNTgyNDU4MSwieSI6ODE1LjE0MzE3MDE2NzU0MTl9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M807.859,740.016L807.859,744.182C807.859,748.349,807.859,756.682,737.675,776.468C667.49,796.254,527.12,827.493,456.936,843.112L386.751,858.731" id="L_GetDoctorData_CheckData_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_GetDoctorData_CheckData_0" data-points="W3sieCI6ODA3Ljg1OTM3NSwieSI6NzQwLjAxNTYyNX0seyJ4Ijo4MDcuODU5Mzc1LCJ5Ijo3NjUuMDE1NjI1fSx7IngiOjM4Mi44NDYzMTYxNzExODYwNiwieSI6ODU5LjYwMDIyMjQyMTE4NjF9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M292.986,939.88L289.999,949.426C287.011,958.972,281.037,978.064,278.05,1006.274C275.063,1034.484,275.063,1071.813,275.063,1090.477L275.063,1109.141" id="L_CheckData_EmptyState_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_CheckData_EmptyState_0" data-points="W3sieCI6MjkyLjk4NTc1MzMxMjQ0MzY1LCJ5Ijo5MzkuODgwMjg0NTYyNDQzNn0seyJ4IjoyNzUuMDYyNSwieSI6OTk3LjE1NjI1fSx7IngiOjI3NS4wNjI1LCJ5IjoxMTEzLjE0MDYyNX1d" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M370.859,902.559L403.912,918.325C436.966,934.092,503.073,965.624,536.126,986.89C569.18,1008.156,569.18,1019.156,569.18,1024.656L569.18,1030.156" id="L_CheckData_CheckConditions_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_CheckData_CheckConditions_0" data-points="W3sieCI6MzcwLjg1ODc5OTU0ODE5NjY2LCJ5Ijo5MDIuNTU5MTY5MjAxODAzM30seyJ4Ijo1NjkuMTc5Njg3NSwieSI6OTk3LjE1NjI1fSx7IngiOjU2OS4xNzk2ODc1LCJ5IjoxMDM0LjE1NjI1fV0=" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M514.376,1215.321L501.103,1230.622C487.831,1245.922,461.287,1276.524,448.014,1303.324C434.742,1330.125,434.742,1353.125,434.742,1364.625L434.742,1376.125" id="L_CheckConditions_NoAccess_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_CheckConditions_NoAccess_0" data-points="W3sieCI6NTE0LjM3NTUyMTczMzExNTUsInkiOjEyMTUuMzIwODM0MjMzMTE1Nn0seyJ4Ijo0MzQuNzQyMTg3NSwieSI6MTMwNy4xMjV9LHsieCI6NDM0Ljc0MjE4NzUsInkiOjEzODAuMTI1fV0=" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M623.984,1215.321L637.256,1230.622C650.528,1245.922,677.073,1276.524,690.345,1297.324C703.617,1318.125,703.617,1329.125,703.617,1334.625L703.617,1340.125" id="L_CheckConditions_FetchData_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_CheckConditions_FetchData_0" data-points="W3sieCI6NjIzLjk4Mzg1MzI2Njg4NDUsInkiOjEyMTUuMzIwODM0MjMzMTE1Nn0seyJ4Ijo3MDMuNjE3MTg3NSwieSI6MTMwNy4xMjV9LHsieCI6NzAzLjYxNzE4NzUsInkiOjEzNDQuMTI1fV0=" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M703.617,1470.125L703.617,1474.292C703.617,1478.458,703.617,1486.792,703.617,1494.458C703.617,1502.125,703.617,1509.125,703.617,1512.625L703.617,1516.125" id="L_FetchData_CalculateStatus_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_FetchData_CalculateStatus_0" data-points="W3sieCI6NzAzLjYxNzE4NzUsInkiOjE0NzAuMTI1fSx7IngiOjcwMy42MTcxODc1LCJ5IjoxNDk1LjEyNX0seyJ4Ijo3MDMuNjE3MTg3NSwieSI6MTUyMC4xMjV9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M627.327,1632.631L539.349,1653.513C451.371,1674.395,275.416,1716.158,187.439,1744.54C99.461,1772.922,99.461,1787.922,99.461,1795.422L99.461,1802.922" id="L_CalculateStatus_Diabetic_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_CalculateStatus_Diabetic_0" data-points="W3sieCI6NjI3LjMyNjU3MzYzNjU3MDMsInkiOjE2MzIuNjMxMjYxMTM2NTcwMn0seyJ4Ijo5OS40NjA5Mzc1LCJ5IjoxNzU3LjkyMTg3NX0seyJ4Ijo5OS40NjA5Mzc1LCJ5IjoxODA2LjkyMTg3NX1d" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M662.88,1668.185L651.527,1683.141C640.173,1698.097,617.465,1728.01,606.112,1750.466C594.758,1772.922,594.758,1787.922,594.758,1795.422L594.758,1802.922" id="L_CalculateStatus_AtRisk_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_CalculateStatus_AtRisk_0" data-points="W3sieCI6NjYyLjg4MDQ3MTMzODkyMzUsInkiOjE2NjguMTg1MTU4ODM4OTIzNH0seyJ4Ijo1OTQuNzU3ODEyNSwieSI6MTc1Ny45MjE4NzV9LHsieCI6NTk0Ljc1NzgxMjUsInkiOjE4MDYuOTIxODc1fV0=" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M747.932,1664.607L761.694,1680.159C775.455,1695.712,802.977,1726.817,816.739,1749.869C830.5,1772.922,830.5,1787.922,830.5,1795.422L830.5,1802.922" id="L_CalculateStatus_Monitoring_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_CalculateStatus_Monitoring_0" data-points="W3sieCI6NzQ3LjkzMjI4MjQwODAwOTUsInkiOjE2NjQuNjA2NzgwMDkxOTkwNX0seyJ4Ijo4MzAuNSwieSI6MTc1Ny45MjE4NzV9LHsieCI6ODMwLjUsInkiOjE4MDYuOTIxODc1fV0=" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M99.461,1860.922L99.461,1865.089C99.461,1869.255,99.461,1877.589,137.803,1887.61C176.144,1897.631,252.827,1909.341,291.169,1915.195L329.511,1921.05" id="L_Diabetic_BuildDashboard_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Diabetic_BuildDashboard_0" data-points="W3sieCI6OTkuNDYwOTM3NSwieSI6MTg2MC45MjE4NzV9LHsieCI6OTkuNDYwOTM3NSwieSI6MTg4NS45MjE4NzV9LHsieCI6MzMzLjQ2NDg0Mzc1LCJ5IjoxOTIxLjY1MzY0NTI2NTc3NX1d" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M594.758,1860.922L594.758,1865.089C594.758,1869.255,594.758,1877.589,582.99,1885.71C571.221,1893.831,547.685,1901.739,535.917,1905.693L524.149,1909.648" id="L_AtRisk_BuildDashboard_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_AtRisk_BuildDashboard_0" data-points="W3sieCI6NTk0Ljc1NzgxMjUsInkiOjE4NjAuOTIxODc1fSx7IngiOjU5NC43NTc4MTI1LCJ5IjoxODg1LjkyMTg3NX0seyJ4Ijo1MjAuMzU2ODk2MDMzNjUzOCwieSI6MTkxMC45MjE4NzV9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M830.5,1860.922L830.5,1865.089C830.5,1869.255,830.5,1877.589,783.835,1887.969C737.169,1898.35,643.839,1910.778,597.173,1916.993L550.508,1923.207" id="L_Monitoring_BuildDashboard_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Monitoring_BuildDashboard_0" data-points="W3sieCI6ODMwLjUsInkiOjE4NjAuOTIxODc1fSx7IngiOjgzMC41LCJ5IjoxODg1LjkyMTg3NX0seyJ4Ijo1NDYuNTQyOTY4NzUsInkiOjE5MjMuNzM0NzEzMjM2NjE4fV0=" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M440.004,1964.922L440.004,1969.089C440.004,1973.255,440.004,1981.589,440.004,1989.255C440.004,1996.922,440.004,2003.922,440.004,2007.422L440.004,2010.922" id="L_BuildDashboard_Aggregation_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_BuildDashboard_Aggregation_0" data-points="W3sieCI6NDQwLjAwMzkwNjI1LCJ5IjoxOTY0LjkyMTg3NX0seyJ4Ijo0NDAuMDAzOTA2MjUsInkiOjE5ODkuOTIxODc1fSx7IngiOjQ0MC4wMDM5MDYyNSwieSI6MjAxNC45MjE4NzV9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M440.004,2212.922L440.004,2217.089C440.004,2221.255,440.004,2229.589,440.004,2237.255C440.004,2244.922,440.004,2251.922,440.004,2255.422L440.004,2258.922" id="L_Aggregation_Response_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Aggregation_Response_0" data-points="W3sieCI6NDQwLjAwMzkwNjI1LCJ5IjoyMjEyLjkyMTg3NX0seyJ4Ijo0NDAuMDAzOTA2MjUsInkiOjIyMzcuOTIxODc1fSx7IngiOjQ0MC4wMDM5MDYyNSwieSI6MjI2Mi45MjE4NzV9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M440.004,2316.922L440.004,2321.089C440.004,2325.255,440.004,2333.589,440.004,2341.255C440.004,2348.922,440.004,2355.922,440.004,2359.422L440.004,2362.922" id="L_Response_Display_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Response_Display_0" data-points="W3sieCI6NDQwLjAwMzkwNjI1LCJ5IjoyMzE2LjkyMTg3NX0seyJ4Ijo0NDAuMDAzOTA2MjUsInkiOjIzNDEuOTIxODc1fSx7IngiOjQ0MC4wMDM5MDYyNSwieSI6MjM2Ni45MjE4NzV9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M440.004,2540.922L440.004,2545.089C440.004,2549.255,440.004,2557.589,476.901,2574.151C513.797,2590.713,587.591,2615.505,624.487,2627.901L661.384,2640.296" id="L_Display_Actions_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Display_Actions_0" data-points="W3sieCI6NDQwLjAwMzkwNjI1LCJ5IjoyNTQwLjkyMTg3NX0seyJ4Ijo0NDAuMDAzOTA2MjUsInkiOjI1NjUuOTIxODc1fSx7IngiOjY2NS4xNzU4NzYxNjA3OTM4LCJ5IjoyNjQxLjU3MDIxNzU4OTIwNn1d" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M666.424,2676.85L627.477,2691.25C588.529,2705.65,510.634,2734.45,471.686,2756.35C432.738,2778.25,432.738,2793.25,432.738,2800.75L432.738,2808.25" id="L_Actions_ReportFlow_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Actions_ReportFlow_0" data-points="W3sieCI6NjY2LjQyNDQ5MDY1NzQ4OTIsInkiOjI2NzYuODUwMjcxOTA3NDg5fSx7IngiOjQzMi43MzgyODEyNSwieSI6Mjc2My4yNX0seyJ4Ijo0MzIuNzM4MjgxMjUsInkiOjI4MTIuMjV9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M715.824,2726.25L715.824,2732.417C715.824,2738.583,715.824,2750.917,715.824,2762.583C715.824,2774.25,715.824,2785.25,715.824,2790.75L715.824,2796.25" id="L_Actions_DrillDown_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Actions_DrillDown_0" data-points="W3sieCI6NzE1LjgyNDIxODc1LCJ5IjoyNzI2LjI1fSx7IngiOjcxNS44MjQyMTg3NSwieSI6Mjc2My4yNX0seyJ4Ijo3MTUuODI0MjE4NzUsInkiOjI4MDAuMjV9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+        <path d="M765.609,2640.706L800.314,2628.242C835.019,2615.778,904.429,2590.85,939.135,2559.719C973.84,2528.589,973.84,2491.255,973.84,2453.922C973.84,2416.589,973.84,2379.255,973.84,2351.922C973.84,2324.589,973.84,2307.255,973.84,2289.922C973.84,2272.589,973.84,2255.255,973.84,2225.922C973.84,2196.589,973.84,2155.255,973.84,2113.922C973.84,2072.589,973.84,2031.255,973.84,2001.922C973.84,1972.589,973.84,1955.255,973.84,1937.922C973.84,1920.589,973.84,1903.255,973.84,1885.922C973.84,1868.589,973.84,1851.255,973.84,1829.922C973.84,1808.589,973.84,1783.255,973.84,1746.689C973.84,1710.122,973.84,1662.323,973.84,1618.523C973.84,1574.724,973.84,1534.924,973.84,1500.358C973.84,1465.792,973.84,1436.458,973.84,1405.125C973.84,1373.792,973.84,1340.458,973.84,1297.961C973.84,1255.464,973.84,1203.802,973.84,1152.141C973.84,1100.479,973.84,1048.818,973.84,1002.642C973.84,956.466,973.84,915.776,973.84,877.086C973.84,838.396,973.84,801.706,973.84,772.694C973.84,743.682,973.84,722.349,973.84,701.016C973.84,679.682,973.84,658.349,973.84,639.016C973.84,619.682,973.84,602.349,973.84,583.016C973.84,563.682,973.84,542.349,973.84,514.917C973.84,487.484,973.84,453.953,973.84,420.422C973.84,386.891,973.84,353.359,973.84,316.941C973.84,280.523,973.84,241.219,973.84,203.914C973.84,166.609,973.84,131.305,894.777,105.899C815.713,80.494,657.587,64.989,578.523,57.236L499.46,49.483" id="L_Actions_Start_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Actions_Start_0" data-points="W3sieCI6NzY1LjYwODY0MDI1NTY2OTgsInkiOjI2NDAuNzA2Mjk2NTA1Njd9LHsieCI6OTczLjgzOTg0Mzc1LCJ5IjoyNTY1LjkyMTg3NX0seyJ4Ijo5NzMuODM5ODQzNzUsInkiOjI0NTMuOTIxODc1fSx7IngiOjk3My44Mzk4NDM3NSwieSI6MjM0MS45MjE4NzV9LHsieCI6OTczLjgzOTg0Mzc1LCJ5IjoyMjg5LjkyMTg3NX0seyJ4Ijo5NzMuODM5ODQzNzUsInkiOjIyMzcuOTIxODc1fSx7IngiOjk3My44Mzk4NDM3NSwieSI6MjExMy45MjE4NzV9LHsieCI6OTczLjgzOTg0Mzc1LCJ5IjoxOTg5LjkyMTg3NX0seyJ4Ijo5NzMuODM5ODQzNzUsInkiOjE5MzcuOTIxODc1fSx7IngiOjk3My44Mzk4NDM3NSwieSI6MTg4NS45MjE4NzV9LHsieCI6OTczLjgzOTg0Mzc1LCJ5IjoxODMzLjkyMTg3NX0seyJ4Ijo5NzMuODM5ODQzNzUsInkiOjE3NTcuOTIxODc1fSx7IngiOjk3My44Mzk4NDM3NSwieSI6MTYxNC41MjM0Mzc1fSx7IngiOjk3My44Mzk4NDM3NSwieSI6MTQ5NS4xMjV9LHsieCI6OTczLjgzOTg0Mzc1LCJ5IjoxNDA3LjEyNX0seyJ4Ijo5NzMuODM5ODQzNzUsInkiOjEzMDcuMTI1fSx7IngiOjk3My44Mzk4NDM3NSwieSI6MTE1Mi4xNDA2MjV9LHsieCI6OTczLjgzOTg0Mzc1LCJ5Ijo5OTcuMTU2MjV9LHsieCI6OTczLjgzOTg0Mzc1LCJ5Ijo4NzUuMDg1OTM3NX0seyJ4Ijo5NzMuODM5ODQzNzUsInkiOjc2NS4wMTU2MjV9LHsieCI6OTczLjgzOTg0Mzc1LCJ5Ijo3MDEuMDE1NjI1fSx7IngiOjk3My44Mzk4NDM3NSwieSI6NjM3LjAxNTYyNX0seyJ4Ijo5NzMuODM5ODQzNzUsInkiOjU4NS4wMTU2MjV9LHsieCI6OTczLjgzOTg0Mzc1LCJ5Ijo1MjEuMDE1NjI1fSx7IngiOjk3My44Mzk4NDM3NSwieSI6NDIwLjQyMTg3NX0seyJ4Ijo5NzMuODM5ODQzNzUsInkiOjMxOS44MjgxMjV9LHsieCI6OTczLjgzOTg0Mzc1LCJ5IjoyMDEuOTE0MDYyNX0seyJ4Ijo5NzMuODM5ODQzNzUsInkiOjk2fSx7IngiOjQ5NS40NzkxNDI3NDUyMzg5NiwieSI6NDkuMDkyNDYyODM4MjQxODZ9XQ==" marker-end="url(#graph-240_flowchart-v2-pointEnd)">
+        </path>
+      </g>
+      <g class="edgeLabels">
+        <g class="edgeLabel">
+          <g class="label" data-id="L_Start_Auth_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(108.33203125, 319.828125)">
+          <g class="label" data-id="L_Auth_Login_0" transform="translate(-9.3984375, -12)">
+            <foreignObject width="18.796875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>No</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(313.26171875, 319.828125)">
+          <g class="label" data-id="L_Auth_Role_0" transform="translate(-11.328125, -12)">
+            <foreignObject width="22.65625" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>Yes</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(267.12109375, 585.015625)">
+          <g class="label" data-id="L_Role_GetPatientData_0" transform="translate(-25.6484375, -12)">
+            <foreignObject width="51.296875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>Patient</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(807.859375, 521.015625)">
+          <g class="label" data-id="L_Role_SelectPatient_0" transform="translate(-23.734375, -12)">
+            <foreignObject width="47.46875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>Doctor</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g class="label" data-id="L_SelectPatient_GetDoctorData_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g class="label" data-id="L_GetPatientData_CheckData_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g class="label" data-id="L_GetDoctorData_CheckData_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(275.0625, 997.15625)">
+          <g class="label" data-id="L_CheckData_EmptyState_0" transform="translate(-9.3984375, -12)">
+            <foreignObject width="18.796875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>No</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(569.1796875, 997.15625)">
+          <g class="label" data-id="L_CheckData_CheckConditions_0" transform="translate(-11.328125, -12)">
+            <foreignObject width="22.65625" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>Yes</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(434.7421875, 1307.125)">
+          <g class="label" data-id="L_CheckConditions_NoAccess_0" transform="translate(-9.3984375, -12)">
+            <foreignObject width="18.796875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>No</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(703.6171875, 1307.125)">
+          <g class="label" data-id="L_CheckConditions_FetchData_0" transform="translate(-11.328125, -12)">
+            <foreignObject width="22.65625" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>Yes</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g class="label" data-id="L_FetchData_CalculateStatus_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(99.4609375, 1757.921875)">
+          <g class="label" data-id="L_CalculateStatus_Diabetic_0" transform="translate(-91.4609375, -12)">
+            <foreignObject width="182.921875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>All Predictions = Diabetes</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(594.7578125, 1757.921875)">
+          <g class="label" data-id="L_CalculateStatus_AtRisk_0" transform="translate(-100, -24)">
+            <foreignObject width="200" height="48">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;">
+                <span class="edgeLabel">
+                  <p>Some Predictions = Diabetes</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(830.5, 1757.921875)">
+          <g class="label" data-id="L_CalculateStatus_Monitoring_0" transform="translate(-91.421875, -12)">
+            <foreignObject width="182.84375" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>No Predictions = Diabetes</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g class="label" data-id="L_Diabetic_BuildDashboard_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g class="label" data-id="L_AtRisk_BuildDashboard_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g class="label" data-id="L_Monitoring_BuildDashboard_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g class="label" data-id="L_BuildDashboard_Aggregation_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g class="label" data-id="L_Aggregation_Response_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g class="label" data-id="L_Response_Display_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel">
+          <g class="label" data-id="L_Display_Actions_0" transform="translate(0, 0)">
+            <foreignObject width="0" height="0">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(432.73828125, 2763.25)">
+          <g class="label" data-id="L_Actions_ReportFlow_0" transform="translate(-51.09375, -12)">
+            <foreignObject width="102.1875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>Upload Report</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(715.82421875, 2763.25)">
+          <g class="label" data-id="L_Actions_DrillDown_0" transform="translate(-44.0859375, -12)">
+            <foreignObject width="88.171875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>View Details</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="edgeLabel" transform="translate(973.83984375, 1407.125)">
+          <g class="label" data-id="L_Actions_Start_0" transform="translate(-26.734375, -12)">
+            <foreignObject width="53.46875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="edgeLabel">
+                  <p>Refresh</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+      </g>
+      <g class="nodes">
+        <g class="node default" id="flowchart-Start-0" transform="translate(403.13671875, 39.5)">
+          <g class="basic label-container outer-path">
+            <path d="M-61.6875 -31.5 C-27.77344729908095 -31.5, 6.140605401838101 -31.5, 61.6875 -31.5 C61.6875 -31.5, 61.6875 -31.5, 61.6875 -31.5 C62.437613955600426 -31.475945305452136, 63.187727911200845 -31.45189061090427, 63.70571192939246 -31.435279871635593 C64.2816815774448 -31.379716772392833, 64.85765122549714 -31.32415367315007, 65.71563059306193 -31.241385435432253 C66.16192726401383 -31.169231650755126, 66.60822393496571 -31.097077866078, 67.70899680409322 -30.91911344521856 C68.24807395219517 -30.79607260397144, 68.78715110029712 -30.673031762724314, 69.67761939314947 -30.469788185729428 C70.37663151632043 -30.262325056761796, 71.0756436394914 -30.054861927794164, 71.61340886774406 -29.895256030836062 C72.30185222366185 -29.64190251195769, 72.99029557957967 -29.38854899307932, 73.50841065370028 -29.197877856399685 C74.11377815757085 -28.929899620025154, 74.7191456614414 -28.661921383650625, 75.35483778220308 -28.380519338926202 C75.75478545353516 -28.17186689497096, 76.15473312486726 -27.963214451015716, 77.14510288812403 -27.44653917988677 C77.73450400966209 -27.089240756304946, 78.32390513120014 -26.731942332723122, 78.87184938813228 -26.399775304092984 C79.22070204757483 -26.156430790454085, 79.5695547070174 -25.913086276815186, 80.5279817104733 -25.244529088840633 C81.08777125624216 -24.79811182271539, 81.64756080201103 -24.351694556590154, 82.10669445219533 -23.985547688627737 C82.4440840760993 -23.679139359038416, 82.78147370000329 -23.372731029449096, 83.60150034400982 -22.62800452807842 C84.09293750477394 -22.1205553118482, 84.58437466553806 -21.613106095617976, 85.00625690787243 -21.177478043231485 C85.4547088815125 -20.650700837353664, 85.90316085515259 -20.123923631475847, 86.31519169774293 -19.63992875855011 C86.75451802341212 -19.051271505605037, 87.19384434908129 -18.462614252659964, 87.5229260198041 -18.02167479384835 C87.92089102704071 -17.41029367416547, 88.31885603427732 -16.798912554482587, 88.6244970346684 -16.329365901781543 C88.94074216029477 -15.767840657940443, 89.25698728592117 -15.206315414099342, 89.6153781507495 -14.56995614258631 C89.92814527833919 -13.92048851000188, 90.24091240592885 -13.27102087741745, 90.49149762499809 -12.750675308355413 C90.64516143396206 -12.37112272932678, 90.79882524292601 -11.991570150298145, 91.24925529456745 -10.878999214271206 C91.40559986280054 -10.408114284877229, 91.56194443103362 -9.937229355483252, 91.88553737065482 -8.962618978877531 C92.0081897887034 -8.494892150963997, 92.130842206752 -8.027165323050461, 92.39772923372745 -7.009409419623907 C92.53569083937961 -6.301005732795704, 92.67365244503178 -5.592602045967502, 92.78372617755518 -5.027396693551458 C92.8560550963541 -4.4664278823076184, 92.928384015153 -3.9054590710637784, 93.04194205789975 -3.024725316091981 C93.08427120214866 -2.3654147269450054, 93.12660034639757 -1.7061041377980297, 93.17131581032167 -1.0096246935071378 C93.17131581032167 -0.5663681593061206, 93.17131581032167 -0.12311162510510343, 93.17131581032167 1.00962469350713 C93.12361726286892 1.7525680716582168, 93.07591871541618 2.4955114498093036, 93.04194205789975 3.02472531609196 C92.96438829669579 3.6262169732675327, 92.88683453549183 4.2277086304431055, 92.78372617755518 5.027396693551435 C92.67986877364947 5.560682512337147, 92.57601136974377 6.093968331122857, 92.39772923372745 7.0094094196239 C92.23561002567044 7.6276402228545015, 92.07349081761343 8.245871026085103, 91.88553737065482 8.96261897887751 C91.73628575417287 9.412141067705427, 91.58703413769094 9.861663156533343, 91.24925529456746 10.878999214271184 C90.96142223933056 11.589952425579856, 90.67358918409367 12.30090563688853, 90.49149762499809 12.750675308355405 C90.1876167850337 13.381690374549853, 89.88373594506929 14.012705440744302, 89.6153781507495 14.569956142586303 C89.29449531956641 15.139716102261968, 88.97361248838331 15.70947606193763, 88.62449703466841 16.329365901781536 C88.32277910166994 16.792885669476437, 88.02106116867145 17.256405437171342, 87.52292601980412 18.021674793848334 C87.20235529074934 18.45121036618753, 86.88178456169456 18.880745938526726, 86.31519169774295 19.639928758550102 C86.00119142143136 20.008771350227565, 85.68719114511978 20.37761394190503, 85.00625690787246 21.177478043231467 C84.53992945731704 21.65899942212565, 84.07360200676162 22.14052080101983, 83.60150034400982 22.628004528078414 C83.04073279177271 23.137278781923772, 82.47996523953562 23.64655303576913, 82.10669445219536 23.985547688627715 C81.61927551668069 24.374251318938057, 81.13185658116602 24.762954949248396, 80.52798171047331 25.24452908884063 C79.9259287619006 25.664495163312864, 79.32387581332787 26.084461237785103, 78.87184938813229 26.399775304092973 C78.29649684768023 26.74855739526184, 77.72114430722817 27.097339486430712, 77.14510288812404 27.446539179886766 C76.47514543968342 27.796055551610014, 75.8051879912428 28.145571923333257, 75.35483778220309 28.3805193389262 C74.82061680211004 28.617003119711065, 74.286395822017 28.853486900495934, 73.5084106537003 29.197877856399682 C72.86190496928401 29.43579792449791, 72.21539928486771 29.67371799259614, 71.61340886774407 29.895256030836055 C70.84396450672763 30.123623078289867, 70.07452014571119 30.351990125743676, 69.67761939314951 30.46978818572942 C69.23435778561031 30.570959755097928, 68.79109617807113 30.672131324466438, 67.70899680409323 30.919113445218557 C67.06409420227082 31.023376296586832, 66.4191916004484 31.127639147955108, 65.71563059306196 31.24138543543225 C65.2272788950769 31.28849613640802, 64.73892719709187 31.335606837383793, 63.70571192939246 31.435279871635593 C63.14391509263262 31.453295602719276, 62.582118255872786 31.47131133380296, 61.68750000000001 31.5 C61.68750000000001 31.5, 61.6875 31.5, 61.6875 31.5 C13.146262026772213 31.5, -35.394975946455574 31.5, -61.68749999999999 31.5 C-62.38658174932224 31.477581808979313, -63.08566349864448 31.455163617958625, -63.70571192939244 31.435279871635593 C-64.27049027722789 31.38079638366525, -64.83526862506334 31.326312895694905, -65.71563059306195 31.24138543543225 C-66.46856404393701 31.11965699418089, -67.22149749481206 30.99792855292953, -67.70899680409323 30.919113445218557 C-68.24005946320479 30.797901858784062, -68.77112212231634 30.67669027234957, -69.67761939314947 30.469788185729428 C-70.37069889210476 30.264085828488028, -71.06377839106004 30.05838347124663, -71.61340886774403 29.89525603083607 C-72.06682868857331 29.728393345404015, -72.52024850940259 29.561530659971964, -73.50841065370028 29.197877856399685 C-74.00964874116298 28.975994623779528, -74.51088682862569 28.75411139115937, -75.35483778220308 28.380519338926206 C-75.84185669301277 28.12644188510729, -76.32887560382247 27.87236443128837, -77.14510288812403 27.446539179886773 C-77.7236261794863 27.09583496088273, -78.30214947084859 26.745130741878686, -78.87184938813226 26.399775304092994 C-79.24898771236462 26.136699935163424, -79.62612603659699 25.873624566233854, -80.5279817104733 25.244529088840636 C-80.96204607563136 24.898374308564946, -81.39611044078943 24.55221952828926, -82.10669445219533 23.98554768862774 C-82.61674737457933 23.522331119779395, -83.12680029696334 23.059114550931053, -83.6015003440098 22.628004528078435 C-83.96321731087416 22.254502062275716, -84.3249342777385 21.880999596472996, -85.00625690787244 21.177478043231478 C-85.26930265640362 20.86848953927964, -85.53234840493481 20.559501035327802, -86.31519169774293 19.639928758550113 C-86.70876659458992 19.11257425218587, -87.10234149143692 18.58521974582162, -87.5229260198041 18.021674793848355 C-87.95166519854948 17.36301628270589, -88.38040437729485 16.704357771563423, -88.6244970346684 16.329365901781557 C-88.83419732731754 15.957021797725782, -89.04389761996669 15.584677693670004, -89.6153781507495 14.569956142586314 C-89.81659651618945 14.152121901366973, -90.01781488162938 13.734287660147633, -90.49149762499809 12.750675308355417 C-90.77083344487929 12.060710432658189, -91.05016926476048 11.37074555696096, -91.24925529456745 10.878999214271209 C-91.42898264777297 10.337689062081113, -91.60871000097849 9.796378909891017, -91.88553737065482 8.962618978877522 C-92.01881383595482 8.45437805430317, -92.15209030125482 7.946137129728818, -92.39772923372743 7.009409419623911 C-92.50225982302186 6.472666936144922, -92.60679041231629 5.935924452665931, -92.78372617755518 5.027396693551461 C-92.85109528031771 4.504895236059355, -92.91846438308023 3.9823937785672476, -93.04194205789975 3.024725316091999 C-93.07704450449387 2.4779763762036224, -93.112146951088 1.9312274363152457, -93.17131581032167 1.0096246935071416 C-93.17131581032167 0.3707389426062583, -93.17131581032167 -0.268146808294625, -93.17131581032167 -1.0096246935071262 C-93.14229152187006 -1.4617014141249702, -93.11326723341844 -1.9137781347428142, -93.04194205789975 -3.024725316091956 C-92.97499789562931 -3.5439310190413216, -92.90805373335888 -4.063136721990688, -92.78372617755518 -5.027396693551446 C-92.63288252774448 -5.801946954512697, -92.48203887793379 -6.576497215473948, -92.39772923372745 -7.009409419623896 C-92.20032946266151 -7.762180300300287, -92.00292969159557 -8.514951180976677, -91.88553737065482 -8.962618978877506 C-91.67370090120171 -9.600636673312383, -91.46186443174862 -10.23865436774726, -91.24925529456746 -10.878999214271168 C-91.07483296499503 -11.309825740541433, -90.90041063542257 -11.740652266811699, -90.49149762499809 -12.750675308355401 C-90.1630837502699 -13.4326337461597, -89.83466987554172 -14.114592183964, -89.6153781507495 -14.5699561425863 C-89.28651157918137 -15.153892041756974, -88.95764500761322 -15.737827940927648, -88.6244970346684 -16.329365901781546 C-88.2522090505217 -16.901300218752194, -87.87992106637502 -17.473234535722842, -87.52292601980412 -18.021674793848344 C-87.27683638245125 -18.351412488674008, -87.0307467450984 -18.681150183499668, -86.31519169774295 -19.639928758550102 C-85.8362058753087 -20.202572760646763, -85.35722005287447 -20.76521676274342, -85.00625690787246 -21.177478043231467 C-84.61421540269748 -21.582293084530793, -84.22217389752252 -21.98710812583012, -83.60150034400984 -22.628004528078403 C-83.20978092628891 -22.9837537389247, -82.818061508568 -23.339502949771, -82.10669445219536 -23.98554768862771 C-81.68777117479563 -24.31962785433739, -81.26884789739591 -24.653708020047073, -80.52798171047331 -25.244529088840626 C-80.19613366538289 -25.476011919625364, -79.86428562029246 -25.707494750410103, -78.8718493881323 -26.39977530409297 C-78.2896784653193 -26.752690738718304, -77.70750754250629 -27.105606173343638, -77.14510288812404 -27.446539179886763 C-76.68301816547992 -27.68760848371081, -76.22093344283581 -27.928677787534856, -75.35483778220309 -28.3805193389262 C-74.97373656722868 -28.549221541829493, -74.59263535225426 -28.71792374473279, -73.5084106537003 -29.19787785639968 C-73.0016813459907 -29.384358925791183, -72.49495203828111 -29.570839995182684, -71.61340886774407 -29.895256030836055 C-70.91983447322511 -30.101105270482993, -70.22626007870616 -30.30695451012993, -69.67761939314951 -30.469788185729417 C-69.06826696718679 -30.608868900559216, -68.45891454122406 -30.747949615389015, -67.70899680409325 -30.919113445218553 C-67.06462675288904 -31.02329019793287, -66.42025670168483 -31.127466950647186, -65.71563059306196 -31.24138543543225 C-65.14334114118105 -31.296593510576436, -64.57105168930013 -31.351801585720622, -63.70571192939246 -31.435279871635593 C-63.0891234255623 -31.45505266483671, -62.47253492173214 -31.474825458037827, -61.68750000000001 -31.5 C-61.68750000000001 -31.5, -61.6875 -31.5, -61.6875 -31.5" stroke="none" stroke-width="0" fill="#ECECFF" style="">
+            </path>
+            <path d="M-61.6875 -31.5 C-25.282277254632895 -31.5, 11.12294549073421 -31.5, 61.6875 -31.5 M-61.6875 -31.5 C-15.09554283242344 -31.5, 31.49641433515312 -31.5, 61.6875 -31.5 M61.6875 -31.5 C61.6875 -31.5, 61.6875 -31.5, 61.6875 -31.5 M61.6875 -31.5 C61.6875 -31.5, 61.6875 -31.5, 61.6875 -31.5 M61.6875 -31.5 C62.142387273008715 -31.485412650538976, 62.59727454601744 -31.470825301077948, 63.70571192939246 -31.435279871635593 M61.6875 -31.5 C62.28036571617863 -31.480987950425263, 62.87323143235726 -31.461975900850526, 63.70571192939246 -31.435279871635593 M63.70571192939246 -31.435279871635593 C64.22857016905569 -31.384840366084315, 64.75142840871891 -31.334400860533037, 65.71563059306193 -31.241385435432253 M63.70571192939246 -31.435279871635593 C64.39811985695631 -31.368484111605877, 65.09052778452016 -31.30168835157616, 65.71563059306193 -31.241385435432253 M65.71563059306193 -31.241385435432253 C66.23653950829367 -31.157168921726555, 66.75744842352542 -31.07295240802086, 67.70899680409322 -30.91911344521856 M65.71563059306193 -31.241385435432253 C66.4233381668113 -31.126968763262656, 67.13104574056068 -31.012552091093063, 67.70899680409322 -30.91911344521856 M67.70899680409322 -30.91911344521856 C68.1927145843449 -30.808708018429627, 68.67643236459656 -30.698302591640694, 69.67761939314947 -30.469788185729428 M67.70899680409322 -30.91911344521856 C68.43349125723287 -30.75375231405757, 69.15798571037253 -30.588391182896586, 69.67761939314947 -30.469788185729428 M69.67761939314947 -30.469788185729428 C70.38512580741236 -30.259803995753153, 71.09263222167527 -30.049819805776878, 71.61340886774406 -29.895256030836062 M69.67761939314947 -30.469788185729428 C70.23972192496036 -30.302959104824353, 70.80182445677127 -30.13613002391928, 71.61340886774406 -29.895256030836062 M71.61340886774406 -29.895256030836062 C72.28881224878903 -29.646701343251095, 72.964215629834 -29.39814665566613, 73.50841065370028 -29.197877856399685 M71.61340886774406 -29.895256030836062 C72.22731512182168 -29.669332854448296, 72.84122137589928 -29.44340967806053, 73.50841065370028 -29.197877856399685 M73.50841065370028 -29.197877856399685 C74.22602263135008 -28.8802123210971, 74.94363460899987 -28.562546785794517, 75.35483778220308 -28.380519338926202 M73.50841065370028 -29.197877856399685 C74.06340128860855 -28.952199965538046, 74.6183919235168 -28.706522074676403, 75.35483778220308 -28.380519338926202 M75.35483778220308 -28.380519338926202 C75.86604135898828 -28.11382476035888, 76.37724493577349 -27.847130181791556, 77.14510288812403 -27.44653917988677 M75.35483778220308 -28.380519338926202 C76.02291926922268 -28.031981655074688, 76.69100075624229 -27.683443971223173, 77.14510288812403 -27.44653917988677 M77.14510288812403 -27.44653917988677 C77.79451371081592 -27.052862522809345, 78.44392453350781 -26.659185865731917, 78.87184938813228 -26.399775304092984 M77.14510288812403 -27.44653917988677 C77.50750225903361 -27.22685055154628, 77.86990162994321 -27.007161923205793, 78.87184938813228 -26.399775304092984 M78.87184938813228 -26.399775304092984 C79.25079519949804 -26.13543911038401, 79.62974101086381 -25.87110291667503, 80.5279817104733 -25.244529088840633 M78.87184938813228 -26.399775304092984 C79.53035297173413 -25.940431710333023, 80.18885655533599 -25.481088116573066, 80.5279817104733 -25.244529088840633 M80.5279817104733 -25.244529088840633 C81.14830843042961 -24.749835037262763, 81.76863515038593 -24.255140985684896, 82.10669445219533 -23.985547688627737 M80.5279817104733 -25.244529088840633 C80.99195100997082 -24.87452591923295, 81.45592030946834 -24.504522749625274, 82.10669445219533 -23.985547688627737 M82.10669445219533 -23.985547688627737 C82.52778031008434 -23.603128653814206, 82.94886616797336 -23.220709619000676, 83.60150034400982 -22.62800452807842 M82.10669445219533 -23.985547688627737 C82.58621033543102 -23.550064050768114, 83.06572621866671 -23.11458041290849, 83.60150034400982 -22.62800452807842 M83.60150034400982 -22.62800452807842 C84.05127710184907 -22.16357309825083, 84.5010538596883 -21.699141668423234, 85.00625690787243 -21.177478043231485 M83.60150034400982 -22.62800452807842 C84.03455056045658 -22.18084462551315, 84.46760077690335 -21.733684722947878, 85.00625690787243 -21.177478043231485 M85.00625690787243 -21.177478043231485 C85.43689864829504 -20.67162175072188, 85.86754038871766 -20.165765458212274, 86.31519169774293 -19.63992875855011 M85.00625690787243 -21.177478043231485 C85.37976077619837 -20.738739146523663, 85.7532646445243 -20.30000024981584, 86.31519169774293 -19.63992875855011 M86.31519169774293 -19.63992875855011 C86.6625271386168 -19.174530910688745, 87.00986257949067 -18.709133062827384, 87.5229260198041 -18.02167479384835 M86.31519169774293 -19.63992875855011 C86.67732131144214 -19.154708066879664, 87.03945092514135 -18.66948737520922, 87.5229260198041 -18.02167479384835 M87.5229260198041 -18.02167479384835 C87.90881864600647 -17.428840093322286, 88.29471127220883 -16.836005392796217, 88.6244970346684 -16.329365901781543 M87.5229260198041 -18.02167479384835 C87.93096939365688 -17.394810596622662, 88.33901276750966 -16.76794639939697, 88.6244970346684 -16.329365901781543 M88.6244970346684 -16.329365901781543 C88.9523922021146 -15.747154828994706, 89.2802873695608 -15.164943756207867, 89.6153781507495 -14.56995614258631 M88.6244970346684 -16.329365901781543 C89.01450533627111 -15.636866669662963, 89.40451363787382 -14.944367437544383, 89.6153781507495 -14.56995614258631 M89.6153781507495 -14.56995614258631 C89.87476010210311 -14.031343970715856, 90.13414205345673 -13.492731798845401, 90.49149762499809 -12.750675308355413 M89.6153781507495 -14.56995614258631 C89.84040198938044 -14.10268932693033, 90.06542582801139 -13.635422511274347, 90.49149762499809 -12.750675308355413 M90.49149762499809 -12.750675308355413 C90.67609108946276 -12.29472588225584, 90.86068455392743 -11.838776456156266, 91.24925529456745 -10.878999214271206 M90.49149762499809 -12.750675308355413 C90.68767047847065 -12.266124567534085, 90.88384333194321 -11.781573826712759, 91.24925529456745 -10.878999214271206 M91.24925529456745 -10.878999214271206 C91.46036538170442 -10.243169267639205, 91.6714754688414 -9.607339321007204, 91.88553737065482 -8.962618978877531 M91.24925529456745 -10.878999214271206 C91.39359319229627 -10.444276463432946, 91.53793109002508 -10.009553712594688, 91.88553737065482 -8.962618978877531 M91.88553737065482 -8.962618978877531 C92.0331926216354 -8.39954551269802, 92.18084787261596 -7.8364720465185105, 92.39772923372745 -7.009409419623907 M91.88553737065482 -8.962618978877531 C92.0598045877454 -8.298062552221444, 92.234071804836 -7.633506125565354, 92.39772923372745 -7.009409419623907 M92.39772923372745 -7.009409419623907 C92.4968690528176 -6.500347401804111, 92.59600887190777 -5.991285383984316, 92.78372617755518 -5.027396693551458 M92.39772923372745 -7.009409419623907 C92.49466360791938 -6.511671895235564, 92.59159798211131 -6.013934370847221, 92.78372617755518 -5.027396693551458 M92.78372617755518 -5.027396693551458 C92.84201563070722 -4.575315205458616, 92.90030508385928 -4.123233717365775, 93.04194205789975 -3.024725316091981 M92.78372617755518 -5.027396693551458 C92.8543566655706 -4.479600576071258, 92.92498715358603 -3.9318044585910576, 93.04194205789975 -3.024725316091981 M93.04194205789975 -3.024725316091981 C93.08126668412346 -2.412212520390723, 93.12059131034717 -1.799699724689465, 93.17131581032167 -1.0096246935071378 M93.04194205789975 -3.024725316091981 C93.07371181074109 -2.5298857715051617, 93.10548156358243 -2.0350462269183422, 93.17131581032167 -1.0096246935071378 M93.17131581032167 -1.0096246935071378 C93.17131581032167 -0.5030101759590657, 93.17131581032167 0.0036043415890063546, 93.17131581032167 1.00962469350713 M93.17131581032167 -1.0096246935071378 C93.17131581032167 -0.5147695834307369, 93.17131581032167 -0.01991447335433605, 93.17131581032167 1.00962469350713 M93.17131581032167 1.00962469350713 C93.1311139950285 1.6358004170196256, 93.09091217973531 2.261976140532121, 93.04194205789975 3.02472531609196 M93.17131581032167 1.00962469350713 C93.13401138550473 1.5906712216206285, 93.0967069606878 2.1717177497341265, 93.04194205789975 3.02472531609196 M93.04194205789975 3.02472531609196 C92.97064039684471 3.5777269191292174, 92.89933873578968 4.130728522166475, 92.78372617755518 5.027396693551435 M93.04194205789975 3.02472531609196 C92.94377724946753 3.7860721854582104, 92.84561244103531 4.547419054824461, 92.78372617755518 5.027396693551435 M92.78372617755518 5.027396693551435 C92.67337162694498 5.5940439874922525, 92.56301707633479 6.160691281433069, 92.39772923372745 7.0094094196239 M92.78372617755518 5.027396693551435 C92.66045385275517 5.660374027784468, 92.53718152795514 6.293351362017501, 92.39772923372745 7.0094094196239 M92.39772923372745 7.0094094196239 C92.28342317838045 7.4453079492197585, 92.16911712303346 7.881206478815616, 91.88553737065482 8.96261897887751 M92.39772923372745 7.0094094196239 C92.25287609728694 7.561797208618014, 92.10802296084643 8.114184997612128, 91.88553737065482 8.96261897887751 M91.88553737065482 8.96261897887751 C91.75211300966401 9.364471895896832, 91.6186886486732 9.766324812916155, 91.24925529456746 10.878999214271184 M91.88553737065482 8.96261897887751 C91.68892003063371 9.554799080302224, 91.49230269061259 10.14697918172694, 91.24925529456746 10.878999214271184 M91.24925529456746 10.878999214271184 C91.00541347183747 11.481293230775197, 90.76157164910747 12.08358724727921, 90.49149762499809 12.750675308355405 M91.24925529456746 10.878999214271184 C91.03343305689636 11.412084313957914, 90.81761081922525 11.945169413644644, 90.49149762499809 12.750675308355405 M90.49149762499809 12.750675308355405 C90.31312415026284 13.121071645224122, 90.13475067552757 13.49146798209284, 89.6153781507495 14.569956142586303 M90.49149762499809 12.750675308355405 C90.25657060671077 13.238506288461982, 90.02164358842343 13.726337268568562, 89.6153781507495 14.569956142586303 M89.6153781507495 14.569956142586303 C89.23286448404265 15.249147891533221, 88.8503508173358 15.928339640480138, 88.62449703466841 16.329365901781536 M89.6153781507495 14.569956142586303 C89.3767104870029 14.993734747290027, 89.13804282325628 15.41751335199375, 88.62449703466841 16.329365901781536 M88.62449703466841 16.329365901781536 C88.2703797956773 16.87338507466493, 87.91626255668619 17.41740424754833, 87.52292601980412 18.021674793848334 M88.62449703466841 16.329365901781536 C88.25579356169435 16.895793447015, 87.88709008872029 17.462220992248458, 87.52292601980412 18.021674793848334 M87.52292601980412 18.021674793848334 C87.21650678026978 18.432248659457347, 86.91008754073545 18.84282252506636, 86.31519169774295 19.639928758550102 M87.52292601980412 18.021674793848334 C87.09573790376751 18.594067951699405, 86.66854978773091 19.16646110955047, 86.31519169774295 19.639928758550102 M86.31519169774295 19.639928758550102 C85.97887009056014 20.03499125558861, 85.64254848337733 20.43005375262712, 85.00625690787246 21.177478043231467 M86.31519169774295 19.639928758550102 C86.05100545725419 19.950256949251138, 85.78681921676542 20.260585139952173, 85.00625690787246 21.177478043231467 M85.00625690787246 21.177478043231467 C84.65562169004271 21.539537693327436, 84.30498647221297 21.901597343423404, 83.60150034400982 22.628004528078414 M85.00625690787246 21.177478043231467 C84.50505393655901 21.695011260641824, 84.00385096524556 22.212544478052177, 83.60150034400982 22.628004528078414 M83.60150034400982 22.628004528078414 C83.06304543945977 23.1170150256547, 82.5245905349097 23.606025523230986, 82.10669445219536 23.985547688627715 M83.60150034400982 22.628004528078414 C83.15141572996254 23.036759465969844, 82.70133111591525 23.445514403861274, 82.10669445219536 23.985547688627715 M82.10669445219536 23.985547688627715 C81.71217479618194 24.300166615689456, 81.31765514016853 24.614785542751196, 80.52798171047331 25.24452908884063 M82.10669445219536 23.985547688627715 C81.68294179015568 24.323479160072438, 81.259189128116 24.66141063151716, 80.52798171047331 25.24452908884063 M80.52798171047331 25.24452908884063 C80.10985536864433 25.536195924502916, 79.69172902681535 25.827862760165203, 78.87184938813229 26.399775304092973 M80.52798171047331 25.24452908884063 C79.93944101702031 25.655069599077446, 79.35090032356732 26.065610109314264, 78.87184938813229 26.399775304092973 M78.87184938813229 26.399775304092973 C78.33638308995718 26.724378120795983, 77.80091679178206 27.04898093749899, 77.14510288812404 27.446539179886766 M78.87184938813229 26.399775304092973 C78.44513873503473 26.65844980963086, 78.01842808193716 26.917124315168742, 77.14510288812404 27.446539179886766 M77.14510288812404 27.446539179886766 C76.69687246105654 27.68038070658259, 76.24864203398906 27.91422223327841, 75.35483778220309 28.3805193389262 M77.14510288812404 27.446539179886766 C76.44213727900389 27.81327588789379, 75.73917166988372 28.180012595900816, 75.35483778220309 28.3805193389262 M75.35483778220309 28.3805193389262 C74.83624092741394 28.61008678291224, 74.31764407262479 28.839654226898283, 73.5084106537003 29.197877856399682 M75.35483778220309 28.3805193389262 C74.77391742490161 28.63767554871343, 74.19299706760015 28.89483175850066, 73.5084106537003 29.197877856399682 M73.5084106537003 29.197877856399682 C72.77680895527561 29.46711404427193, 72.04520725685092 29.73635023214418, 71.61340886774407 29.895256030836055 M73.5084106537003 29.197877856399682 C73.05940448256362 29.363116277945522, 72.61039831142696 29.528354699491363, 71.61340886774407 29.895256030836055 M71.61340886774407 29.895256030836055 C70.9217883097974 30.100525382044232, 70.23016775185076 30.305794733252412, 69.67761939314951 30.46978818572942 M71.61340886774407 29.895256030836055 C70.92290023033536 30.100195369865162, 70.23239159292666 30.305134708894265, 69.67761939314951 30.46978818572942 M69.67761939314951 30.46978818572942 C69.21713370846489 30.574891038308767, 68.75664802378026 30.67999389088811, 67.70899680409323 30.919113445218557 M69.67761939314951 30.46978818572942 C69.18781717223789 30.581582346394303, 68.69801495132626 30.693376507059185, 67.70899680409323 30.919113445218557 M67.70899680409323 30.919113445218557 C67.03909301187318 31.027418295163194, 66.36918921965314 31.135723145107836, 65.71563059306196 31.24138543543225 M67.70899680409323 30.919113445218557 C67.08641484544644 31.019767668097373, 66.46383288679964 31.12042189097619, 65.71563059306196 31.24138543543225 M65.71563059306196 31.24138543543225 C65.23252530257163 31.287990021786733, 64.74942001208132 31.334594608141217, 63.70571192939246 31.435279871635593 M65.71563059306196 31.24138543543225 C65.27439159366163 31.283951231036863, 64.8331525942613 31.326517026641476, 63.70571192939246 31.435279871635593 M63.70571192939246 31.435279871635593 C63.27819951213121 31.448989362754723, 62.85068709486996 31.46269885387385, 61.68750000000001 31.5 M63.70571192939246 31.435279871635593 C62.94274437938027 31.45974675593824, 62.17977682936809 31.484213640240885, 61.68750000000001 31.5 M61.68750000000001 31.5 C61.68750000000001 31.5, 61.68750000000001 31.5, 61.6875 31.5 M61.68750000000001 31.5 C61.68750000000001 31.5, 61.68750000000001 31.5, 61.6875 31.5 M61.6875 31.5 C15.00133529037879 31.5, -31.68482941924242 31.5, -61.68749999999999 31.5 M61.6875 31.5 C26.45280769435869 31.5, -8.78188461128262 31.5, -61.68749999999999 31.5 M-61.68749999999999 31.5 C-62.125592691851836 31.485951220068007, -62.56368538370368 31.471902440136013, -63.70571192939244 31.435279871635593 M-61.68749999999999 31.5 C-62.32112910317127 31.479680747945526, -62.95475820634255 31.459361495891056, -63.70571192939244 31.435279871635593 M-63.70571192939244 31.435279871635593 C-64.28643050875345 31.37925864870091, -64.86714908811446 31.323237425766226, -65.71563059306195 31.24138543543225 M-63.70571192939244 31.435279871635593 C-64.5035571123454 31.35831270638534, -65.30140229529836 31.28134554113509, -65.71563059306195 31.24138543543225 M-65.71563059306195 31.24138543543225 C-66.116072453344 31.176645100934852, -66.51651431362606 31.11190476643746, -67.70899680409323 30.919113445218557 M-65.71563059306195 31.24138543543225 C-66.41504903607238 31.128308885637356, -67.11446747908282 31.015232335842466, -67.70899680409323 30.919113445218557 M-67.70899680409323 30.919113445218557 C-68.42825840941941 30.75494667742347, -69.14752001474561 30.590779909628385, -69.67761939314947 30.469788185729428 M-67.70899680409323 30.919113445218557 C-68.26877883627151 30.791346849293006, -68.8285608684498 30.663580253367456, -69.67761939314947 30.469788185729428 M-69.67761939314947 30.469788185729428 C-70.22589804403248 30.30706196012072, -70.77417669491547 30.144335734512016, -71.61340886774403 29.89525603083607 M-69.67761939314947 30.469788185729428 C-70.10810323960568 30.342022839757046, -70.5385870860619 30.21425749378466, -71.61340886774403 29.89525603083607 M-71.61340886774403 29.89525603083607 C-72.0241664654945 29.744093437862286, -72.43492406324498 29.5929308448885, -73.50841065370028 29.197877856399685 M-71.61340886774403 29.89525603083607 C-72.09906419263969 29.716530381925857, -72.58471951753535 29.53780473301564, -73.50841065370028 29.197877856399685 M-73.50841065370028 29.197877856399685 C-74.12095828542674 28.926721190414277, -74.73350591715321 28.655564524428865, -75.35483778220308 28.380519338926206 M-73.50841065370028 29.197877856399685 C-74.0147525329456 28.973735326555968, -74.52109441219092 28.74959279671225, -75.35483778220308 28.380519338926206 M-75.35483778220308 28.380519338926206 C-75.93070849650482 28.08008795613778, -76.50657921080656 27.779656573349357, -77.14510288812403 27.446539179886773 M-75.35483778220308 28.380519338926206 C-75.89032230287708 28.10115740748478, -76.4258068235511 27.821795476043356, -77.14510288812403 27.446539179886773 M-77.14510288812403 27.446539179886773 C-77.77503525295134 27.06467047843498, -78.40496761777865 26.682801776983183, -78.87184938813226 26.399775304092994 M-77.14510288812403 27.446539179886773 C-77.51882660819857 27.21998566453323, -77.89255032827312 26.993432149179682, -78.87184938813226 26.399775304092994 M-78.87184938813226 26.399775304092994 C-79.50183714182018 25.960323118850624, -80.13182489550807 25.520870933608254, -80.5279817104733 25.244529088840636 M-78.87184938813226 26.399775304092994 C-79.3080615775598 26.095492564069676, -79.74427376698733 25.791209824046362, -80.5279817104733 25.244529088840636 M-80.5279817104733 25.244529088840636 C-81.02711533065386 24.8464833092501, -81.52624895083443 24.448437529659568, -82.10669445219533 23.98554768862774 M-80.5279817104733 25.244529088840636 C-81.08779678462277 24.79809146451121, -81.64761185877222 24.351653840181783, -82.10669445219533 23.98554768862774 M-82.10669445219533 23.98554768862774 C-82.65997812317961 23.483070097723548, -83.21326179416391 22.980592506819352, -83.6015003440098 22.628004528078435 M-82.10669445219533 23.98554768862774 C-82.57907734127137 23.556542047335224, -83.0514602303474 23.12753640604271, -83.6015003440098 22.628004528078435 M-83.6015003440098 22.628004528078435 C-84.10673663245399 22.106306579589095, -84.61197292089818 21.58460863109976, -85.00625690787244 21.177478043231478 M-83.6015003440098 22.628004528078435 C-84.10089825333132 22.112335185373098, -84.60029616265284 21.59666584266776, -85.00625690787244 21.177478043231478 M-85.00625690787244 21.177478043231478 C-85.27356573357221 20.86348188626145, -85.54087455927198 20.549485729291423, -86.31519169774293 19.639928758550113 M-85.00625690787244 21.177478043231478 C-85.44268884062315 20.664820261342015, -85.87912077337386 20.15216247945255, -86.31519169774293 19.639928758550113 M-86.31519169774293 19.639928758550113 C-86.61236457792037 19.241744172118675, -86.9095374580978 18.843559585687238, -87.5229260198041 18.021674793848355 M-86.31519169774293 19.639928758550113 C-86.61853783421803 19.23347257107503, -86.92188397069313 18.827016383599943, -87.5229260198041 18.021674793848355 M-87.5229260198041 18.021674793848355 C-87.79907087833213 17.597442135872065, -88.07521573686017 17.173209477895778, -88.6244970346684 16.329365901781557 M-87.5229260198041 18.021674793848355 C-87.85197968273899 17.51616000429985, -88.18103334567387 17.010645214751342, -88.6244970346684 16.329365901781557 M-88.6244970346684 16.329365901781557 C-88.95555324666162 15.741542074311003, -89.28660945865485 15.153718246840446, -89.6153781507495 14.569956142586314 M-88.6244970346684 16.329365901781557 C-88.8952271164319 15.848657227216963, -89.1659571981954 15.367948552652368, -89.6153781507495 14.569956142586314 M-89.6153781507495 14.569956142586314 C-89.82886470916141 14.126646736163421, -90.0423512675733 13.683337329740526, -90.49149762499809 12.750675308355417 M-89.6153781507495 14.569956142586314 C-89.89546486352951 13.988350090603015, -90.17555157630952 13.406744038619717, -90.49149762499809 12.750675308355417 M-90.49149762499809 12.750675308355417 C-90.78846318849848 12.01716462507087, -91.08542875199886 11.283653941786326, -91.24925529456745 10.878999214271209 M-90.49149762499809 12.750675308355417 C-90.73272809418461 12.15483138559088, -90.97395856337113 11.558987462826341, -91.24925529456745 10.878999214271209 M-91.24925529456745 10.878999214271209 C-91.40503532166967 10.409814592815993, -91.5608153487719 9.940629971360776, -91.88553737065482 8.962618978877522 M-91.24925529456745 10.878999214271209 C-91.38500862520617 10.470131811743286, -91.5207619558449 10.061264409215365, -91.88553737065482 8.962618978877522 M-91.88553737065482 8.962618978877522 C-92.0854065015707 8.200431358865904, -92.2852756324866 7.438243738854287, -92.39772923372743 7.009409419623911 M-91.88553737065482 8.962618978877522 C-92.06108363553534 8.293184988655568, -92.23662990041588 7.6237509984336125, -92.39772923372743 7.009409419623911 M-92.39772923372743 7.009409419623911 C-92.51833945894437 6.390101404115091, -92.6389496841613 5.770793388606272, -92.78372617755518 5.027396693551461 M-92.39772923372743 7.009409419623911 C-92.49485752205142 6.510676187151271, -92.5919858103754 6.01194295467863, -92.78372617755518 5.027396693551461 M-92.78372617755518 5.027396693551461 C-92.87813300764616 4.2951959621030555, -92.97253983773714 3.562995230654651, -93.04194205789975 3.024725316091999 M-92.78372617755518 5.027396693551461 C-92.87880612868594 4.289975368241361, -92.9738860798167 3.55255404293126, -93.04194205789975 3.024725316091999 M-93.04194205789975 3.024725316091999 C-93.07046611526687 2.5804400983943556, -93.09899017263399 2.1361548806967123, -93.17131581032167 1.0096246935071416 M-93.04194205789975 3.024725316091999 C-93.06868003118602 2.608259799654712, -93.0954180044723 2.1917942832174253, -93.17131581032167 1.0096246935071416 M-93.17131581032167 1.0096246935071416 C-93.17131581032167 0.2503760295293542, -93.17131581032167 -0.5088726344484331, -93.17131581032167 -1.0096246935071262 M-93.17131581032167 1.0096246935071416 C-93.17131581032167 0.41011236164431564, -93.17131581032167 -0.1893999702185103, -93.17131581032167 -1.0096246935071262 M-93.17131581032167 -1.0096246935071262 C-93.14052623500758 -1.489197181921942, -93.1097366596935 -1.968769670336758, -93.04194205789975 -3.024725316091956 M-93.17131581032167 -1.0096246935071262 C-93.12643724308893 -1.7086446034845344, -93.08155867585619 -2.4076645134619423, -93.04194205789975 -3.024725316091956 M-93.04194205789975 -3.024725316091956 C-92.95940526630079 -3.6648643730004187, -92.87686847470184 -4.305003429908882, -92.78372617755518 -5.027396693551446 M-93.04194205789975 -3.024725316091956 C-92.97094578111556 -3.5753584190294836, -92.89994950433139 -4.125991521967011, -92.78372617755518 -5.027396693551446 M-92.78372617755518 -5.027396693551446 C-92.6496295372092 -5.715954600393099, -92.51553289686322 -6.404512507234751, -92.39772923372745 -7.009409419623896 M-92.78372617755518 -5.027396693551446 C-92.64390260567882 -5.745361183414153, -92.50407903380247 -6.46332567327686, -92.39772923372745 -7.009409419623896 M-92.39772923372745 -7.009409419623896 C-92.28440035849182 -7.44158153794253, -92.17107148325621 -7.873753656261163, -91.88553737065482 -8.962618978877506 M-92.39772923372745 -7.009409419623896 C-92.28394387504603 -7.443322307162532, -92.17015851636462 -7.877235194701167, -91.88553737065482 -8.962618978877506 M-91.88553737065482 -8.962618978877506 C-91.70757082912887 -9.498625846835965, -91.52960428760292 -10.034632714794427, -91.24925529456746 -10.878999214271168 M-91.88553737065482 -8.962618978877506 C-91.75427022270844 -9.35797471391223, -91.62300307476205 -9.75333044894695, -91.24925529456746 -10.878999214271168 M-91.24925529456746 -10.878999214271168 C-91.04001539008115 -11.395825823730686, -90.83077548559486 -11.912652433190205, -90.49149762499809 -12.750675308355401 M-91.24925529456746 -10.878999214271168 C-91.06741088441697 -11.328158423065386, -90.88556647426647 -11.777317631859601, -90.49149762499809 -12.750675308355401 M-90.49149762499809 -12.750675308355401 C-90.2033794806348 -13.348958799866491, -89.91526133627151 -13.94724229137758, -89.6153781507495 -14.5699561425863 M-90.49149762499809 -12.750675308355401 C-90.14322649845714 -13.473867754426045, -89.79495537191619 -14.19706020049669, -89.6153781507495 -14.5699561425863 M-89.6153781507495 -14.5699561425863 C-89.4110183997398 -14.932817574172761, -89.2066586487301 -15.295679005759222, -88.6244970346684 -16.329365901781546 M-89.6153781507495 -14.5699561425863 C-89.38792768693827 -14.97381747294011, -89.16047722312702 -15.377678803293922, -88.6244970346684 -16.329365901781546 M-88.6244970346684 -16.329365901781546 C-88.31264317190795 -16.808457179469073, -88.0007893091475 -17.2875484571566, -87.52292601980412 -18.021674793848344 M-88.6244970346684 -16.329365901781546 C-88.3151577089231 -16.804594175366095, -88.00581838317778 -17.27982244895064, -87.52292601980412 -18.021674793848344 M-87.52292601980412 -18.021674793848344 C-87.25711830141763 -18.37783292090492, -86.99131058303117 -18.73399104796149, -86.31519169774295 -19.639928758550102 M-87.52292601980412 -18.021674793848344 C-87.10225682506801 -18.5853331910427, -86.68158763033189 -19.148991588237056, -86.31519169774295 -19.639928758550102 M-86.31519169774295 -19.639928758550102 C-85.79696451136013 -20.24866789963762, -85.27873732497731 -20.857407040725143, -85.00625690787246 -21.177478043231467 M-86.31519169774295 -19.639928758550102 C-86.02741521678864 -19.977967388024673, -85.73963873583435 -20.316006017499248, -85.00625690787246 -21.177478043231467 M-85.00625690787246 -21.177478043231467 C-84.58836342259644 -21.608987376472168, -84.17046993732042 -22.040496709712865, -83.60150034400984 -22.628004528078403 M-85.00625690787246 -21.177478043231467 C-84.66577384467705 -21.529054760160093, -84.32529078148163 -21.88063147708872, -83.60150034400984 -22.628004528078403 M-83.60150034400984 -22.628004528078403 C-83.01915066950626 -23.156879094334496, -82.4368009950027 -23.68575366059059, -82.10669445219536 -23.98554768862771 M-83.60150034400984 -22.628004528078403 C-83.18396674968864 -23.00719749110739, -82.76643315536742 -23.38639045413638, -82.10669445219536 -23.98554768862771 M-82.10669445219536 -23.98554768862771 C-81.58920239632532 -24.398233832142108, -81.0717103404553 -24.810919975656507, -80.52798171047331 -25.244529088840626 M-82.10669445219536 -23.98554768862771 C-81.64870081258712 -24.350785428492674, -81.19070717297889 -24.716023168357637, -80.52798171047331 -25.244529088840626 M-80.52798171047331 -25.244529088840626 C-79.99443007681259 -25.61671161140439, -79.46087844315186 -25.988894133968152, -78.8718493881323 -26.39977530409297 M-80.52798171047331 -25.244529088840626 C-80.14190004355409 -25.51384294647748, -79.75581837663488 -25.78315680411434, -78.8718493881323 -26.39977530409297 M-78.8718493881323 -26.39977530409297 C-78.43008979142961 -26.667572567681695, -77.98833019472691 -26.935369831270418, -77.14510288812404 -27.446539179886763 M-78.8718493881323 -26.39977530409297 C-78.20640650434201 -26.803170690823094, -77.54096362055172 -27.20656607755322, -77.14510288812404 -27.446539179886763 M-77.14510288812404 -27.446539179886763 C-76.64691218255307 -27.706444951876765, -76.14872147698209 -27.966350723866768, -75.35483778220309 -28.3805193389262 M-77.14510288812404 -27.446539179886763 C-76.66888357757678 -27.694982489166247, -76.1926642670295 -27.943425798445734, -75.35483778220309 -28.3805193389262 M-75.35483778220309 -28.3805193389262 C-74.8213899068079 -28.61666088919466, -74.2879420314127 -28.852802439463122, -73.5084106537003 -29.19787785639968 M-75.35483778220309 -28.3805193389262 C-74.72607040540947 -28.658856004911193, -74.09730302861587 -28.937192670896188, -73.5084106537003 -29.19787785639968 M-73.5084106537003 -29.19787785639968 C-72.99800186965635 -29.38571300709493, -72.4875930856124 -29.573548157790185, -71.61340886774407 -29.895256030836055 M-73.5084106537003 -29.19787785639968 C-73.00529293546947 -29.383029827477827, -72.50217521723866 -29.568181798555973, -71.61340886774407 -29.895256030836055 M-71.61340886774407 -29.895256030836055 C-71.03280364164108 -30.0675766142844, -70.45219841553809 -30.239897197732745, -69.67761939314951 -30.469788185729417 M-71.61340886774407 -29.895256030836055 C-70.84129232587564 -30.124416167540172, -70.0691757840072 -30.353576304244292, -69.67761939314951 -30.469788185729417 M-69.67761939314951 -30.469788185729417 C-69.14939496592193 -30.59035196425759, -68.62117053869434 -30.71091574278576, -67.70899680409325 -30.919113445218553 M-69.67761939314951 -30.469788185729417 C-68.9755827808687 -30.630023461265477, -68.27354616858791 -30.79025873680154, -67.70899680409325 -30.919113445218553 M-67.70899680409325 -30.919113445218553 C-67.05404571220387 -31.02500085853365, -66.39909462031449 -31.13088827184875, -65.71563059306196 -31.24138543543225 M-67.70899680409325 -30.919113445218553 C-67.21224966438272 -30.99942367043535, -66.7155025246722 -31.07973389565214, -65.71563059306196 -31.24138543543225 M-65.71563059306196 -31.24138543543225 C-65.17001847420049 -31.29401998034424, -64.62440635533902 -31.346654525256227, -63.70571192939246 -31.435279871635593 M-65.71563059306196 -31.24138543543225 C-64.91495585238833 -31.318625564712775, -64.1142811117147 -31.395865693993297, -63.70571192939246 -31.435279871635593 M-63.70571192939246 -31.435279871635593 C-63.270379911047904 -31.449240122141532, -62.83504789270336 -31.463200372647474, -61.68750000000001 -31.5 M-63.70571192939246 -31.435279871635593 C-63.10884122306942 -31.454420353449024, -62.51197051674637 -31.47356083526245, -61.68750000000001 -31.5 M-61.68750000000001 -31.5 C-61.68750000000001 -31.5, -61.6875 -31.5, -61.6875 -31.5 M-61.68750000000001 -31.5 C-61.68750000000001 -31.5, -61.6875 -31.5, -61.6875 -31.5" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="">
+            </path>
+          </g>
+          <g class="label" style="" transform="translate(-77.8125, -24)">
+            <rect>
+            </rect>
+            <foreignObject width="155.625" height="48">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Patient/Doctor Opens<br/>Diabetes Dashboard</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-Auth-1" transform="translate(210.796875, 201.9140625)">
+          <polygon points="80.9140625,0 161.828125,-80.9140625 80.9140625,-161.828125 0,-80.9140625" class="label-container" transform="translate(-80.4140625, 80.9140625)">
+          </polygon>
+          <g class="label" style="" transform="translate(-53.9140625, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="107.828125" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Authenticated?</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-Login-3" transform="translate(108.33203125, 420.421875)">
+          <rect class="basic label-container" style="" x="-91.3359375" y="-27" width="182.671875" height="54">
+          </rect>
+          <g class="label" style="" transform="translate(-61.3359375, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="122.671875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Redirect to Login</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-Role-5" transform="translate(313.26171875, 420.421875)">
+          <polygon points="63.59375,0 127.1875,-63.59375 63.59375,-127.1875 0,-63.59375" class="label-container" transform="translate(-63.09375, 63.59375)">
+          </polygon>
+          <g class="label" style="" transform="translate(-36.59375, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="73.1875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>User Role?</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-GetPatientData-7" transform="translate(267.12109375, 701.015625)">
+          <rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78">
+          </rect>
+          <g class="label" style="" transform="translate(-100, -24)">
+            <rect>
+            </rect>
+            <foreignObject width="200" height="48">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;">
+                <span class="nodeLabel">
+                  <p>GET /patient/diabetes-dashboard</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-SelectPatient-9" transform="translate(807.859375, 585.015625)">
+          <rect class="basic label-container" style="" x="-114.6875" y="-27" width="229.375" height="54">
+          </rect>
+          <g class="label" style="" transform="translate(-84.6875, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="169.375" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Select Patient from List</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-GetDoctorData-11" transform="translate(807.859375, 701.015625)">
+          <rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78">
+          </rect>
+          <g class="label" style="" transform="translate(-100, -24)">
+            <rect>
+            </rect>
+            <foreignObject width="200" height="48">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;">
+                <span class="nodeLabel">
+                  <p>GET /doctor/diabetes-dashboard/patient_id</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-CheckData-13" transform="translate(313.26171875, 875.0859375)">
+          <polygon points="85.0703125,0 170.140625,-85.0703125 85.0703125,-170.140625 0,-85.0703125" class="label-container" transform="translate(-84.5703125, 85.0703125)">
+          </polygon>
+          <g class="label" style="" transform="translate(-46.0703125, -24)">
+            <rect>
+            </rect>
+            <foreignObject width="92.140625" height="48">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Has Diabetes<br/>Data?</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-EmptyState-17" transform="translate(275.0625, 1152.140625)">
+          <rect class="basic label-container" style="fill:#e0e0e0 !important" x="-126.1328125" y="-39" width="252.265625" height="78">
+          </rect>
+          <g class="label" style="" transform="translate(-96.1328125, -24)">
+            <rect>
+            </rect>
+            <foreignObject width="192.265625" height="48">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Show Empty State<br/>Upload reports for analysis</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-CheckConditions-19" transform="translate(569.1796875, 1152.140625)">
+          <polygon points="117.984375,0 235.96875,-117.984375 117.984375,-235.96875 0,-117.984375" class="label-container" transform="translate(-117.484375, 117.984375)">
+          </polygon>
+          <g class="label" style="" transform="translate(-54.984375, -48)">
+            <rect>
+            </rect>
+            <foreignObject width="109.96875" height="96">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Diabetes in<br/>Medical History<br/>OR<br/>AI Prediction?</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-NoAccess-21" transform="translate(434.7421875, 1407.125)">
+          <rect class="basic label-container" style="" x="-113.6484375" y="-27" width="227.296875" height="54">
+          </rect>
+          <g class="label" style="" transform="translate(-83.6484375, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="167.296875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>No diabetes data found</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-FetchData-23" transform="translate(703.6171875, 1407.125)">
+          <rect class="basic label-container" style="" x="-105.2265625" y="-63" width="210.453125" height="126">
+          </rect>
+          <g class="label" style="" transform="translate(-75.2265625, -48)">
+            <rect>
+            </rect>
+            <foreignObject width="150.453125" height="96">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Fetch Data from:<br/>MongoDB analyses<br/>PostgreSQL user data<br/>Report extractions</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-CalculateStatus-25" transform="translate(703.6171875, 1614.5234375)">
+          <polygon points="94.3984375,0 188.796875,-94.3984375 94.3984375,-188.796875 0,-94.3984375" class="label-container" transform="translate(-93.8984375, 94.3984375)">
+          </polygon>
+          <g class="label" style="" transform="translate(-55.3984375, -24)">
+            <rect>
+            </rect>
+            <foreignObject width="110.796875" height="48">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Calculate<br/>Diabetes Status</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-Diabetic-27" transform="translate(99.4609375, 1833.921875)">
+          <rect class="basic label-container" style="fill:#ff6b6b !important" x="-89.671875" y="-27" width="179.34375" height="54">
+          </rect>
+          <g class="label" style="" transform="translate(-59.671875, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="119.34375" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Status: DIABETIC</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-AtRisk-29" transform="translate(594.7578125, 1833.921875)">
+          <rect class="basic label-container" style="fill:#ffa500 !important" x="-83" y="-27" width="166" height="54">
+          </rect>
+          <g class="label" style="" transform="translate(-53, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="106" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Status: AT-RISK</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-Monitoring-31" transform="translate(830.5, 1833.921875)">
+          <rect class="basic label-container" style="fill:#4caf50 !important" x="-102.7421875" y="-27" width="205.484375" height="54">
+          </rect>
+          <g class="label" style="" transform="translate(-72.7421875, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="145.484375" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Status: MONITORING</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-BuildDashboard-33" transform="translate(440.00390625, 1937.921875)">
+          <rect class="basic label-container" style="" x="-106.5390625" y="-27" width="213.078125" height="54">
+          </rect>
+          <g class="label" style="" transform="translate(-76.5390625, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="153.078125" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Build Dashboard Data</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-Aggregation-39" transform="translate(440.00390625, 2113.921875)">
+          <rect class="basic label-container" style="" x="-94.984375" y="-99" width="189.96875" height="198">
+          </rect>
+          <g class="label" style="" transform="translate(-64.984375, -84)">
+            <rect>
+            </rect>
+            <foreignObject width="129.96875" height="168">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Aggregate:<br/>Prediction history<br/>HbA1c trends<br/>Glucose trends<br/>BMI history<br/>Risk factors<br/>Recommendations</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-Response-41" transform="translate(440.00390625, 2289.921875)">
+          <rect class="basic label-container" style="" x="-113.9375" y="-27" width="227.875" height="54">
+          </rect>
+          <g class="label" style="" transform="translate(-83.9375, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="167.875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Return Dashboard JSON</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-Display-43" transform="translate(440.00390625, 2453.921875)">
+          <rect class="basic label-container" style="" x="-94.984375" y="-87" width="189.96875" height="174">
+          </rect>
+          <g class="label" style="" transform="translate(-64.984375, -72)">
+            <rect>
+            </rect>
+            <foreignObject width="129.96875" height="144">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Display:<br/>Status badge<br/>Latest prediction<br/>Trend charts<br/>Risk factors<br/>Recommendations</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-Actions-45" transform="translate(715.82421875, 2658.5859375)">
+          <polygon points="67.6640625,0 135.328125,-67.6640625 67.6640625,-135.328125 0,-67.6640625" class="label-container" transform="translate(-67.1640625, 67.6640625)">
+          </polygon>
+          <g class="label" style="" transform="translate(-40.6640625, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="81.328125" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>User Action</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-ReportFlow-47" transform="translate(432.73828125, 2839.25)">
+          <rect class="basic label-container" style="" x="-103.0859375" y="-27" width="206.171875" height="54">
+          </rect>
+          <g class="label" style="" transform="translate(-73.0859375, -12)">
+            <rect>
+            </rect>
+            <foreignObject width="146.171875" height="24">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                <span class="nodeLabel">
+                  <p>Go to Report Upload</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+        <g class="node default" id="flowchart-DrillDown-49" transform="translate(715.82421875, 2839.25)">
+          <rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78">
+          </rect>
+          <g class="label" style="" transform="translate(-100, -24)">
+            <rect>
+            </rect>
+            <foreignObject width="200" height="48">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;">
+                <span class="nodeLabel">
+                  <p>Navigate to Report or Analysis</p>
+                </span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</g>
+</svg>
