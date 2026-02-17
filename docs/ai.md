@@ -1,7 +1,16 @@
 # AI Module Documentation
 
 ## Overview
-The AI module provides intelligent medical data extraction, analysis, and conversational AI capabilities powered by Google's Gemini 2.5 Flash model and XGBoost machine learning. It includes report extraction (lab results, medications, diagnoses), diabetes risk prediction, RAG-based medical chat, and automated case summarization. All AI-extracted data is stored in MongoDB and linked to PostgreSQL records.
+The AI module provides intelligent medical data extraction, analysis, and conversational AI capabilities powered by Google's Gemini 2.5 Flash model and XGBoost machine learning. It includes:
+
+- **Report Extraction**: Extract structured data (lab results, medications, diagnoses) from PDFs and images
+- **Diabetes Risk Prediction**: XGBoost-based diabetes risk assessment with AI-generated narratives
+- **RAG-based Medical Chat**: Context-aware conversations about patient medical history with tool calling support
+- **AI Tool Calling**: 11 intelligent tools for appointments, reports, health insights, symptom checking, and more
+- **Voice Chat**: Multilingual voice input/output with automatic transcription and translation (Kannada, Hindi, English)
+- **Automated Case Summarization**: Comprehensive summaries of patient cases
+
+All AI-extracted data is stored in MongoDB and linked to PostgreSQL records.
 
 ---
 
@@ -825,7 +834,28 @@ Status Code: `429 Too Many Requests`
 
 ---
 
-## 11. Error Handling
+## 11. Get My Profile (`get_my_profile`)
+Retrieves the user's personal medical profile.
+
+**When Activated:**
+- "What is my blood group?"
+- "Do I have any allergies?"
+- "Show my profile"
+
+**Parameters:**
+- None
+
+**Example Response:**
+> "Name: Rahul
+> Age: 28
+> Gender: Male
+> Blood Group: O+
+> Allergies: Peanuts, Penicillin
+> Current Medications: Metformin 500mg"
+
+---
+
+## 12. Error Handling
 
 ### **Common Errors**
 
@@ -867,11 +897,513 @@ db.chats.createIndex({ "patient_id": 1 });
 
 ---
 
-## 13. Future Enhancements
+---
 
-- **Multi-language Support**: Extract reports in different languages
-- **Voice Input**: Voice-to-text for chat messages
+## 13. Voice Chat (Multilingual Support)
+
+### **Overview**
+The voice chat feature enables users to interact with the AI using voice messages in any language. The system automatically transcribes the audio, translates it to English for processing, executes any necessary tools, and translates the response back to the user's preferred language.
+
+### **Supported Languages**
+- **Input**: Any language (Kannada, Hindi, English, Telugu, Tamil, etc.)
+- **Output**: English, Kannada, Hindi (user-selectable)
+
+### **Voice Message Endpoint**
+Send a voice message and receive an AI response with tool calling support.
+
+-**Endpoint**: `POST /ai/chat/{chat_id}/voice-message`
+- **Auth**: Required (Chat owner)
+- **Rate Limit**: 20 requests/minute
+- **Content-Type**: `multipart/form-data`
+
+**Request Parameters:**
+- `audio_file`: Audio file (File, required) - Formats: webm, wav, mp3, m4a
+- `language`: Response language (Form, optional) - Options: `english`, `kannada`, `hindi` (default: `english`)
+- `attach_report_ids`: Comma-separated report IDs (Form, optional)
+
+**Example (Python):**
+```python
+import requests
+
+files = {
+    'audio_file': ('message.webm', open('message.webm', 'rb'), 'audio/webm')
+}
+data = {
+    'language': 'kannada',  # Response in Kannada
+    'attach_report_ids': 'report-1,report-2'
+}
+
+response = requests.post(
+    'https://api.example.com/ai/chat/{chat_id}/voice-message',
+    headers={'Authorization': 'Bearer YOUR_TOKEN'},
+    files=files,
+    data=data
+)
+```
+
+**Example (JavaScript/FormData):**
+```javascript
+const formData = new FormData();
+formData.append('audio_file', audioBlob, 'message.webm');
+formData.append('language', 'hindi');  // Response in Hindi
+formData.append('attach_report_ids', 'report-1,report-2');
+
+fetch(`https://api.example.com/ai/chat/${chatId}/voice-message`, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  },
+  body: formData
+});
+```
+
+**Response** (same as text message):
+```json
+{
+  "message_id": "msg-uuid-1",
+  "response": "ನಿಮ್ಮ ಇತ್ತೀಚಿನ HbA1c ಮಟ್ಟಗಳು 5.2% ಆಗಿದ್ದು, ಇದು ಸಾಮಾನ್ಯ ವ್ಯಾಪ್ತಿಯಲ್ಲಿದೆ...",
+  "sources": ["report-uuid-1"],
+  "title": "HbA1c Discussion",
+  "timestamp": "2026-01-22T10:31:00Z"
+}
+```
+
+### **Processing Pipeline**
+1. **Transcription**: Audio → Text (any language detected automatically)
+2. **Translation**: Non-English → English (for AI processing)
+3. **Tool Calling**: AI determines if tools are needed and executes them
+4. **Response Generation**: AI creates contextual response
+5. **Translation**: English response → User's preferred language
+
+### **Use Cases**
+- **Rural healthcare**: Users can speak in local languages (Kannada, Hindi, etc.)
+- **Accessibility**: Easier for users with limited literacy
+- **Convenience**: Faster than typing medical terms
+- **Multilingual support**: Seamless experience in native language
+
+**Important Notes:**
+- Audio is transcribed using Gemini 2.5 Flash multimodal API
+- Language detection is automatic - no need to specify input language
+- Translation preserves medical terminology accuracy
+- Tool calling works the same as text chat (appointments, reports, etc.)
+
+---
+
+## 14. AI Tool Calling Framework
+
+### **Overview**
+The AI chat system includes an intelligent tool calling framework that allows Gemini to autonomously execute actions based on user requests. The AI can book appointments, retrieve medical reports, check symptoms, and more - all through natural conversation.
+
+### **How It Works**
+1. User sends a message (text or voice)
+2. Gemini analyzes the request and determines if a tool is needed
+3. If needed, Gemini calls the appropriate tool with extracted parameters
+4. Tool executes and returns structured results
+5. Gemini formats the results into a natural language response
+6. User receives a conversational response
+
+### **Available Tools**
+
+#### **1. Create Appointment** (`create_appointment`)
+Books a new appointment with a doctor.
+
+**When Activated:**
+- "Book an appointment with Dr. Smith tomorrow at 2 PM"
+- "Schedule a follow-up on March 15th at 10:30 AM"
+- "I want to see Dr. Kumar next week"
+
+**Parameters:**
+- `doctor_name_or_id`: Doctor's name or user ID
+- `date`: Date (YYYY-MM-DD)
+- `time`: Time (HH:MM, 24-hour format, interpreted as IST)
+- `type`: Consultation, Follow-up, or Emergency
+- `reason`: Reason for appointment (optional)
+
+**Validations:**
+- ✅ Patient must be assigned to the doctor
+- ✅ Cannot book in the past
+- ✅ Checks for overlapping appointments
+- ✅ Validates appointment type (case-insensitive matching)
+- ✅ Times are interpreted as IST (Asia/Kolkata) and stored as UTC
+
+**Example Response:**
+> "I've successfully booked your consultation appointment with Dr. Priya Sharma for March 15, 2026 at 10:30 AM IST. You'll receive a confirmation notification shortly."
+
+**Error Examples:**
+- "You are not assigned to Dr. Smith. You can only book with your assigned doctors."
+- "Cannot book appointment in the past. The requested time (2026-01-15 02:00 PM IST) has already passed."
+- "Dr. Sharma already has an appointment from 10:00 to 10:30. Please choose a different time."
+- "Invalid appointment type: 'checkup'. Valid types are: Consultation, Follow-up, Emergency"
+
+---
+
+#### **2. List My Appointments** (`list_my_appointments`)
+Retrieves user's upcoming or past appointments.
+
+**When Activated:**
+- "Show me my upcoming appointments"
+- "What appointments do I have this week?"
+- "List my appointments from January to February"
+
+**Parameters:**
+- `start_date`: Filter from date (YYYY-MM-DD, optional) - supports multiple date formats
+- `end_date`: Filter to date (YYYY-MM-DD, optional) - supports multiple date formats
+- `status`: Scheduled, Completed, Cancelled, or No-show (optional, case-insensitive)
+
+**Validations:**
+- ✅ Safe date parsing with clear error messages
+- ✅ Case-insensitive status matching
+- ✅ Works for both patients and doctors
+
+**Example Response:**
+> "You have 2 upcoming appointments:
+> 1. Dr. Sharma - March 15, 2026 at 10:30 AM (Consultation)
+> 2. Dr. Kumar - March 22, 2026 at 3:00 PM (Follow-up)"
+
+---
+
+#### **3. Cancel Appointment** (`cancel_appointment`)
+Cancels an existing appointment.
+
+**When Activated:**
+- "Cancel my appointment with Dr. Sharma"
+- "I need to cancel my March 15th appointment"
+- "Remove my upcoming appointment"
+
+**Parameters:**
+- `appointment_identifier`: Date, doctor name, or appointment type
+
+**Example Response:**
+> "I've cancelled your appointment with Dr. Sharma scheduled for March 15, 2026 at 10:30 AM. The doctor has been notified."
+
+---
+
+#### **4. Get Latest Reports** (`get_latest_reports`)
+Retrieves summaries of recent medical reports.
+
+**When Activated:**
+- "Show me my latest lab reports"
+- "What are my recent test results?"
+- "Get my last 10 reports"
+
+**Parameters:**
+- `limit`: Number of reports to return (1-20, default: 5)
+
+**Access Control:**
+- **Patients**: See their own reports
+- **Doctors**: See reports from all assigned patients (with patient names)
+
+**Example Response (Patient):**
+> "Here are your 3 most recent reports:
+> 1. Lab Report (Jan 20, 2026): HbA1c 5.2%, Cholesterol 180 mg/dL
+> 2. Blood Test (Jan 10, 2026): Glucose 95 mg/dL, Normal ranges
+> 3. Annual Checkup (Dec 15, 2025): All vitals normal"
+
+**Example Response (Doctor):**
+> "Here are recent reports from your patients:
+> 1. Lab Report - Rahul Kumar (Jan 20, 2026): HbA1c test results
+> 2. Blood Test - Priya Sharma (Jan 15, 2026): Complete blood count"
+
+---
+
+#### **5. Get Report Details** (`get_report_details`)
+Retrieves detailed extraction from a specific report.
+
+**When Activated:**
+- "Show me details of my January 20th report"
+- "What were all the results in my latest lab report?"
+- "Get full details of report ABC123"
+
+**Parameters:**
+- `report_id`: Report ID to retrieve
+
+**Access Control:**
+- **Patients**: Can only view their own reports
+- **Doctors**: Can view reports of assigned patients only
+
+**Validations:**
+- ✅ ObjectId format validation for MongoDB references
+- ✅ MongoDB connection check before query
+- ✅ Proper access control for both patients and doctors
+
+**Example Response:**
+> "Your Lab Report from January 20, 2026:
+> - HbA1c: 5.2% (Normal: 4.0-5.6%)
+> - Fasting Glucose: 95 mg/dL (Normal: 70-100)
+> - Total Cholesterol: 180 mg/dL (Normal: <200)
+> - Blood Pressure: 120/80 mmHg
+> - Medications: Metformin 500mg twice daily"
+
+**Error Examples:**
+- "Access denied - patient not assigned to you"
+- "This report has not been analyzed yet"
+- "Invalid analysis reference. Report may need re-analysis."
+
+---
+
+#### **6. Get Health Insights** (`get_health_insights`)
+Generates AI-powered health insights from patient data.
+
+**When Activated:**
+- "Give me my health insights"
+- "What are my health trends?"
+- "Analyze my medical history"
+
+**Example Response:**
+> "Based on your medical history:
+> 
+> **Key Insights:**
+> - Your HbA1c has improved from 6.5% to 5.2% over 3 months - excellent progress!
+> - Blood pressure is consistently well-controlled
+> - Weight has decreased by 3 kg
+> 
+> **Risk Factors:**
+> - Family history of diabetes - continue monitoring
+> - BMI of 26 indicates overweight - weight management recommended
+> 
+> **Trends:**
+> - Blood sugar levels trending downward consistently
+> - Medication adherence is excellent"
+
+---
+
+#### **7. List My Doctors** (`list_my_doctors`)
+Shows all doctors assigned to the patient.
+
+**When Activated:**
+- "Who are my doctors?"
+- "Show me my assigned doctors"
+- "Which doctors can I book with?"
+
+**Parameters:**
+- `limit`: Max number of doctors to return (1-50, default: 20)
+- `name`: Filter by doctor name (partial match, e.g., "Sharma")
+
+**Example Response:**
+> "You are currently assigned to 2 doctors:
+> 1. Dr. Priya Sharma (Endocrinologist)
+> 2. Dr. Rahul Kumar (General Physician)"
+
+---
+
+#### **8. List My Patients** (`list_my_patients`)
+Shows all patients assigned to the doctor (doctors only).
+
+**When Activated:**
+- "Show me my patients"
+- "List all my assigned patients"
+- "Who am I treating?"
+
+**Parameters:**
+- `limit`: Max number of patients to return (1-50, default: 20)
+
+**Example Response:**
+> "You have 15 active patients. Showing first 20:
+> 1. John Doe (Age: 38)
+> 2. Jane Smith (Age: 45)
+> 3. Ram Kumar (Age: 52)"
+
+---
+
+#### **9. Get Booked Slots** (`get_booked_slots`)
+Shows booked appointment slots for a doctor on a specific date.
+
+**When Activated:**
+- "Is Dr. Sharma available on March 15th?"
+- "Show me Dr. Kumar's schedule for tomorrow"
+- "What slots are booked for Dr. Patel on March 20th?"
+
+**Parameters:**
+- `doctor_name_or_id`: Doctor's name or user ID
+- `date`: Date (YYYY-MM-DD)
+
+**Example Response:**
+> "Dr. Sharma has 3 appointments booked on March 15, 2026:
+> - 10:00 AM - 10:30 AM (Consultation)
+> - 2:00 PM - 2:30 PM (Follow-up)
+> - 4:30 PM - 5:00 PM (Consultation)
+> 
+> Available slots: 11:00 AM, 12:00 PM, 3:00 PM"
+
+**Note**: Patient names are anonymized for non-doctors (e.g., "J***")
+
+**Error Examples:**
+- "Multiple doctors match 'Kumar': Dr. Kumar Singh, Dr. Rahul Kumar. Please specify the full name."
+- "Doctor 'Dr. XYZ' not found"
+
+---
+
+#### **10. Check Symptoms** (`check_symptoms`)
+Analyzes symptoms and provides triage recommendations.
+
+**When Activated:**
+- "I have a headache and fever"
+- "I'm feeling dizzy and nauseous"
+- "Check my symptoms: cough, fatigue, body ache"
+
+**Parameters:**
+- `symptoms`: List of symptoms
+
+**Example Response:**
+> "Based on your symptoms (headache, fever), this appears to be a moderate concern.
+> 
+> **Severity**: Moderate
+> **Possible Causes**: Viral infection, flu, or migraine
+> **Recommendations**:
+> - Monitor temperature regularly
+> - Stay hydrated
+> - Rest
+> - If fever exceeds 102°F or persists beyond 3 days, consult a doctor
+> - Over-the-counter pain relievers may help
+> 
+> ⚠️ **Disclaimer**: This is not a medical diagnosis. Please consult a healthcare professional for accurate diagnosis and treatment."
+
+---
+
+#### **11. Get My Profile** (`get_my_profile`)
+Retrieves the user's personal medical profile.
+
+**When Activated:**
+- "What is my blood group?"
+- "Do I have any allergies?"
+- "Show my profile"
+
+**Parameters:**
+- None
+
+**Example Response:**
+> "Here is your profile:
+> - Name: Rahul
+> - Age: 28
+> - Gender: Male
+> - Blood Group: O+
+> - Allergies: Peanuts, Penicillin
+> - Current Medications: Metformin 500mg"
+
+---
+
+### **Tool Calling Examples**
+
+**Example 1: Multi-step conversation**
+```
+User: "Do I have any appointments this week?"
+AI: [Calls list_my_appointments]
+→ "You have one appointment: Dr. Sharma on March 15 at 10:30 AM."
+
+User: "I need to cancel that"
+AI: [Calls cancel_appointment]
+→ "I've cancelled your appointment with Dr. Sharma on March 15."
+```
+
+**Example 2: Complex request**
+```
+User: "Book me with Dr. Kumar for next Monday at 2 PM for a follow-up"
+AI: [Calls create_appointment with:
+     doctor_name="Dr. Kumar"
+     appointment_date="2026-03-17"
+     appointment_time="14:00"
+     appointment_type="follow-up"]
+→ "Your follow-up appointment with Dr. Kumar is confirmed for Monday, March 17 at 2:00 PM."
+```
+
+**Example 3: Health inquiry**
+```
+User: "What were my latest lab results and give me insights"
+AI: [Calls get_latest_reports then get_health_insights]
+→ "Your latest report from Jan 20 shows HbA1c at 5.2%... 
+   [Full report details]
+   
+   Based on your history, your diabetes control has improved significantly..."
+```
+
+### **Tool Execution Flow**
+
+```mermaid
+graph TD
+    A[User Message] --> B{Gemini Analysis}
+    B -->|Tool Needed| C[Extract Parameters]
+    B -->|No Tool| D[Generate Response]
+    C --> E[Execute Tool]
+    E -->|Success| F[Format Results]
+    E -->|Error| G[Friendly Error Message]
+    F --> H[Natural Language Response]
+    G --> H
+    D --> H
+    H --> I[Return to User]
+```
+
+### **Error Handling**
+
+The AI gracefully handles tool errors with clear, actionable messages:
+
+**Appointment Errors:**
+- **Doctor not found**: "Doctor 'Dr. XYZ' not found. Please check the name and try again."
+- **Not assigned**: "You are not assigned to Dr. Smith. You can only book with your assigned doctors."
+- **Past date**: "Cannot book appointment in the past. The requested time (2026-01-15 02:00 PM IST) has already passed."
+- **Overlap**: "Dr. Sharma already has an appointment from 10:00 to 10:30. Please choose a different time."
+- **Invalid type**: "Invalid appointment type: 'checkup'. Valid types are: Consultation, Follow-up, Emergency"
+- **Invalid date**: "Invalid start_date format: 'tomorrow'. Expected YYYY-MM-DD."
+
+**Report Errors:**
+- **Access denied**: "Access denied - patient not assigned to you"
+- **Not analyzed**: "This report has not been analyzed yet"
+- **Invalid reference**: "Invalid analysis reference. Report may need re-analysis."
+- **No connection**: "Database connection unavailable for analysis retrieval"
+
+**General Errors:**
+- **Permission denied**: "Only patients can book appointments"
+- **Empty response**: "I'm sorry, I couldn't generate a response. Please try again."
+
+### **Timezone Handling**
+
+All appointment times are interpreted as **IST (Asia/Kolkata)** timezone:
+- User says "2 PM" → Stored as 2:00 PM IST (8:30 AM UTC)
+- Displayed times are in IST format
+- This ensures correct scheduling for Indian users
+
+### **Doctor Name Resolution**
+
+Doctor names are resolved using a multi-step approach:
+1. **Exact ID match** — if the input is a user ID, returns exact match
+2. **Case-insensitive name search** — uses `ILIKE %name%` for partial matching
+3. **Ambiguity handling** — if multiple doctors match, returns an error with all matching names
+
+**Example:**
+- Input: `"Kumar"` → Matches `Dr. Kumar Singh` and `Dr. Rahul Kumar` → Error: "Multiple doctors match 'Kumar': Dr. Kumar Singh, Dr. Rahul Kumar. Please specify the full name."
+- Input: `"Priya Sharma"` → Single match → Returns `Dr. Priya Sharma`
+
+### **Context Caching**
+
+Chat context is built from patient data and attached reports. To balance freshness and performance:
+- **First message**: Context is always built fresh
+- **Subsequent messages**: Context is reused if it's less than **30 minutes** old
+- **Stale context**: Automatically rebuilt after 30 minutes (e.g., if new reports were uploaded)
+- **Context timestamp** is stored alongside context in MongoDB (`context_built_at`)
+
+### **Tool Call Safety**
+
+To prevent abuse or infinite loops:
+- Maximum **3 tool calls per message** — additional calls are rejected
+- Tool call count is tracked per message request
+- Each tool call is individually logged with tool name, args, and result
+
+### **Best Practices**
+
+1. **Natural Language**: Users can ask in natural conversational style
+2. **Flexible Inputs**: Multiple date formats supported (YYYY-MM-DD, DD-MM-YYYY, etc.)
+3. **Context Awareness**: AI remembers conversation context
+4. **Error Recovery**: Clear error messages with alternatives
+5. **Privacy**: Patient data anonymization where needed
+6. **Access Control**: Proper authorization checks for all data access
+7. **Structured Results**: Tool results sent as JSON for better AI formatting
+
+---
+
+## 15. Future Enhancements
+
 - **Report Comparison**: Compare lab results across time periods
 - **Predictive Analytics**: More ML models for different conditions
 - **Automated Reminders**: AI-suggested follow-ups based on trends
 - **Export Reports**: Download chat conversations as PDF
+- **Voice Output**: Text-to-speech for responses
+- **Real-time Translation**: Live translation during doctor-patient calls

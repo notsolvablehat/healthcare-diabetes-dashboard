@@ -11,7 +11,8 @@ Handles the full analysis workflow:
 7. Update Postgres with mongo_analysis_id
 """
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from bson import ObjectId
 from fastapi import HTTPException, status
@@ -823,11 +824,12 @@ class ChatService:
         mongo_db: AsyncDatabase,
         user_id: str,
     ):
-        """Send a message and get AI response."""
+        """Send a message and get AI response with tool calling support."""
         import uuid
 
         from src.ai.gemini_client import generate_chat_response, generate_chat_title
         from src.ai.models import ChatMessageResponse
+        from src.ai.tools import TOOL_DEFINITIONS, execute_tool
 
         # Fetch chat
         chat = await mongo_db.chats.find_one({"chat_id": chat_id})
@@ -857,10 +859,17 @@ class ChatService:
         messages = chat.get("messages", [])
         is_first_message = len(messages) == 0
 
-        # Build context on first message only
+        # Build context - first message or stale context (>30 min old) or reports changed
         context = chat.get("context", "")
-        if is_first_message or not context:
-            logger.info(f"[Chat] Building context for first message | chat_id={chat_id}")
+        context_built_at = chat.get("context_built_at")
+        context_is_stale = False
+        if context_built_at:
+            age_minutes = (now - context_built_at).total_seconds() / 60
+            context_is_stale = age_minutes > 30
+        
+        if is_first_message or not context or context_is_stale:
+            reason = "first_message" if is_first_message else ("stale" if context_is_stale else "missing")
+            logger.info(f"[Chat] Building context | chat_id={chat_id} | reason={reason}")
             context = await self._build_context(
                 db, mongo_db,
                 chat["patient_id"],
@@ -868,15 +877,93 @@ class ChatService:
             )
             await mongo_db.chats.update_one(
                 {"chat_id": chat_id},
-                {"$set": {"context": context}}
+                {"$set": {"context": context, "context_built_at": now}}
             )
 
-        # Get AI response
+        # Get tools list
+        tools_list = list(TOOL_DEFINITIONS.values())
+        user_role = chat["user_role"]
+
+        # Get AI response with tool calling support
         logger.info(f"[Chat] Generating response | chat_id={chat_id}")
+        
+        response_text = None
+        tool_used = None
+        
         try:
-            response_text = await generate_chat_response(context, messages, message)
+            # First call to Gemini - may return text or tool_call
+            ai_response = await generate_chat_response(
+                context, 
+                messages, 
+                message,
+                tools=tools_list,
+                user_role=user_role
+            )
+            
+            # Handle tool call (with max 3 tool calls per message)
+            if ai_response["type"] == "tool_call":
+                MAX_TOOL_CALLS = 3
+                tool_call_count = 0
+                tool_name = ai_response["name"]
+                tool_args = ai_response["args"]
+                
+                logger.info(f"[Chat] Tool called | tool={tool_name} | args={tool_args}")
+                tool_used = tool_name
+                tool_call_count += 1
+                
+                # Execute the tool with error handling
+                try:
+                    tool_result = await execute_tool(
+                        tool_name,
+                        tool_args,
+                        db,
+                        user_id,
+                        user_role,
+                        mongo_db
+                    )
+                    
+                    # Check if tool execution succeeded
+                    if not tool_result.get("success", False):
+                        error_msg = tool_result.get("error", "Unknown error")
+                        logger.warning(f"[Chat] Tool execution failed | tool={tool_name} | error={error_msg}")
+                        
+                        # Create a friendly error message for the user
+                        response_text = f"I tried to {tool_name.replace('_', ' ')}, but encountered an issue: {error_msg}. Please try again or rephrase your request."
+                    else:
+                        # Tool succeeded - format the result into a natural language response
+                        import json
+                        try:
+                            result_summary = json.dumps(tool_result, indent=2, default=str)
+                        except (TypeError, ValueError):
+                            result_summary = str(tool_result)
+                        
+                        # Get a natural language response from Gemini about the tool result
+                        follow_up_prompt = f"""The tool '{tool_name}' was executed successfully. Here are the results in JSON:
+{result_summary}
+
+Please provide a clear, friendly response to the user summarizing the results. Format the data nicely and highlight key information."""
+                        
+                        final_response = await generate_chat_response(
+                            context,
+                            messages,
+                            follow_up_prompt,
+                            tools=None,  # No tools for follow-up
+                            user_role=user_role
+                        )
+                        
+                        response_text = final_response.get("content", str(tool_result))
+                        logger.info(f"[Chat] Tool result formatted | tool={tool_name}")
+                
+                except Exception as tool_error:
+                    logger.error(f"[Chat] Tool execution error | tool={tool_name} | error={tool_error}", exc_info=True)
+                    response_text = f"I encountered an error while trying to {tool_name.replace('_', ' ')}: {str(tool_error)}. Please try again."
+            
+            else:
+                # Regular text response (no tool call)
+                response_text = ai_response.get("content", "I'm sorry, I couldn't generate a response.")
+        
         except Exception as e:
-            logger.error(f"[Chat] Response generation failed | error={e}")
+            logger.error(f"[Chat] Response generation failed | error={e}", exc_info=True)
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)) from e
 
         # Generate title on first message
@@ -907,6 +994,7 @@ class ChatService:
             "role": "assistant",
             "content": response_text,
             "sources": chat.get("attached_report_ids", []),
+            "tool_used": tool_used,  # Track which tool was used
             "timestamp": now.isoformat()
         }
 
@@ -918,7 +1006,7 @@ class ChatService:
             }
         )
 
-        logger.info(f"[Chat] Message saved | chat_id={chat_id} | msg_id={assistant_msg_id}")
+        logger.info(f"[Chat] Message saved | chat_id={chat_id} | msg_id={assistant_msg_id} | tool_used={tool_used}")
 
         return ChatMessageResponse(
             message_id=assistant_msg_id,
@@ -927,6 +1015,67 @@ class ChatService:
             title=title,
             timestamp=now
         )
+
+    async def send_voice_message(
+        self,
+        chat_id: str,
+        audio_bytes: bytes,
+        mime_type: str,
+        language: str,
+        attach_report_ids: list[str] | None,
+        db: Session,
+        mongo_db: AsyncDatabase,
+        user_id: str,
+    ):
+        """Process voice message: transcribe, handle with tool calling, translate response."""
+        from src.ai.gemini_client import (
+            transcribe_and_process_audio,
+            translate_response_to_language
+        )
+        
+        logger.info(f"[Chat] Processing voice message | chat_id={chat_id} | language={language}")
+        
+        # Transcribe audio
+        try:
+            transcription = await transcribe_and_process_audio(audio_bytes, mime_type)
+            logger.info(f"[Chat] Transcribed | detected_lang={transcription.detected_language} | text_len={len(transcription.transcribed_text)}")
+            logger.info(f"[Chat] Transcribed text: \"{transcription.transcribed_text}\"")
+            if transcription.english_translation and transcription.english_translation != transcription.transcribed_text:
+                logger.info(f"[Chat] English translation: \"{transcription.english_translation}\"")
+        except Exception as e:
+            logger.error(f"[Chat] Transcription failed | error={e}", exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Failed to transcribe audio: {str(e)}"
+            ) from e
+        
+        # Use English translation if available, otherwise use original transcription
+        message_text = transcription.english_translation or transcription.transcribed_text
+        
+        # Process message with tool calling (same as send_message)
+        response = await self.send_message(
+            chat_id=chat_id,
+            message=message_text,
+            attach_report_ids=attach_report_ids,
+            db=db,
+            mongo_db=mongo_db,
+            user_id=user_id
+        )
+        
+        # Translate response if needed
+        if language.lower() != "english":
+            try:
+                translated_response = await translate_response_to_language(
+                    response.response,
+                    language
+                )
+                response.response = translated_response
+                logger.info(f"[Chat] Response translated to {language}")
+            except Exception as e:
+                logger.warning(f"[Chat] Translation failed | error={e}")
+                # Continue with English response if translation fails
+        
+        return response
 
     async def get_history(self, chat_id: str, mongo_db: AsyncDatabase, user_id: str):
         """Get full chat history."""
@@ -1045,36 +1194,32 @@ class ChatService:
         patient_id: str,
         report_ids: list[str],
     ) -> str:
-        """Build context from patient reports (called once on first message)."""
+        """
+        Build minimal anchor context + attached reports.
+        Agentic flow: Minimal context, let AI use tools to fetch history.
+        """
         context_parts = []
-
-        # If specific reports attached, use those
+        
+        # 1. Anchor Context (Time & User)
+        IST = ZoneInfo("Asia/Kolkata")
+        now_ist = datetime.now(IST)
+        context_parts.append(f"CURRENT_TIME: {now_ist.strftime('%Y-%m-%d %A %I:%M %p')} (IST)")
+        context_parts.append(f"USER_ID: {patient_id}")
+        
+        # 2. Attached Reports (High Priority Context)
         if report_ids:
+            context_parts.append("\n=== ATTACHED REPORTS ===")
             for rid in report_ids:
                 analysis = await mongo_db.report_analysis.find_one({"report_id": rid})
                 if analysis:
                     report = db.query(ReportORM).filter(ReportORM.id == rid).first()
                     context_parts.append(
-                        f"=== Report: {report.file_name if report else rid} ===\n"
-                        f"Raw Text:\n{analysis.get('raw_text', '')[:5000]}\n\n"
-                        f"Extracted Data:\n{analysis.get('extracted_data', {})}\n"
+                        f"Report: {report.file_name if report else rid}\n"
+                        f"Summary:\n{analysis.get('extracted_data', {})}\n"
+                        f"Raw Text Segment:\n{analysis.get('raw_text', '')[:3000]}\n"
                     )
-        else:
-            # Use all patient reports
-            reports = db.query(ReportORM).filter(ReportORM.patient_id == patient_id).all()
-            for report in reports[:10]:  # Limit to 10 reports
-                if report.mongo_analysis_id:
-                    analysis = await mongo_db.report_analysis.find_one(
-                        {"_id": ObjectId(report.mongo_analysis_id)}
-                    )
-                    if analysis:
-                        context_parts.append(
-                            f"=== Report: {report.file_name} ===\n"
-                            f"Raw Text:\n{analysis.get('raw_text', '')[:5000]}\n\n"
-                            f"Extracted Data:\n{analysis.get('extracted_data', {})}\n"
-                        )
-
-        return "\n\n".join(context_parts)[:50000]  # Limit total context
+        
+        return "\n\n".join(context_parts)
 
 
 # Singleton instances

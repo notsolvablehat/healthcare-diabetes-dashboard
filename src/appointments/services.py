@@ -22,6 +22,8 @@ from .models import (
     AppointmentResponse,
     AppointmentStatus,
     AppointmentType,
+    BookedSlot,
+    BookedSlotsResponse,
     CreateAppointmentRequest,
     CreateAppointmentResponse,
     UpdateAppointmentStatusRequest,
@@ -394,4 +396,93 @@ def update_appointment_status(
         cancellation_reason=appointment.cancellation_reason,
         created_at=appointment.created_at,
         updated_at=appointment.updated_at,
+    )
+
+
+def get_booked_slots(
+    db: Session,
+    doctor_id: str,
+    date: str,  # YYYY-MM-DD format
+    user_role: str,
+) -> BookedSlotsResponse:
+    """
+    Get all booked appointment slots for a doctor on a specific date.
+    
+    Args:
+        db: Database session
+        doctor_id: Doctor's user ID
+        date: Date in YYYY-MM-DD format
+        user_role: Role of requesting user (for anonymization)
+    
+    Returns:
+        BookedSlotsResponse with slots and anonymized patient names for non-doctors
+        
+    Raises:
+        HTTPException: If doctor not found or date invalid
+    """
+    from datetime import datetime
+    
+    # Verify doctor exists
+    doctor = db.query(User).filter(User.id == doctor_id, User.role == "doctor").first()
+    if not doctor:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Doctor not found"
+        )
+    
+    # Parse date
+    try:
+        target_date = datetime.strptime(date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid date format. Use YYYY-MM-DD"
+        )
+    
+    # Define start and end of day
+    start_of_day = datetime.combine(target_date, datetime.min.time())
+    end_of_day = datetime.combine(target_date, datetime.max.time())
+    
+    # Query appointments for this doctor on this date
+    appointments = db.query(AppointmentORM).filter(
+        AppointmentORM.doctor_user_id == doctor_id,
+        AppointmentORM.start_time >= start_of_day,
+        AppointmentORM.start_time <= end_of_day,
+        AppointmentORM.status == AppointmentStatus.SCHEDULED.value,  # Only scheduled appointments
+    ).order_by(AppointmentORM.start_time.asc()).all()
+    
+    # Get patient names
+    patient_ids = [appt.patient_user_id for appt in appointments]
+    patients = db.query(User).filter(User.id.in_(patient_ids)).all() if patient_ids else []
+    patient_names = {p.id: p.name for p in patients}
+    
+    # Build booked slots with anonymization
+    booked_slots = []
+    for appt in appointments:
+        # Anonymize patient name for non-doctors
+        if user_role == "doctor":
+            patient_name = patient_names.get(appt.patient_user_id, "Unknown Patient")
+        else:
+            # Anonymize: show only first name initial
+            full_name = patient_names.get(appt.patient_user_id, "Anonymous")
+            patient_name = f"{full_name[0]}***" if full_name else "Anonymous"
+        
+        booked_slots.append(BookedSlot(
+            appointment_id=appt.id,
+            doctor_id=appt.doctor_user_id,
+            doctor_name=doctor.name,
+            patient_id=appt.patient_user_id,
+            patient_name=patient_name,
+            start_time=appt.start_time,
+            end_time=appt.end_time,
+            type=AppointmentType(appt.type),
+            status=AppointmentStatus(appt.status),
+        ))
+    
+    return BookedSlotsResponse(
+        doctor_id=doctor_id,
+        doctor_name=doctor.name,
+        date=date,
+        booked_slots=booked_slots,
+        total_booked=len(booked_slots)
     )

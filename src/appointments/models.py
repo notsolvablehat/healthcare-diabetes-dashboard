@@ -69,3 +69,25 @@ class CreateAppointmentResponse(BaseModel):
     id: str
     status: AppointmentStatus
     message: str
+
+
+class BookedSlot(BaseModel):
+    """A single booked appointment slot."""
+    appointment_id: str
+    doctor_id: str
+    doctor_name: str
+    patient_id: str
+    patient_name: str  # Anonymized for non-doctors
+    start_time: datetime
+    end_time: datetime
+    type: AppointmentType
+    status: AppointmentStatus
+
+
+class BookedSlotsResponse(BaseModel):
+    """Response for GET /appointments/booked-slots."""
+    doctor_id: str
+    doctor_name: str
+    date: str  # YYYY-MM-DD format
+    booked_slots: list[BookedSlot]
+    total_booked: int

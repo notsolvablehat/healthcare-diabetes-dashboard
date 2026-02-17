@@ -1,4 +1,5 @@
 import logging
+import sys
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -14,13 +15,58 @@ from .logging import LogLevels, configure_logging
 
 configure_logging(LogLevels.info)
 
+logger = logging.getLogger(__name__)
+
+
+async def _check_postgres() -> bool:
+    """Ping PostgreSQL with a simple SELECT 1 query."""
+    from sqlalchemy import text
+    from src.database.core import engine
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            conn.commit()
+        return True
+    except Exception as e:
+        logger.error(f"PostgreSQL health check FAILED: {e}")
+        return False
+
+
+async def _check_mongodb() -> bool:
+    """Ping MongoDB with admin.command('ping')."""
+    from src.database.mongo import client
+    try:
+        await client.admin.command("ping")
+        return True
+    except Exception as e:
+        logger.error(f"MongoDB health check FAILED: {e}")
+        return False
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logging.info("Everything Ready...")
+    # ── Startup health checks ──
+    logger.info("🔍 Running startup health checks...")
+
+    pg_ok = await _check_postgres()
+    mongo_ok = await _check_mongodb()
+
+    if pg_ok:
+        logger.info("PostgreSQL (Supabase) — connected")
+    else:
+        logger.critical("PostgreSQL (Supabase) — UNREACHABLE. Exiting.")
+        sys.exit(1)
+
+    if mongo_ok:
+        logger.info("MongoDB — connected")
+    else:
+        logger.warning("MongoDB — UNREACHABLE. Chat/analysis features will fail.")
+
+    logger.info("Everything Ready...")
     yield
 
     await close_mongodb_connection()
-    logging.info("Closed connections...")
+    logger.info("Closed connections...")
 
 app = FastAPI(lifespan=lifespan)
 

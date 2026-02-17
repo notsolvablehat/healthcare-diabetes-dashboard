@@ -125,22 +125,49 @@ async def extract_report_data(
 # ============================================================================
 
 CHAT_RESPONSE_PROMPT = """
-You are a helpful medical AI assistant. You have access to the patient's medical records.
+You are a helpful medical AI assistant for the 'Health Care' app.
+You have access to tools to fetch patient data. DO NOT HALLUCINATE data.
 
-PATIENT MEDICAL CONTEXT:
+---
+### 1. ANCHOR CONTEXT (Always Available)
 {context}
 
-CONVERSATION HISTORY:
+Use 'CURRENT_TIME' to resolve "tomorrow", "next week", etc.
+Use 'USER_ID' for tool calls requiring 'user_id'.
+---
+
+### 2. AGENTIC RULES (How to think)
+You start with minimal context. If you need information (like doctor's name, appointments, profile), **USE A TOOL TO FIND IT**.
+
+- **"Book with my doctor"":** 
+  - Call `list_my_doctors(limit=5)` first.
+  - If 1 doctor found: Use that doctor's ID.
+  - If multiple: Ask user "Which doctor? Dr. A or Dr. B?"
+  - If none: Tell user they have no assigned doctors.
+
+- **"Is Dr. Sharma free?"**:
+  - Call `list_my_doctors(name="Sharma")` to find their ID.
+  - Then call `get_booked_slots(doctor_id=..., date=...)`.
+
+- **"My profile / blood group / allergies"**:
+  - Call `get_my_profile()`.
+
+- **"Cancel appointment"**:
+  - Call `list_my_appointments(status="scheduled")` to find the ID.
+  - Then call `cancel_appointment(appointment_id=...)`.
+
+---
+### 3. CONVERSATION HISTORY:
 {history}
 
-USER MESSAGE: {message}
+---
+### 4. USER MESSAGE: {message}
 
-Provide a helpful, accurate response based on the patient's medical records.
-- Be clear and professional
-- Only reference information from the provided context
-- If information is not available, say so clearly
-- Do NOT provide medical advice or diagnoses
-- Suggest consulting a doctor for medical decisions
+### 5. EXECUTION GUIDELINES:
+- **Language**: detected intent language, but ALWAYS create tool parameters in **English**.
+- **Tone**: Professional, empathetic, helpful.
+- **Medical Advice**: NEVER diagnose. Use `check_symptoms` for informational triage only.
+- **Missing Info**: If a tool fails or data is missing, ask the user politely.
 """
 
 
@@ -148,15 +175,24 @@ async def generate_chat_response(
     context: str,
     history: list[dict],
     message: str,
-) -> str:
+    tools: list | None = None,
+    user_role: str = "patient",
+) -> dict:
     """
     Generate a chat response with medical context and conversation history.
+    Supports function calling with tools.
+    
     Args:
         context: Pre-built context from patient reports (built once, reused)
         history: Last 10 messages as list of {"role": "user"|"assistant", "content": str}
         message: Current user message
+        tools: Optional list of tool definitions for function calling
+        user_role: User's role (patient/doctor) for context
+    
     Returns:
-        Assistant response text
+        Dict with either:
+        - {"type": "text", "content": str} for text response
+        - {"type": "tool_call", "name": str, "args": dict} for tool call
     """
     # Format history
     history_str = ""
@@ -173,15 +209,58 @@ async def generate_chat_response(
         message=message
     )
 
+    # Build config with tools if provided
+    config = {"temperature": 0.7}
+    
+    if tools:
+        # Convert tool definitions to Gemini format
+        gemini_tools = []
+        from google.genai.types import Tool, FunctionDeclaration
+        
+        function_declarations = []
+        for tool_def in tools:
+            func_decl = FunctionDeclaration(
+                name=tool_def["name"],
+                description=tool_def["description"],
+                parameters=tool_def["parameters"]
+            )
+            function_declarations.append(func_decl)
+        
+        if function_declarations:
+            gemini_tools.append(Tool(function_declarations=function_declarations))
+            config["tools"] = gemini_tools
+
     response = await client.aio.models.generate_content(
         model=MODEL_NAME,
         contents=[prompt],
-        config=genai_types.GenerateContentConfig(
-            temperature=0.7,
-        )
+        config=config
     )
 
-    return response.text
+    # Check if response contains a function call
+    if response.candidates and len(response.candidates) > 0:
+        candidate = response.candidates[0]
+        if candidate.content and candidate.content.parts:
+            for part in candidate.content.parts:
+                # Check for function call
+                if hasattr(part, 'function_call') and part.function_call:
+                    func_call = part.function_call
+                    return {
+                        "type": "tool_call",
+                        "name": func_call.name,
+                        "args": dict(func_call.args) if func_call.args else {}
+                    }
+    
+    # Default to text response
+    try:
+        text_content = response.text if response.text else None
+    except (ValueError, AttributeError):
+        text_content = None
+    
+    return {
+        "type": "text",
+        "content": text_content or "I'm sorry, I couldn't generate a response. Please try again."
+    }
+
 
 
 TITLE_GENERATION_PROMPT = """
@@ -220,6 +299,132 @@ async def generate_chat_title(question: str, response: str) -> str:
 
     title_data = ChatTitleSchema.model_validate_json(result.text)
     return title_data.title[:50]  # Ensure max 50 chars
+
+
+
+# ============================================================================
+# Voice Chat Functions (Multilingual STT + Translation)
+# ============================================================================
+
+class TranscriptionResult(BaseModel):
+    """Structured output for audio transcription."""
+    transcribed_text: str = Field(description="The transcribed text from audio")
+    detected_language: str = Field(description="Detected language name (e.g., 'Kannada', 'Hindi', 'English')")
+    language_code: str = Field(description="ISO language code (e.g., 'kn', 'hi', 'en')")
+    english_translation: str | None = Field(default=None, description="English translation if not in English")
+
+
+async def transcribe_and_process_audio(
+    audio_bytes: bytes,
+    mime_type: str = "audio/webm"
+) -> TranscriptionResult:
+    """
+    Transcribe audio using Gemini's multimodal capabilities.
+    Supports any language including Kannada, Hindi, Telugu, Tamil, English.
+    
+    Args:
+        audio_bytes: Raw audio file bytes
+        mime_type: MIME type of audio (e.g., 'audio/webm', 'audio/wav', 'audio/mp3')
+    
+    Returns:
+        TranscriptionResult with text, detected language, and English translation if needed
+    """
+    import base64
+    
+    # Convert audio bytes to base64 for Gemini
+    audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
+    
+    prompt = """Process this audio file and generate a detailed transcription.
+
+Requirements:
+1. Transcribe the audio accurately in the original language spoken.
+2. Detect the primary language spoken (e.g., Kannada, Hindi, English, Telugu, Tamil, etc.)
+3. Provide the ISO language code (e.g., 'kn' for Kannada, 'hi' for Hindi, 'en' for English).
+4. If the audio is NOT in English, also provide an accurate English translation.
+5. If the audio IS in English, set english_translation to null.
+
+Be accurate with medical terminology if present."""
+
+    # Create content with audio part
+    response = await client.aio.models.generate_content(
+        model=MODEL_NAME,
+        contents=[
+            genai_types.Content(
+                parts=[
+                    genai_types.Part.from_bytes(
+                        data=audio_bytes,
+                        mime_type=mime_type
+                    ),
+                    genai_types.Part(text=prompt)
+                ]
+            )
+        ],
+        config={
+            "temperature": 0.3,  # Low temperature for accuracy
+            "response_mime_type": "application/json",
+            "response_schema": TranscriptionResult.model_json_schema()
+        }
+    )
+    
+    return TranscriptionResult.model_validate_json(response.text)
+
+
+class TranslationResult(BaseModel):
+    """Structured output for translation."""
+    translated_text: str = Field(description="The translated text in target language")
+
+
+async def translate_response_to_language(
+    text: str,
+    target_language: str
+) -> str:
+    """
+    Translate English text to target language (Kannada, Hindi, or English).
+    
+    Args:
+        text: English text to translate
+        target_language: Target language ('kannada', 'hindi', or 'english')
+    
+    Returns:
+        Translated text string
+    """
+    # If target is English, return as-is
+    if target_language.lower() == "english":
+        return text
+    
+    # Map language names to full names for clarity
+    lang_map = {
+        "kannada": "Kannada (ಕನ್ನಡ)",
+        "hindi": "Hindi (हिन्दी)"
+    }
+    
+    target_lang_full = lang_map.get(target_language.lower(), target_language)
+    
+    prompt = f"""Translate this medical assistant response from English to {target_lang_full}.
+
+IMPORTANT:
+1. Maintain medical accuracy and clarity
+2. Use appropriate medical terminology in {target_lang_full}
+3. Keep the tone professional and friendly
+4. Preserve any numerical values, dates, times exactly as they are
+
+English text:
+{text}
+
+Provide the translation in {target_lang_full}:"""
+
+    response = await client.aio.models.generate_content(
+        model=MODEL_NAME,
+        contents=[prompt],
+        config={
+            "temperature": 0.5,
+            "response_mime_type": "application/json",
+            "response_schema": TranslationResult.model_json_schema()
+        }
+    )
+    
+    result = TranslationResult.model_validate_json(response.text)
+    return result.translated_text
 
 
 # ============================================================================

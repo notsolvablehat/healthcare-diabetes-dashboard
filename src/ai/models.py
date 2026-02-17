@@ -182,6 +182,18 @@ class ChatMessageResponse(BaseModel):
     timestamp: datetime
 
 
+class VoiceMessageRequest(BaseModel):
+    """Request for POST /ai/chat/{chat_id}/voice-message"""
+    language: Literal["english", "kannada", "hindi"] = Field(
+        default="english",
+        description="Preferred response language"
+    )
+    attach_report_ids: list[str] | None = Field(
+        default=None,
+        description="Optionally attach reports with this voice message"
+    )
+
+
 class AttachReportsRequest(BaseModel):
     """Request for PATCH /ai/chat/{chat_id}/reports"""
     report_ids: list[str]

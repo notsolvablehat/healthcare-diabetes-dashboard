@@ -13,12 +13,14 @@ from .models import (
     AppointmentListResponse,
     AppointmentResponse,
     AppointmentStatus,
+    BookedSlotsResponse,
     CreateAppointmentRequest,
     CreateAppointmentResponse,
     UpdateAppointmentStatusRequest,
 )
 from .services import (
     create_appointment,
+    get_booked_slots,
     get_doctor_appointments,
     get_patient_appointments,
     update_appointment_status,
@@ -183,4 +185,42 @@ def update_appointment_status_endpoint(
         user_id=user.user_id,
         user_role=user.role,
         request=request,
+    )
+
+
+@router.get("/booked-slots", response_model=BookedSlotsResponse)
+def get_booked_slots_endpoint(
+    user: CurrentUser,
+    db: DbSession,
+    doctor_id: str = Query(..., description="Doctor's user ID"),
+    date: str = Query(..., description="Date in YYYY-MM-DD format"),
+):
+    """
+    Get all booked appointment slots for a doctor on a specific date.
+    
+    Returns list of scheduled appointments with:
+    - Appointment details (time, type, status)
+    - Doctor information
+    - Patient names (anonymized for non-doctors: e.g., "J***")
+    
+    Use cases:
+    - Patients checking doctor availability before booking
+    - Doctors viewing their daily schedule
+    - System preventing double-booking
+    
+    Query parameters:
+    - doctor_id: UUID of the doctor
+    - date: Target date in YYYY-MM-DD format
+    """
+    if not user or not user.user_id:
+        raise HTTPException(
+            status_code=http_status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+    
+    return get_booked_slots(
+        db=db,
+        doctor_id=doctor_id,
+        date=date,
+        user_role=user.role or "patient",
     )

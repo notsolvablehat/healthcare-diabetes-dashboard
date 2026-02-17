@@ -7,6 +7,8 @@ from src.auth.services import CurrentUser
 from src.database.core import DbSession
 from src.database.mongo import MongoDb
 
+from .analytics import get_doctor_analytics, get_patient_analytics
+from .analytics_models import DoctorAnalyticsResponse, PatientAnalyticsResponse
 from .models import DiabetesDashboardResponse, DoctorDashboardResponse, PatientDashboardResponse
 from .services import get_diabetes_dashboard, get_doctor_dashboard, get_patient_dashboard
 
@@ -206,12 +208,95 @@ async def doctor_view_patient_diabetes_dashboard(
             detail="Patient is not assigned to you"
         )
 
+
     try:
         return await get_diabetes_dashboard(
             db=db,
             mongo_db=mongo_db,
             patient_id=patient_id,
         )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        ) from e
+
+
+# ============================================================================
+# Analytics Endpoints
+# ============================================================================
+
+@router.get("/patient/analytics", response_model=PatientAnalyticsResponse)
+def patient_analytics(
+    user: CurrentUser,
+    db: DbSession,
+):
+    """
+    Get analytics data for patient dashboard.
+    
+    Returns:
+    - Appointment statistics (total, upcoming, completed, cancelled, no-show)
+    - Appointment trends by month (last 6 months)
+    - Appointment breakdown by type (Consultation, Follow-up, Emergency)
+    - Next upcoming appointment details
+    - Current medications list
+    - Vital signs (blood group, height, weight)
+    - Reports uploaded by month
+    - Cases created by month
+    """
+    if not user or not user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+
+    if user.role != "patient":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint is only accessible to patients"
+        )
+
+    try:
+        return get_patient_analytics(db=db, patient_id=user.user_id)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        ) from e
+
+
+@router.get("/doctor/analytics", response_model=DoctorAnalyticsResponse)
+def doctor_analytics(
+    user: CurrentUser,
+    db: DbSession,
+):
+    """
+    Get analytics data for doctor dashboard.
+    
+    Returns:
+    - Appointment statistics (total, today, upcoming week, completed, cancelled, no-show)
+    - Appointment completion rate
+    - Appointment trends by month (last 6 months)
+    - Appointment breakdown by type (Consultation, Follow-up, Emergency)
+    - Patient demographics (gender distribution, age group distribution)
+    - Case trends by month
+    - Case breakdown by type (initial, follow_up, urgent, routine)
+    - Reports analyzed vs pending count
+    """
+    if not user or not user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
+        )
+
+    if user.role != "doctor":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint is only accessible to doctors"
+        )
+
+    try:
+        return get_doctor_analytics(db=db, doctor_id=user.user_id)
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

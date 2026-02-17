@@ -19,6 +19,7 @@ class Case(Base):
     patient_id = Column(String, ForeignKey("users.id"), nullable=False)
     doctor_id = Column(String, ForeignKey("users.id"), nullable=False)
     status = Column(String, default="open", index=True)
+    case_type = Column(String, default="routine", index=True)
     chief_complaint = Column(String) # Short text for the dashboard list view
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

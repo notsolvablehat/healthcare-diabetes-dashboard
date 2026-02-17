@@ -70,6 +70,7 @@ class CaseService:
             patient_id=patient_user_id,
             doctor_id=doctor_id,
             status="open",
+            case_type=case_data.case_type.value if case_data.case_type else "routine",
             chief_complaint=case_data.chief_complaint,
             created_at=datetime.utcnow(),
             mongo_case_id=None  # Will update after MongoDB write

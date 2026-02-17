@@ -3,7 +3,7 @@ AI Controller - API routes for AI-powered analysis.
 """
 import logging
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile, status
 
 from src.ai.models import (
     AnalyzeReportResponse,
@@ -19,6 +19,7 @@ from src.ai.models import (
     InsightsResponse,
     StartChatRequest,
     StartChatResponse,
+    VoiceMessageRequest,
 )
 from src.ai.services import ai_service, chat_service, extraction_service
 from src.auth.services import CurrentUser
@@ -169,6 +170,69 @@ async def send_message(
     )
 
     logger.info(f"[AI] send_message complete | chat_id={chat_id} | msg_id={result.message_id}")
+    return result
+
+
+@router.post("/chat/{chat_id}/voice-message", response_model=ChatMessageResponse)
+@limiter.limit("20/minute")
+async def send_voice_message(
+    request: Request,
+    chat_id: str,
+    audio_file: UploadFile = File(..., description="Audio file (webm, wav, mp3, etc.)"),
+    language: str = Form("english", description="Response language: english, kannada, hindi"),
+    attach_report_ids: str | None = Form(None, description="Comma-separated report IDs"),
+    user: CurrentUser = None,
+    db: DbSession = None,
+    mongo_db: MongoDb = None,
+):
+    """
+    Process voice message with multilingual support.
+    
+    - Transcribes audio in any language (Kannada, Hindi, English, etc.)
+    - Processes message with AI tool calling
+    - Returns response in specified language (english/kannada/hindi)
+    """
+    logger.info(f"[AI] send_voice_message called | chat_id={chat_id} | user={user.user_id} | language={language}")
+
+    if not user or not user.user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+
+    # Read audio file
+    try:
+        audio_bytes = await audio_file.read()
+        mime_type = audio_file.content_type or "audio/webm"
+        logger.info(f"[AI] Audio file read | size={len(audio_bytes)} | mime={mime_type}")
+    except Exception as e:
+        logger.error(f"[AI] Failed to read audio file | error={e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to read audio file"
+        ) from e
+
+    # Parse report IDs if provided
+    report_ids_list = None
+    if attach_report_ids:
+        report_ids_list = [rid.strip() for rid in attach_report_ids.split(",") if rid.strip()]
+
+    # Validate language
+    if language.lower() not in ["english", "kannada", "hindi"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="language must be one of: english, kannada, hindi"
+        )
+
+    result = await chat_service.send_voice_message(
+        chat_id=chat_id,
+        audio_bytes=audio_bytes,
+        mime_type=mime_type,
+        language=language,
+        attach_report_ids=report_ids_list,
+        db=db,
+        mongo_db=mongo_db,
+        user_id=user.user_id,
+    )
+
+    logger.info(f"[AI] send_voice_message complete | chat_id={chat_id} | msg_id={result.message_id}")
     return result
 
 
