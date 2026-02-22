@@ -172,11 +172,21 @@ class PendingApprovalItem(BaseModel):
     created_at: datetime
 
 
+class SpecialtyMetric(BaseModel):
+    """Metric for a doctor's particular specialty."""
+    value: str
+    label: str
+    sub: str
+    cls: str
+
+
 class DoctorDashboardResponse(BaseModel):
     """Complete doctor dashboard response."""
     user_info: DoctorUserInfo
     patient_stats: PatientStats
     cases: CasesSummary
+    recent_patients: list[CaseWithPatient] = Field(default_factory=list)
+    specialty_metrics: list[SpecialtyMetric] = Field(default_factory=list)
     pending_approvals: list[PendingApprovalItem] = Field(default_factory=list)
     alerts: list[AlertItem] = Field(default_factory=list)
     ai_stats: AIStats

@@ -14,6 +14,7 @@ from src.dashboards.models import (
     BMIReading,
     CasesSummary,
     CaseSummaryItem,
+    CaseWithPatient,
     DiabetesDashboardResponse,
     DiabetesPrediction,
     DiabetesRiskFactor,
@@ -32,6 +33,7 @@ from src.dashboards.models import (
     PendingApprovalItem,
     ReportsSummary,
     ReportSummaryItem,
+    SpecialtyMetric,
     WeightReading,
 )
 from src.notifications.services import get_unread_count
@@ -247,6 +249,20 @@ async def get_doctor_dashboard(
         pagination=_calculate_pagination(total_cases, cases_page, cases_limit)
     )
 
+    recent_patients = [
+        CaseWithPatient(
+            case_id=c.case_id,
+            status=c.status,
+            chief_complaint=c.chief_complaint,
+            patient_name=patient.name,
+            patient_id=c.patient_id,
+            created_at=c.created_at
+        )
+        for c, patient in cases_list[:5]
+    ]
+
+    specialty_metrics = _get_specialty_metrics_for(doctor.specialisation)
+
     # Get pending approvals
     pending_query = (
         db.query(CaseORM, User)
@@ -284,11 +300,52 @@ async def get_doctor_dashboard(
         user_info=user_info,
         patient_stats=patient_stats,
         cases=cases,
+        recent_patients=recent_patients,
+        specialty_metrics=specialty_metrics,
         pending_approvals=pending_approvals,
         alerts=alerts,
         ai_stats=ai_stats,
         notifications_unread=unread_count_response.count
     )
+
+
+def _get_specialty_metrics_for(specialisation: str | None) -> list[SpecialtyMetric]:
+    spec = (specialisation or "").lower()
+    if "cardiology" in spec:
+        return [
+            SpecialtyMetric(value='52%', label='Avg EF', sub='↑ 3% this Q', cls='up'),
+            SpecialtyMetric(value='88%', label='Statin Compliance', sub='↑ 5%', cls='up'),
+            SpecialtyMetric(value='128/78', label='Avg BP', sub='well controlled', cls='up'),
+            SpecialtyMetric(value='0.8', label='Avg Troponin', sub='2 elevated', cls='down')
+        ]
+    elif "gynecology" in spec or "gynaecology" in spec:
+        return [
+            SpecialtyMetric(value='3.2', label='Avg AMH (ng/mL)', sub='normal range', cls='neutral'),
+            SpecialtyMetric(value='68%', label='PCOS Control Rate', sub='↑ 8%', cls='up'),
+            SpecialtyMetric(value='94%', label='Pap Smear Done', sub='screening target', cls='up'),
+            SpecialtyMetric(value='12.4', label='Avg Hemoglobin', sub='3 below 10 g/dL', cls='down')
+        ]
+    elif "orthopedics" in spec or "orthopaedics" in spec:
+        return [
+            SpecialtyMetric(value='82%', label='Rehab Compliance', sub='↑ 6%', cls='up'),
+            SpecialtyMetric(value='3.2', label='Avg Pain Score', sub='↓ 0.8 post-op', cls='up'),
+            SpecialtyMetric(value='-1.8', label='Avg T-Score (DEXA)', sub='osteopenia range', cls='down'),
+            SpecialtyMetric(value='18d', label='Avg Recovery', sub='under 21d target', cls='up')
+        ]
+    elif "pediatrics" in spec or "paediatrics" in spec:
+        return [
+            SpecialtyMetric(value='92%', label='Immunization Rate', sub='↑ 3%', cls='up'),
+            SpecialtyMetric(value='54th', label='Avg Growth %ile', sub='on track', cls='neutral'),
+            SpecialtyMetric(value='11.8', label='Avg Hemoglobin', sub='4 below 11 g/dL', cls='down'),
+            SpecialtyMetric(value='3.1d', label='Avg Illness Duration', sub='↓ 0.5d', cls='up')
+        ]
+    else:  # General Medicine
+        return [
+            SpecialtyMetric(value='7.4%', label='Avg HbA1c', sub='↓ 0.3 vs last Q', cls='up'),
+            SpecialtyMetric(value='134/82', label='Avg BP', sub='target <140/90', cls='up'),
+            SpecialtyMetric(value='86%', label='Med Adherence', sub='↑ 4% this month', cls='up'),
+            SpecialtyMetric(value='4.2', label='Avg TSH', sub='in range', cls='neutral')
+        ]
 
 
 async def _get_patient_health_charts(mongo_db: AsyncDatabase, patient_id: str) -> HealthCharts:

@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard — Final</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* ══════════════════════════════════════
+           CSS Custom Properties (Theme Tokens)
+           ══════════════════════════════════════ */
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #111111;
+            --bg-card-hover: #151515;
+            --bg-input: #1a1a1a;
+            --border: #1a1a1a;
+            --border-hover: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-body: #e0e0e0;
+            --text-muted: #888888;
+            --text-dim: #555555;
+            --text-faint: #444444;
+            --table-row-hover: #151515;
+            --table-border: #0f0f0f;
+
+            --green: #00ff88;
+            --blue: #00aaff;
+            --red: #ff4444;
+            --amber: #ffaa00;
+            --purple: #8b5cf6;
+            --teal: #14b8a6;
+            --pink: #e879f9;
+            --orange: #f97316;
+            --slate: #94a3b8;
+
+            --chart-grid: rgba(255, 255, 255, 0.04);
+            --chart-tick: #555;
+            --chart-point-border: #0a0a0a;
+        }
+
+        body.light-mode {
+            --bg: #f5f5f7;
+            --bg-card: #ffffff;
+            --bg-card-hover: #fafafa;
+            --bg-input: #f0f0f0;
+            --border: #e8e8e8;
+            --border-hover: #dddddd;
+            --text-primary: #1a1a1a;
+            --text-body: #333333;
+            --text-muted: #999999;
+            --text-dim: #999999;
+            --text-faint: #aaaaaa;
+            --table-row-hover: #fafafa;
+            --table-border: #f0f0f0;
+
+            --chart-grid: rgba(0, 0, 0, 0.06);
+            --chart-tick: #999;
+            --chart-point-border: #ffffff;
+        }
+
+        /* ══════════════════════════════════════
+           Base Reset & Layout
+           ══════════════════════════════════════ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text-body);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* ─── Header ─── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 100;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-date {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-pill {
+            font-size: 11px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: rgba(0, 255, 136, 0.08);
+            color: var(--green);
+            border: 1px solid rgba(0, 255, 136, 0.15);
+        }
+
+        .theme-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-hover);
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .theme-btn:hover {
+            background: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .theme-icon {
+            font-size: 14px;
+        }
+
+        /* ─── Main Content ─── */
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 28px;
+        }
+
+        /* ─── Grid Layouts ─── */
+        .grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .grid-1 {
+            grid-template-columns: 1fr;
+        }
+
+        .grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .grid-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .grid-2-1 {
+            grid-template-columns: 2fr 1fr;
+        }
+
+        .grid-1-2 {
+            grid-template-columns: 1fr 2fr;
+        }
+
+        .grid-summary {
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        /* ─── Panel / Card ─── */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.2s;
+        }
+
+        .panel:hover {
+            border-color: var(--border-hover);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .panel-badge {
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 6px;
+            background: var(--bg-input);
+            color: var(--text-muted);
+        }
+
+        .chart-box {
+            position: relative;
+            height: 260px;
+        }
+
+        .chart-box.tall {
+            height: 300px;
+        }
+
+        .chart-box.short {
+            height: 220px;
+        }
+
+        /* ─── Select / Dropdown ─── */
+        .dropdown-select {
+            background: var(--bg-input);
+            border: 1px solid var(--border-hover);
+            padding: 5px 10px;
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+            padding-right: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='%23888'%3E%3Cpath d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+        }
+
+        .dropdown-select:hover {
+            border-color: var(--text-muted);
+        }
+
+        .dropdown-select:focus {
+            border-color: var(--green);
+        }
+
+        /* ─── Today's Summary ─── */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .summary-item:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .summary-value.critical {
+            color: var(--red);
+        }
+
+        .summary-value.good {
+            color: var(--green);
+        }
+
+        .summary-label {
+            font-size: 10px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ─── Data Table ─── */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            font-size: 10px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+        }
+
+        .data-table td {
+            font-size: 13px;
+            color: var(--text-body);
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--table-border);
+        }
+
+        .data-table tbody tr {
+            transition: background 0.15s;
+        }
+
+        .data-table tbody tr:hover td {
+            background: var(--table-row-hover);
+        }
+
+        .severity-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .severity-dot.critical {
+            background: var(--red);
+            box-shadow: 0 0 6px rgba(255, 68, 68, 0.4);
+        }
+
+        .severity-dot.high {
+            background: var(--amber);
+        }
+
+        .severity-dot.moderate {
+            background: var(--blue);
+        }
+
+        .severity-dot.stable {
+            background: var(--green);
+        }
+
+        .table-tag {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .tag-new {
+            background: rgba(0, 170, 255, 0.1);
+            color: var(--blue);
+        }
+
+        .tag-returning {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--green);
+        }
+
+        .tag-urgent {
+            background: rgba(255, 68, 68, 0.1);
+            color: var(--red);
+        }
+
+        /* ─── Section Titles ─── */
+        .section-label {
+            font-size: 10px;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        /* ─── Alerts ─── */
+        .alert-item {
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .alert-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-item:hover {
+            border-color: var(--border-hover);
+        }
+
+        .alert-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .alert-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-body);
+        }
+
+        .alert-time {
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+
+        .alert-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .alert-severity {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .alert-severity.crit {
+            background: var(--red);
+            box-shadow: 0 0 6px rgba(255, 68, 68, 0.4);
+        }
+
+        .alert-severity.warn {
+            background: var(--amber);
+        }
+
+        /* ─── Specialty Metrics ─── */
+        .spec-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .spec-metric {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .spec-metric::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--green);
+            opacity: 0.6;
+        }
+
+        .spec-metric:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+        }
+
+        .spec-metric-value {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .spec-metric-label {
+            font-size: 10px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .spec-metric-sub {
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .spec-metric-sub.up {
+            color: var(--green);
+        }
+
+        .spec-metric-sub.down {
+            color: var(--red);
+        }
+
+        .spec-metric-sub.neutral {
+            color: var(--text-muted);
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 1100px) {
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .grid-2-1,
+            .grid-1-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .spec-metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .main {
+                padding: 16px;
+            }
+
+            .header {
+                padding: 14px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .spec-metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ═══════ HEADER ═══════ -->
+    <div class="header">
+        <div class="header-left">
+            <div class="header-title">Dr. Sharma</div>
+            <div class="header-date">Sat, 22 Feb 2026</div>
+        </div>
+        <div class="header-right">
+            <div class="status-pill">Online</div>
+            <button class="theme-btn" onclick="toggleTheme()">
+                <span class="theme-icon" id="themeIcon">🌙</span>
+                <span id="themeLabel">Dark</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="main">
+
+        <!-- ═══════ ROW 1: ALERTS ═══════ -->
+        <div class="grid grid-1">
+            <!-- Alerts -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Alerts</div>
+                    <div class="panel-badge">4 active</div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-item-header">
+                        <div class="alert-name"><span class="alert-severity crit"></span>Rajesh Kumar</div>
+                        <div class="alert-time">09:00</div>
+                    </div>
+                    <div class="alert-desc">Blood sugar 312 mg/dL, ketones positive</div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-item-header">
+                        <div class="alert-name"><span class="alert-severity crit"></span>Amit Patel</div>
+                        <div class="alert-time">11:15</div>
+                    </div>
+                    <div class="alert-desc">Troponin elevated, ECG ST changes</div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-item-header">
+                        <div class="alert-name"><span class="alert-severity warn"></span>Sneha Desai</div>
+                        <div class="alert-time">Lab</div>
+                    </div>
+                    <div class="alert-desc">LDL 198 mg/dL, needs statin review</div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-item-header">
+                        <div class="alert-name"><span class="alert-severity warn"></span>Karan Shah</div>
+                        <div class="alert-time">Lab</div>
+                    </div>
+                    <div class="alert-desc">TSH 8.4 mIU/L, subclinical hypo</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════ ROW 2: SPECIALTY SELECTOR + METRICS + TOP DIAGNOSES + RETENTION RATE ═══════ -->
+        <div class="section-label" style="display:flex;align-items:center;">
+            Specialty View
+            <span class="panel-badge" id="doctorSpecialtyLabel"
+                style="margin-left: 12px; font-size: 11px;">Cardiology</span>
+        </div>
+        <div class="spec-metrics-grid" id="specMetrics">
+            <!-- Filled by JS -->
+        </div>
+
+        <div class="grid grid-2">
+            <!-- Top Diagnoses (from 4b) -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Top Diagnoses</div>
+                    <div class="panel-badge">Last 90 days</div>
+                </div>
+                <div class="chart-box tall">
+                    <canvas id="diagChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Retention Rate (from 4b) -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Retention Rate</div>
+                    <div class="panel-badge">Follow-up compliance</div>
+                </div>
+                <div class="chart-box tall">
+                    <canvas id="retentionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════ ROW 3: WEEKLY OVERVIEW ═══════ -->
+        <div class="grid grid-1">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Weekly Overview — Patient Outcomes</div>
+                    <div class="panel-badge">This week</div>
+                </div>
+                <div class="chart-box">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════ ROW 4: VITAL TREND + VISIT TYPES ═══════ -->
+        <div class="grid grid-2-1">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Vital Trend — Most Critical</div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <select class="dropdown-select" id="patientSelect" onchange="updateVitalTrend()">
+                            <option value="amit">Amit Patel (Bed 4) — MEWS 7</option>
+                            <option value="rajesh">Rajesh Kumar (Bed 7) — MEWS 6</option>
+                            <option value="sneha">Sneha Desai (Bed 12) — MEWS 5</option>
+                        </select>
+                        <div class="panel-badge">Last 12 hours</div>
+                    </div>
+                </div>
+                <div class="chart-box tall">
+                    <canvas id="vitalChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Visit Types Doughnut (from 4c) -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Visit Types</div>
+                    <div class="panel-badge">This month</div>
+                </div>
+                <div class="chart-box">
+                    <canvas id="visitTypesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════ ROW 5: TODAY'S SUMMARY + RECENT PATIENTS ═══════ -->
+        <div class="section-label">Today's Summary</div>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <div class="summary-value">8</div>
+                <div class="summary-label">Scheduled</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value good">3</div>
+                <div class="summary-label">Completed</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value critical">2</div>
+                <div class="summary-label">Critical</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">4</div>
+                <div class="summary-label">Pending Reports</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">14m</div>
+                <div class="summary-label">Avg Wait</div>
+            </div>
+        </div>
+
+        <div class="grid grid-1">
+            <!-- Recent Patients (from 4a) -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Recent Patients</div>
+                    <div class="panel-badge">Today</div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Condition</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentPatientsList">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         SCRIPTS
+         ══════════════════════════════════════ -->
+        <script>
+            /* ─── Simulated API Response from /doctor/dashboard ─── */
+            const apiResponse = {
+                user_info: {
+                    name: "Dr. Sharma",
+                    specialisation: "Cardiology"
+                },
+                specialty_metrics: [
+                    { value: '52%', label: 'Avg EF', sub: '↑ 3% this Q', cls: 'up' },
+                    { value: '88%', label: 'Statin Compliance', sub: '↑ 5%', cls: 'up' },
+                    { value: '128/78', label: 'Avg BP', sub: 'well controlled', cls: 'up' },
+                    { value: '0.8', label: 'Avg Troponin', sub: '2 elevated', cls: 'down' }
+                ],
+                recent_patients: [
+                    { patient_name: "Rajesh Kumar", chief_complaint: "Uncontrolled diabetes, HbA1c 9.2%", status: "open", created_at: "2026-02-22T09:00:00" },
+                    { patient_name: "Priya Sharma", chief_complaint: "Hypertension follow-up, BP 145/92", status: "under_review", created_at: "2026-02-22T10:30:00" },
+                    { patient_name: "Amit Patel", chief_complaint: "Chest pain, rule out ACS", status: "open", created_at: "2026-02-22T11:15:00" },
+                    { patient_name: "Sunita Reddy", chief_complaint: "Post-stent ECG review", status: "closed", created_at: "2026-02-22T14:00:00" },
+                    { patient_name: "Vijay Singh", chief_complaint: "Annual physical, no complaints", status: "closed", created_at: "2026-02-22T15:30:00" }
+                ]
+            };
+
+            /* ─── Theme Toggle ─── */
+            function toggleTheme() {
+                document.body.classList.toggle('light-mode');
+                const isLight = document.body.classList.contains('light-mode');
+                document.getElementById('themeIcon').textContent = isLight ? '☀️' : '🌙';
+                document.getElementById('themeLabel').textContent = isLight ? 'Light' : 'Dark';
+
+                // Rebuild charts with updated colors
+                rebuildAllCharts();
+            }
+
+            /* ─── Color helpers ─── */
+            function getColors() {
+                const s = getComputedStyle(document.body);
+                return {
+                    green: s.getPropertyValue('--green').trim(),
+                    blue: s.getPropertyValue('--blue').trim(),
+                    red: s.getPropertyValue('--red').trim(),
+                    amber: s.getPropertyValue('--amber').trim(),
+                    purple: s.getPropertyValue('--purple').trim(),
+                    teal: s.getPropertyValue('--teal').trim(),
+                    pink: s.getPropertyValue('--pink').trim(),
+                    orange: s.getPropertyValue('--orange').trim(),
+                    slate: s.getPropertyValue('--slate').trim(),
+                    grid: s.getPropertyValue('--chart-grid').trim(),
+                    tick: s.getPropertyValue('--chart-tick').trim(),
+                    ptBorder: s.getPropertyValue('--chart-point-border').trim()
+                };
+            }
+
+            function makeScales(C) {
+                return {
+                    y: { beginAtZero: true, grid: { color: C.grid }, ticks: { color: C.tick, font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { color: C.tick, font: { size: 10 } } }
+                };
+            }
+
+            function makeLegend() {
+                const C = getColors();
+                return {
+                    position: 'bottom',
+                    labels: { color: C.tick, boxWidth: 10, padding: 12, font: { size: 10 } }
+                };
+            }
+
+            /* ═══════════════════════════
+               Chart Instances
+               ═══════════════════════════ */
+            let chartInstances = {};
+
+            function destroyChart(id) {
+                if (chartInstances[id]) {
+                    chartInstances[id].destroy();
+                    delete chartInstances[id];
+                }
+            }
+
+            /* ─── 1. Visit Types Doughnut ─── */
+            function buildVisitTypesChart() {
+                destroyChart('visitTypes');
+                const C = getColors();
+                chartInstances['visitTypes'] = new Chart(document.getElementById('visitTypesChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Consultation', 'Follow-up', 'Emergency', 'Procedure', 'Teleconsult'],
+                        datasets: [{
+                            data: [38, 32, 8, 12, 10],
+                            backgroundColor: [C.green, C.blue, C.red, C.amber, C.purple],
+                            borderWidth: 0,
+                            borderRadius: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '62%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: C.tick, padding: 10, font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            /* ─── 2. Top Diagnoses (specialty-specific) ─── */
+            const specialtyData = {
+                general: {
+                    labels: ['Type 2 DM', 'Hypertension', 'Hypothyroidism', 'CAD', 'COPD', 'Lower Back Pain', 'Anxiety/Depression', 'GERD', 'Anemia', 'UTI'],
+                    data: [42, 38, 24, 19, 16, 14, 12, 11, 9, 7]
+                },
+                cardiology: {
+                    labels: ['Hypertension', 'CAD', 'Heart Failure', 'Atrial Fibrillation', 'Valvular Disease', 'Cardiomyopathy', 'Angina', 'Dyslipidemia', 'ACS/NSTEMI', 'Peripheral Artery'],
+                    data: [52, 44, 28, 22, 18, 15, 14, 12, 10, 6]
+                },
+                gynecology: {
+                    labels: ['PCOS', 'Endometriosis', 'Fibroids', 'Menorrhagia', 'Cervical Dysplasia', 'Ovarian Cyst', 'Vaginitis', 'PID', 'Infertility', 'Menopause Mgmt'],
+                    data: [38, 32, 28, 24, 18, 16, 14, 10, 9, 8]
+                },
+                orthopedics: {
+                    labels: ['Osteoarthritis', 'Lumbar Disc', 'Fracture Mgmt', 'Rotator Cuff', 'Knee Ligament', 'Carpal Tunnel', 'Osteoporosis', 'Tendinitis', 'Scoliosis', 'Plantar Fasciitis'],
+                    data: [45, 34, 28, 22, 20, 16, 14, 12, 8, 6]
+                },
+                pediatrics: {
+                    labels: ['Upper RTI', 'Viral Fever', 'Diarrhea/GI', 'Asthma', 'Otitis Media', 'Skin Infections', 'Growth Delay', 'Anemia', 'Allergies', 'Tonsillitis'],
+                    data: [48, 36, 30, 24, 20, 16, 12, 10, 8, 6]
+                }
+            };
+
+            function buildDiagChart() {
+                destroyChart('diag');
+                const C = getColors();
+                const spec = (apiResponse.user_info.specialisation || '').toLowerCase();
+                const specialty = Object.keys(specialtyData).find(k => spec.includes(k)) || 'general';
+                const sData = specialtyData[specialty];
+                const barColors = [C.green, C.blue, C.purple, C.red, C.amber, C.teal, C.pink, C.orange, C.blue, C.slate];
+
+                chartInstances['diag'] = new Chart(document.getElementById('diagChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: sData.labels,
+                        datasets: [{
+                            data: sData.data,
+                            backgroundColor: barColors,
+                            borderRadius: 4,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: C.grid }, ticks: { color: C.tick, font: { size: 10 } } },
+                            y: { grid: { display: false }, ticks: { color: '#aaa', font: { size: 11 } } }
+                        }
+                    }
+                });
+            }
+
+            /* ─── Specialty Metrics ─── */
+            function renderSpecMetrics() {
+                document.getElementById('doctorSpecialtyLabel').textContent = apiResponse.user_info.specialisation;
+                const metrics = apiResponse.specialty_metrics;
+                const container = document.getElementById('specMetrics');
+                container.innerHTML = metrics.map(m => `
+                <div class="spec-metric">
+                    <div class="spec-metric-value">${m.value}</div>
+                    <div class="spec-metric-label">${m.label}</div>
+                    <div class="spec-metric-sub ${m.cls}">${m.sub}</div>
+                </div>
+            `).join('');
+            }
+
+            /* ─── Recent Patients ─── */
+            function renderRecentPatients() {
+                const tbody = document.getElementById('recentPatientsList');
+                tbody.innerHTML = apiResponse.recent_patients.map(p => {
+                    let sevClass = 'stable';
+                    let tagClass = 'tag-new';
+                    let statusLabel = p.status;
+                    let timeStr = new Date(p.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    if (p.status === 'open') { sevClass = 'critical'; tagClass = 'tag-urgent'; statusLabel = 'Critical'; }
+                    else if (p.status === 'under_review') { sevClass = 'high'; tagClass = 'tag-returning'; statusLabel = 'Review'; }
+                    else if (p.status === 'closed') { sevClass = 'moderate'; tagClass = 'tag-returning'; statusLabel = 'Closed'; }
+
+                    return `
+                        <tr>
+                            <td><span class="severity-dot ${sevClass}"></span>${p.patient_name}</td>
+                            <td>${p.chief_complaint || '-'}</td>
+                            <td><span class="table-tag ${tagClass}">${statusLabel}</span></td>
+                            <td>${timeStr}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            /* ─── 3. Retention Rate ─── */
+            function buildRetentionChart() {
+                destroyChart('retention');
+                const C = getColors();
+                const scales = makeScales(C);
+
+                chartInstances['retention'] = new Chart(document.getElementById('retentionChart'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
+                        datasets: [{
+                            label: 'Follow-up Rate',
+                            data: [65, 68, 64, 72, 75, 78],
+                            borderColor: C.green,
+                            backgroundColor: 'rgba(0,255,136,0.06)',
+                            fill: true,
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointRadius: 5,
+                            pointBackgroundColor: C.green,
+                            pointBorderColor: C.ptBorder,
+                            pointBorderWidth: 2
+                        }, {
+                            label: 'No-show Rate',
+                            data: [18, 15, 20, 12, 11, 8],
+                            borderColor: C.red,
+                            borderWidth: 2,
+                            tension: 0.3,
+                            borderDash: [4, 3],
+                            pointRadius: 4,
+                            pointBackgroundColor: C.red,
+                            pointBorderColor: C.ptBorder,
+                            pointBorderWidth: 2,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index' },
+                        plugins: { legend: makeLegend() },
+                        scales: {
+                            ...scales,
+                            y: { ...scales.y, ticks: { ...scales.y.ticks, callback: v => v + '%' } }
+                        }
+                    }
+                });
+            }
+
+            /* ─── 4. Vital Trend (patient-specific) ─── */
+            const patientVitals = {
+                amit: {
+                    name: 'Amit Patel (Bed 4)',
+                    hr: [108, 112, 118, 115, 120, 116, 118],
+                    systolic: [96, 92, 88, 94, 90, 92, 92],
+                    spo2: [94, 93, 91, 92, 90, 91, 91],
+                    labels: ['02:00', '04:00', '06:00', '08:00', '10:00', '12:00', '14:00']
+                },
+                rajesh: {
+                    name: 'Rajesh Kumar (Bed 7)',
+                    hr: [88, 92, 95, 98, 96, 100, 98],
+                    systolic: [152, 156, 160, 158, 155, 162, 158],
+                    spo2: [97, 96, 96, 95, 96, 95, 96],
+                    labels: ['02:00', '04:00', '06:00', '08:00', '10:00', '12:00', '14:00']
+                },
+                sneha: {
+                    name: 'Sneha Desai (Bed 12)',
+                    hr: [78, 80, 82, 84, 82, 80, 82],
+                    systolic: [142, 146, 148, 150, 148, 146, 148],
+                    spo2: [96, 96, 95, 96, 97, 96, 96],
+                    labels: ['02:00', '04:00', '06:00', '08:00', '10:00', '12:00', '14:00']
+                }
+            };
+
+            function buildVitalChart() {
+                destroyChart('vital');
+                const C = getColors();
+                const patientKey = document.getElementById('patientSelect').value;
+                const p = patientVitals[patientKey];
+
+                chartInstances['vital'] = new Chart(document.getElementById('vitalChart'), {
+                    type: 'line',
+                    data: {
+                        labels: p.labels,
+                        datasets: [{
+                            label: 'HR (bpm)',
+                            data: p.hr,
+                            borderColor: C.red,
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 5,
+                            pointBackgroundColor: C.red,
+                            pointBorderColor: C.ptBorder,
+                            pointBorderWidth: 2,
+                            yAxisID: 'y'
+                        }, {
+                            label: 'Systolic BP',
+                            data: p.systolic,
+                            borderColor: C.amber,
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 5,
+                            pointBackgroundColor: C.amber,
+                            pointBorderColor: C.ptBorder,
+                            pointBorderWidth: 2,
+                            yAxisID: 'y'
+                        }, {
+                            label: 'SpO₂ %',
+                            data: p.spo2,
+                            borderColor: C.blue,
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 5,
+                            pointBackgroundColor: C.blue,
+                            pointBorderColor: C.ptBorder,
+                            pointBorderWidth: 2,
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index' },
+                        plugins: { legend: makeLegend() },
+                        scales: {
+                            y: {
+                                position: 'left',
+                                grid: { color: C.grid },
+                                ticks: { color: C.tick, font: { size: 10 } },
+                                min: 60, max: 180,
+                                title: { display: true, text: 'HR / BP', color: C.tick, font: { size: 9 } }
+                            },
+                            y1: {
+                                position: 'right',
+                                grid: { display: false },
+                                ticks: { color: C.blue, font: { size: 10 }, callback: v => v + '%' },
+                                min: 85, max: 100,
+                                title: { display: true, text: 'SpO₂', color: C.blue, font: { size: 9 } }
+                            },
+                            x: { grid: { display: false }, ticks: { color: C.tick, font: { size: 10 } } }
+                        }
+                    }
+                });
+            }
+
+            function updateVitalTrend() { buildVitalChart(); }
+
+            /* ─── 5. Weekly Overview — Patient Outcomes ─── */
+            function buildWeeklyChart() {
+                destroyChart('weekly');
+                const C = getColors();
+
+                chartInstances['weekly'] = new Chart(document.getElementById('weeklyChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                        datasets: [{
+                            label: 'Resolved',
+                            data: [6, 8, 5, 9, 7, 4],
+                            backgroundColor: C.green,
+                            borderRadius: 4,
+                            borderSkipped: false
+                        }, {
+                            label: 'Ongoing',
+                            data: [4, 5, 3, 4, 6, 3],
+                            backgroundColor: C.blue,
+                            borderRadius: 4,
+                            borderSkipped: false
+                        }, {
+                            label: 'Escalated',
+                            data: [1, 0, 2, 1, 0, 1],
+                            backgroundColor: C.red,
+                            borderRadius: 4,
+                            borderSkipped: false
+                        }, {
+                            label: 'Referred Out',
+                            data: [0, 1, 0, 1, 2, 0],
+                            backgroundColor: C.amber,
+                            borderRadius: 4,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: makeLegend() },
+                        scales: {
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                grid: { color: C.grid },
+                                ticks: { color: C.tick, font: { size: 10 }, stepSize: 2 }
+                            },
+                            x: {
+                                stacked: true,
+                                grid: { display: false },
+                                ticks: { color: C.tick, font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            /* ─── Rebuild All ─── */
+            function rebuildAllCharts() {
+                buildVisitTypesChart();
+                buildDiagChart();
+                buildRetentionChart();
+                buildVitalChart();
+                buildWeeklyChart();
+                renderSpecMetrics();
+                renderRecentPatients();
+            }
+
+            /* ─── Init ─── */
+            rebuildAllCharts();
+        </script>
+</body>
+
+</html>
