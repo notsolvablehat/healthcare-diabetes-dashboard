@@ -204,3 +204,45 @@ def assign(user: CurrentUser, data: RequestModel, db: DbSession):
 3. **Filter:** Exclude doctors where `current_load >= max_patients`.
 4. **Sort:** Ascending by `current_load`.
 5. **Result:** Assign to the 0th index (least loaded).
+
+# How to Run
+
+### Step 1: Create Virtual Environment
+
+**All Platforms:**
+```bash
+python -m venv venv
+```
+
+### Step 2: Activate Virtual Environment
+
+**Linux & macOS:**
+```bash
+source venv/bin/activate
+```
+
+**Windows (Command Prompt):**
+```cmd
+venv\Scripts\activate
+```
+
+**Windows (PowerShell):**
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+### Step 3: Install Dependencies
+
+**All Platforms:**
+```bash
+pip install -r requirements.txt
+```
+
+### Step 4: Run the Application
+
+**All Platforms:**
+```bash
+uvicorn src.main:app
+```
+
+The application will start on `http://localhost:8000`
